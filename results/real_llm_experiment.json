@@ -1,0 +1,98 @@
+{
+  "experiment_id": "real_llm_selector_generation_v1",
+  "timestamp": "2026-09-29T06:06:20Z",
+  "model": "qwen2.5-coder:3b",
+  "temperature": 0.0,
+  "seed": 42,
+  "prompt_version": "1.0",
+  "latency_seconds": 109.188,
+  "generation_pages": [
+    "page01_changed.html",
+    "page02_changed.html",
+    "page03_changed.html"
+  ],
+  "validation_pages": [
+    "page04_changed.html",
+    "page05_changed.html"
+  ],
+  "held_out_pages": [
+    "page06_changed.html"
+  ],
+  "schema_validation": "PASS",
+  "candidate_selectors": {
+    "title": {
+      "selector": ".headline",
+      "type": "css"
+    },
+    "body": {
+      "selector": ".story-text",
+      "type": "css"
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "type": "css"
+    },
+    "author": {
+      "selector": ".byline-author",
+      "type": "css"
+    }
+  },
+  "validation_results": {
+    "title": {
+      "selector": ".headline",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "body": {
+      "selector": ".story-text",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "author": {
+      "selector": ".byline-author",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    }
+  },
+  "held_out_results": {
+    "title": {
+      "selector": ".headline",
+      "extracted_value": "Indigenous Cartography: Mapping Ancestral Toponyms",
+      "expected_value": "Indigenous Cartography: Mapping Ancestral Toponyms",
+      "success": true,
+      "correct": true
+    },
+    "body": {
+      "selector": ".story-text",
+      "extracted_value": "Counter-mapping initiatives employ GIS technology to reinstate original place names, reflecting deep ecological knowledge embedded in local geography. By replacing colonial cartographic layers with indigenous toponyms, communities assert territorial memory and historical continuity. We demonstrate how participatory web maps enable youth to interview elders and geotag sacred landmarks with audio recordings.",
+      "expected_value": "Counter-mapping initiatives employ GIS technology to reinstate original place names",
+      "success": true,
+      "correct": true
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "extracted_value": "June 10, 2024",
+      "expected_value": "June 10, 2024",
+      "success": true,
+      "correct": true
+    },
+    "author": {
+      "selector": ".byline-author",
+      "extracted_value": "Tariq Whitefeather",
+      "expected_value": "Tariq Whitefeather",
+      "success": true,
+      "correct": true
+    }
+  },
+  "field_accuracy": 1.0,
+  "failure_reason": null
+}

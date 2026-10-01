@@ -1,0 +1,113 @@
+{
+  "experiment": "simulated_layout_change_repair",
+  "generator": "MockRuleGenerator",
+  "pages_tested": 3,
+  "threshold": 0.9,
+  "before_repair": {
+    "title": false,
+    "body": false,
+    "date": false,
+    "author": false
+  },
+  "proposed_rules": {
+    "title": "h2.headline",
+    "body": "section.story-text",
+    "date": "span.post-timestamp",
+    "author": "span.byline-author"
+  },
+  "validation_results": {
+    "title": {
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "body": {
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "date": {
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "author": {
+      "success_rate": 1.0,
+      "accepted": true
+    }
+  },
+  "approved": true,
+  "after_repair": {
+    "title": true,
+    "body": true,
+    "date": true,
+    "author": true
+  },
+  "repaired_config_sample": {
+    "title": {
+      "selector": "h2.headline",
+      "type": "css",
+      "version": 2,
+      "source": "mock-ai",
+      "reason": "simulated redesign repair",
+      "validation_score": 1.0,
+      "history": [
+        {
+          "version": 1,
+          "selector": "h1.article-title",
+          "type": "css",
+          "source": "manual",
+          "reason": "initial rule"
+        }
+      ]
+    },
+    "body": {
+      "selector": "section.story-text",
+      "type": "css",
+      "version": 2,
+      "source": "mock-ai",
+      "reason": "simulated redesign repair",
+      "validation_score": 1.0,
+      "history": [
+        {
+          "version": 1,
+          "selector": "div.article-body",
+          "type": "css",
+          "source": "manual",
+          "reason": "initial rule"
+        }
+      ]
+    },
+    "date": {
+      "selector": "span.post-timestamp",
+      "type": "css",
+      "version": 2,
+      "source": "mock-ai",
+      "reason": "simulated redesign repair",
+      "validation_score": 1.0,
+      "history": [
+        {
+          "version": 1,
+          "selector": "time.published",
+          "type": "css",
+          "source": "manual",
+          "reason": "initial rule"
+        }
+      ]
+    },
+    "author": {
+      "selector": "span.byline-author",
+      "type": "css",
+      "version": 2,
+      "source": "mock-ai",
+      "reason": "simulated redesign repair",
+      "validation_score": 1.0,
+      "history": [
+        {
+          "version": 1,
+          "selector": ".author-name",
+          "type": "css",
+          "source": "manual",
+          "reason": "initial rule"
+        }
+      ]
+    }
+  }
+}

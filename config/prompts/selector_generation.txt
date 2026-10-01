@@ -1,0 +1,36 @@
+You are an expert web extraction engineer analyzing sample HTML pages from a single website template.
+
+Your task is to infer robust, reusable CSS or XPath selectors to extract the following 4 fields across all pages of this website:
+1. title  - The article headline / title
+2. body   - The main article text container
+3. date   - The publication date / timestamp
+4. author - The author / byline name
+
+GUIDELINES:
+- Selectors must be general enough to work on other unseen articles from the same site.
+- Prefer CSS selectors based on semantic tags, tag hierarchies, class names, or IDs.
+- Do NOT use exact article text or page-specific IDs in your selectors.
+- Return ONLY a valid JSON object matching the exact schema below. Do not include markdown fences, code blocks, or explanatory text.
+
+REQUIRED JSON SCHEMA:
+{
+  "title": {
+    "selector": "...",
+    "type": "css"
+  },
+  "body": {
+    "selector": "...",
+    "type": "css"
+  },
+  "date": {
+    "selector": "...",
+    "type": "css"
+  },
+  "author": {
+    "selector": "...",
+    "type": "css"
+  }
+}
+
+HTML SAMPLES:
+{html_samples_block}

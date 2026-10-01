@@ -1,0 +1,118 @@
+{
+  "warc_file": "mixed_content_test.warc",
+  "total_records": 11,
+  "response_records": 9,
+  "html_records": 3,
+  "css_records": 1,
+  "javascript_records": 1,
+  "image_records": 2,
+  "json_records": 1,
+  "text_records": 1,
+  "font_records": 0,
+  "other_records": 2,
+  "filtered_usable_html_count": 3,
+  "expected_html_count": 3,
+  "html_filter_accuracy": 1.0,
+  "misclassified_records": [],
+  "classification_breakdown": [
+    {
+      "index": 1,
+      "warc_type": "warcinfo",
+      "target_uri": "",
+      "http_status": null,
+      "http_content_type": null,
+      "classified_category": "OTHER",
+      "payload_size_bytes": 107
+    },
+    {
+      "index": 2,
+      "warc_type": "response",
+      "target_uri": "https://example.test/articles/science-today.html",
+      "http_status": 200,
+      "http_content_type": "text/html; charset=utf-8",
+      "classified_category": "HTML",
+      "payload_size_bytes": 166
+    },
+    {
+      "index": 3,
+      "warc_type": "response",
+      "target_uri": "https://example.test/article/123",
+      "http_status": 200,
+      "http_content_type": "text/html; charset=utf-8",
+      "classified_category": "HTML",
+      "payload_size_bytes": 180
+    },
+    {
+      "index": 4,
+      "warc_type": "response",
+      "target_uri": "https://example.test/news?id=45",
+      "http_status": 200,
+      "http_content_type": "text/html; charset=utf-8",
+      "classified_category": "HTML",
+      "payload_size_bytes": 162
+    },
+    {
+      "index": 5,
+      "warc_type": "response",
+      "target_uri": "https://example.test/assets/style.css",
+      "http_status": 200,
+      "http_content_type": "text/css",
+      "classified_category": "CSS",
+      "payload_size_bytes": 70
+    },
+    {
+      "index": 6,
+      "warc_type": "response",
+      "target_uri": "https://example.test/assets/app.js",
+      "http_status": 200,
+      "http_content_type": "application/javascript",
+      "classified_category": "JAVASCRIPT",
+      "payload_size_bytes": 88
+    },
+    {
+      "index": 7,
+      "warc_type": "response",
+      "target_uri": "https://example.test/images/logo.png",
+      "http_status": 200,
+      "http_content_type": "image/png",
+      "classified_category": "IMAGE",
+      "payload_size_bytes": 67
+    },
+    {
+      "index": 8,
+      "warc_type": "response",
+      "target_uri": "https://example.test/image.html",
+      "http_status": 200,
+      "http_content_type": "image/png",
+      "classified_category": "IMAGE",
+      "payload_size_bytes": 67
+    },
+    {
+      "index": 9,
+      "warc_type": "response",
+      "target_uri": "https://example.test/api/metadata.json",
+      "http_status": 200,
+      "http_content_type": "application/json",
+      "classified_category": "JSON",
+      "payload_size_bytes": 70
+    },
+    {
+      "index": 10,
+      "warc_type": "response",
+      "target_uri": "https://example.test/robots.txt",
+      "http_status": 200,
+      "http_content_type": "text/plain",
+      "classified_category": "TEXT",
+      "payload_size_bytes": 50
+    },
+    {
+      "index": 11,
+      "warc_type": "resource",
+      "target_uri": "urn:example:metadata:resource01",
+      "http_status": null,
+      "http_content_type": null,
+      "classified_category": "OTHER",
+      "payload_size_bytes": 36
+    }
+  ]
+}

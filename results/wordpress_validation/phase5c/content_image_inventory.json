@@ -1,0 +1,12 @@
+[
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+    "role": "article_content",
+    "reason": "Located inside article body container (e.g. entry-content / wp-block-image)"
+  },
+  {
+    "url": "https://s.w.org/style/images/code-is-poetry-for-dark-bg.svg",
+    "role": "site_chrome",
+    "reason": "URL or filename matches site logo / favicon / chrome marker"
+  }
+]

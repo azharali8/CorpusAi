@@ -1,0 +1,39 @@
+# Python virtual environments & bytecode
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Secrets & Local Configurations
+.env
+.env.*
+!.env.example
+*.log
+
+# IDE / OS Artifacts
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Large / Generated Archival & Crawl Data
+*.warc
+*.warc.gz
+*.wacz
+
+# Browser / Archive Runtime Output
+results/**/browsertrix/
+results/**/archive_snapshot.html
+
+# Python Build / Packaging Artifacts
+build/
+dist/
+*.egg-info/

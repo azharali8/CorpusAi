@@ -1,0 +1,185 @@
+[
+  {
+    "url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "source_archive": "https://wordpress.org/news/all-posts/",
+    "discovered_at": "2026-10-01T17:12:23.713368+00:00",
+    "content_role": "article",
+    "capture_status": "captured",
+    "http_status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "final_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+    "payload_sha256": "06612a3bbbbe8a7a13574829573c555baa397876135c008fa5d7388248051ade",
+    "payload_size_bytes": 154558,
+    "warc_record_id": "<urn:uuid:ce9d9462-6812-4d47-a104-1d2d29d9e725>",
+    "metadata": {
+      "title": "WordPress 7.1.2 Release – WordPress News",
+      "heading": "WordPress 7.1.2 Release",
+      "publication_date": "2026-09-22T14:01:20+00:00",
+      "author": "John Blackbourn",
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+      "rest_api_url": "https://wordpress.org/news/wp-json/",
+      "lazy_loading": {
+        "lazy_loading_detected": true,
+        "loading_lazy_count": 0,
+        "data_src_count": 0,
+        "srcset_count": 0,
+        "deferred_scripts_count": 6,
+        "details": {
+          "loading_lazy_samples": [],
+          "data_src_samples": [],
+          "deferred_scripts_samples": [
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+              "defer": true,
+              "async": false
+            }
+          ]
+        }
+      },
+      "assets_count": 18
+    },
+    "error": null
+  },
+  {
+    "url": "https://wordpress.org/news/2026/09/owa-president",
+    "source_archive": "https://wordpress.org/news/all-posts/",
+    "discovered_at": "2026-10-01T17:12:23.713391+00:00",
+    "content_role": "article",
+    "capture_status": "captured",
+    "http_status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "final_url": "https://wordpress.org/news/2026/09/owa-president/",
+    "payload_sha256": "19b3f4534d67a0329aef6fafe5dee150bb34e3f56001fa668b37854838f51ed5",
+    "payload_size_bytes": 154333,
+    "warc_record_id": "<urn:uuid:43817dd9-7898-4e56-a485-fb9fbe26bf1c>",
+    "metadata": {
+      "title": "WordPress Takes Its Turn Leading the Open Website Alliance – WordPress News",
+      "heading": "WordPress Takes Its Turn Leading the Open Website Alliance",
+      "publication_date": "2026-09-21T14:28:41+00:00",
+      "author": "Mary Hubbard",
+      "canonical_url": "https://wordpress.org/news/2026/09/owa-president/",
+      "rest_api_url": "https://wordpress.org/news/wp-json/",
+      "lazy_loading": {
+        "lazy_loading_detected": true,
+        "loading_lazy_count": 0,
+        "data_src_count": 0,
+        "srcset_count": 1,
+        "deferred_scripts_count": 6,
+        "details": {
+          "loading_lazy_samples": [],
+          "data_src_samples": [],
+          "deferred_scripts_samples": [
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+              "defer": true,
+              "async": false
+            }
+          ]
+        }
+      },
+      "assets_count": 23
+    },
+    "error": null
+  },
+  {
+    "url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "source_archive": "https://wordpress.org/news/all-posts/",
+    "discovered_at": "2026-10-01T17:12:23.713398+00:00",
+    "content_role": "article",
+    "capture_status": "captured",
+    "http_status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "final_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/",
+    "payload_sha256": "9b56ade565e735d8d7cbcce907c5bc7f278eaafb75c21b29b5e7684bf8ccca2a",
+    "payload_size_bytes": 164651,
+    "warc_record_id": "<urn:uuid:0074f17e-7dc4-4425-8802-2dfceb2fdf32>",
+    "metadata": {
+      "title": "WordPress 7.1.1 Maintenance and Security Release – WordPress News",
+      "heading": "WordPress 7.1.1 Maintenance and Security Release",
+      "publication_date": "2026-09-17T19:53:09+00:00",
+      "author": "Aaron Jorbin",
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/",
+      "rest_api_url": "https://wordpress.org/news/wp-json/",
+      "lazy_loading": {
+        "lazy_loading_detected": true,
+        "loading_lazy_count": 0,
+        "data_src_count": 0,
+        "srcset_count": 0,
+        "deferred_scripts_count": 6,
+        "details": {
+          "loading_lazy_samples": [],
+          "data_src_samples": [],
+          "deferred_scripts_samples": [
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+              "defer": true,
+              "async": false
+            },
+            {
+              "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+              "defer": true,
+              "async": false
+            }
+          ]
+        }
+      },
+      "assets_count": 18
+    },
+    "error": null
+  }
+]

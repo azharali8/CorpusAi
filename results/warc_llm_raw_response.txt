@@ -1,0 +1,18 @@
+{
+  "title": {
+    "selector": ".headline",
+    "type": "css"
+  },
+  "body": {
+    "selector": ".story-text",
+    "type": "css"
+  },
+  "date": {
+    "selector": ".post-timestamp",
+    "type": "css"
+  },
+  "author": {
+    "selector": ".byline-author",
+    "type": "css"
+  }
+}

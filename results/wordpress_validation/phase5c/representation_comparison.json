@@ -1,0 +1,69 @@
+{
+  "article_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "slug": "owa-president",
+  "representations": {
+    "simple_html_http": {
+      "format": "HTML over HTTP/1.1",
+      "contains_title": true,
+      "contains_author": true,
+      "contains_date": true,
+      "contains_main_body": true,
+      "contains_article_images": true,
+      "supports_visual_replay": false,
+      "includes_dependent_resources": false,
+      "deterministic_raw_representation": true,
+      "requires_browser_execution": false,
+      "payload_size_bytes": 154333
+    },
+    "wordpress_rest_json": {
+      "format": "REST API Post JSON",
+      "endpoint": "https://wordpress.org/news/wp-json/wp/v2/posts?slug=owa-president",
+      "is_content_json": true,
+      "contains_title": true,
+      "contains_author": true,
+      "contains_date": true,
+      "contains_main_body": true,
+      "contains_article_images": true,
+      "supports_visual_replay": false,
+      "includes_dependent_resources": false,
+      "deterministic_raw_representation": true,
+      "requires_browser_execution": false,
+      "payload_size_bytes": 6994
+    },
+    "browser_backed_wacz": {
+      "format": "WACZ / Browser crawl",
+      "execution_status": "BROWSERTRIX_NOT_RUN_RESOURCE_CONSTRAINT",
+      "supports_visual_replay": false,
+      "includes_dependent_resources": false,
+      "requires_browser_execution": true
+    }
+  },
+  "content_comparison_details": {
+    "same_article_identity": true,
+    "title_match": true,
+    "html_title": "WordPress Takes Its Turn Leading the Open Website Alliance",
+    "json_title": "WordPress Takes Its Turn Leading the Open Website Alliance",
+    "html_date": "2026-09-21T14:28:41+00:00",
+    "json_date": "2026-09-21T14:28:41",
+    "html_author": "Mary Hubbard",
+    "json_author_id": 23149404,
+    "json_slug": "owa-president",
+    "html_body_length_chars": 1608,
+    "json_body_length_chars": 1608,
+    "normalized_word_jaccard_similarity": 1.0,
+    "json_body_available": true,
+    "html_only_elements": [
+      "Navigation header",
+      "Footer widget areas",
+      "Theme styles & inline CSS",
+      "Jetpack sharing markup",
+      "Local navigation bar block"
+    ],
+    "json_only_elements": [
+      "Raw post ID",
+      "Numeric author ID",
+      "Post format & ping_status fields",
+      "Curated REST _links taxonomy links"
+    ]
+  }
+}

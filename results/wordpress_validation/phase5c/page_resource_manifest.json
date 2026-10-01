@@ -1,0 +1,86 @@
+{
+  "article_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "capture_timestamp": "2026-10-01T17:33:40Z",
+  "html_record": {
+    "http_status": 200,
+    "content_type": "text/html; charset=UTF-8",
+    "payload_size_bytes": 154333,
+    "payload_sha256": "19b3f4534d67a0329aef6fafe5dee150bb34e3f56001fa668b37854838f51ed5"
+  },
+  "json_content_record": {
+    "available": true,
+    "endpoint": "https://wordpress.org/news/wp-json/wp/v2/posts?slug=owa-president",
+    "http_status": 200,
+    "content_type": "application/json; charset=UTF-8",
+    "payload_size_bytes": 6994,
+    "payload_sha256": "ea5e1e5895ef38e2c7f44f2ec4a0ec9f787a700bebc6ec8dc197799d0b67159a",
+    "warc_file": "results/wordpress_validation/phase5c\\content_json.warc.gz",
+    "warc_sha256": "43a4652541318a44efec65136cfb62fb8562e5b5440c8abf25ca526e79edc8db"
+  },
+  "referenced_assets_inventory": {
+    "total_referenced_assets": 23,
+    "by_type": {
+      "image": 8,
+      "css": 5,
+      "javascript": 9,
+      "font": 1,
+      "video": 0
+    }
+  },
+  "content_images_classification": {
+    "total_images": 2,
+    "article_content_images": 1,
+    "site_chrome_images": 1,
+    "unknown_images": 0
+  },
+  "lazy_loading_inspection": {
+    "lazy_loading_detected": true,
+    "loading_lazy_count": 0,
+    "data_src_count": 0,
+    "srcset_count": 1,
+    "deferred_scripts_count": 6,
+    "details": {
+      "loading_lazy_samples": [],
+      "data_src_samples": [],
+      "deferred_scripts_samples": [
+        {
+          "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+          "defer": true,
+          "async": false
+        },
+        {
+          "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+          "defer": true,
+          "async": false
+        },
+        {
+          "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+          "defer": true,
+          "async": false
+        },
+        {
+          "src": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+          "defer": true,
+          "async": false
+        },
+        {
+          "src": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+          "defer": true,
+          "async": false
+        }
+      ]
+    }
+  },
+  "browsertrix_capture": {
+    "status": "BROWSERTRIX_NOT_RUN_RESOURCE_CONSTRAINT",
+    "ran": false,
+    "reason": "failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; check if the path is correct and if the daemon is running: open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified.",
+    "docker_installed": true,
+    "docker_daemon_running": false,
+    "free_disk_gb": 30.19,
+    "wacz_path": null,
+    "wacz_sha256": null
+  },
+  "full_page_replay_verified": false,
+  "network_requests": 2
+}

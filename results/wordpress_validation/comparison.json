@@ -1,0 +1,35 @@
+{
+  "manual_count": 10,
+  "discovered_count": 10,
+  "exact_set_matches": 10,
+  "precision": 1.0,
+  "recall": 1.0,
+  "missing_urls": [],
+  "unexpected_urls": [],
+  "duplicates": [],
+  "same_order": true,
+  "manual_urls": [
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "https://wordpress.org/news/2026/09/owa-president",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/108-student-websites",
+    "https://wordpress.org/news/2026/08/open-weight",
+    "https://wordpress.org/news/2026/08/wcus-2026-recap",
+    "https://wordpress.org/news/2026/08/mary-lou",
+    "https://wordpress.org/news/2026/08/browser-extension",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-3-release"
+  ],
+  "discovered_urls": [
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "https://wordpress.org/news/2026/09/owa-president",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/108-student-websites",
+    "https://wordpress.org/news/2026/08/open-weight",
+    "https://wordpress.org/news/2026/08/wcus-2026-recap",
+    "https://wordpress.org/news/2026/08/mary-lou",
+    "https://wordpress.org/news/2026/08/browser-extension",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-3-release"
+  ]
+}

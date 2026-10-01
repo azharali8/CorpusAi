@@ -1,0 +1,39 @@
+portal: "synthetic_test_portal_redesign"
+description: "Ground truth annotations for evaluation of redesigned fixtures"
+
+pages:
+  page01_changed.html:
+    title: "Oral Histories and Indigenous Archival Practices"
+    author: "Dr. Elena Ramos"
+    date: "March 15, 2024"
+    body_substring: "Indigenous knowledge systems have historically relied on oral tradition"
+
+  page02_changed.html:
+    title: "Traditional Ecological Knowledge in Fire Management"
+    author: "Prof. Marcus Clearwater"
+    date: "April 02, 2024"
+    body_substring: "Cultural burning practices among Indigenous communities have shaped forest ecology"
+
+  page03_changed.html:
+    title: "Language Revitalization Through Community Radio"
+    author: "Aria Nightbird"
+    date: "April 18, 2024"
+    body_substring: "Community radio stations provide accessible broadcast mediums for endangered Indigenous languages"
+
+  page04_changed.html:
+    title: "Water Sovereignty and River Basin Treaties"
+    author: "Dr. Samuel Running Crane"
+    date: "May 05, 2024"
+    body_substring: "Legal personhood granted to rivers represents a paradigm shift in environmental jurisprudence"
+
+  page05_changed.html:
+    title: "Indigenous Seed Sovereignty and Heritage Crops"
+    author: "Maya Littlebear"
+    date: "May 22, 2024"
+    body_substring: "Seed-saving collectives safeguard climate-resilient heritage maize and bean varieties"
+
+  page06_changed.html:
+    title: "Indigenous Cartography: Mapping Ancestral Toponyms"
+    author: "Tariq Whitefeather"
+    date: "June 10, 2024"
+    body_substring: "Counter-mapping initiatives employ GIS technology to reinstate original place names"

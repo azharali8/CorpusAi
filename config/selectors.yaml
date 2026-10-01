@@ -1,0 +1,24 @@
+portal:
+  name: "synthetic_test_portal"
+  domain: null
+  description: "Local synthetic HTML fixtures for CorpusAI baseline testing"
+
+selectors:
+  title:
+    selector: "h1.article-title"
+    type: "css"
+  body:
+    selector: "div.article-body"
+    type: "css"
+  date:
+    selector: "time.published"
+    type: "css"
+  author:
+    selector: ".author-name"
+    type: "css"
+
+metadata:
+  version: 1
+  created_by: "manual"
+  validated: true
+  acceptance_threshold: 0.90

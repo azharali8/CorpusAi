@@ -1,0 +1,116 @@
+{
+  "experiment_id": "warc_selector_generation_phase4",
+  "timestamp": "2026-09-29T06:33:44Z",
+  "corpusai_version": "0.1.0",
+  "python_version": "3.11.14",
+  "platform": "Windows-10-10.0.26200-SP0",
+  "webarticlecurator_version": "1.13.0",
+  "warcio_version": "1.8.1",
+  "model": "qwen2.5-coder:3b",
+  "ollama_version": "0.17.1",
+  "prompt_version": "1.0",
+  "warc": {
+    "filename": "synthetic_portal.warc",
+    "path": "C:\\Users\\evo\\CorpusAI\\data\\warc\\synthetic_portal.warc",
+    "sha256": "0de78fa112b39ba24c584957c2c9c21b7eb261e7dd0c80d4f60d8dd416fea305",
+    "file_size_bytes": 11532,
+    "total_records": 8,
+    "html_records": 6
+  },
+  "splits": {
+    "generation_urls": [
+      "https://example.org/articles/page01",
+      "https://example.org/articles/page02",
+      "https://example.org/articles/page03"
+    ],
+    "validation_urls": [
+      "https://example.org/articles/page04",
+      "https://example.org/articles/page05"
+    ],
+    "held_out_urls": [
+      "https://example.org/articles/page06"
+    ]
+  },
+  "schema_validation": "PASS",
+  "latency_seconds": 102.634,
+  "candidate_selectors": {
+    "title": {
+      "selector": ".headline",
+      "type": "css"
+    },
+    "body": {
+      "selector": ".story-text",
+      "type": "css"
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "type": "css"
+    },
+    "author": {
+      "selector": ".byline-author",
+      "type": "css"
+    }
+  },
+  "validation_results": {
+    "title": {
+      "selector": ".headline",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "body": {
+      "selector": ".story-text",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    },
+    "author": {
+      "selector": ".byline-author",
+      "type": "css",
+      "success_rate": 1.0,
+      "accepted": true
+    }
+  },
+  "held_out_results": {
+    "title": {
+      "selector": ".headline",
+      "type": "css",
+      "extracted_value": "Indigenous Cartography: Mapping Ancestral Toponyms",
+      "expected_value": "Indigenous Cartography: Mapping Ancestral Toponyms",
+      "success": true,
+      "correct": true
+    },
+    "body": {
+      "selector": ".story-text",
+      "type": "css",
+      "extracted_value": "Counter-mapping initiatives employ GIS technology to reinstate original place names, reflecting deep ecological knowledge embedded in local geography. By replacing colonial cartographic layers with indigenous toponyms, communities assert territorial memory and historical continuity. We demonstrate how participatory web maps enable youth to interview elders and geotag sacred landmarks with audio recordings.",
+      "expected_value": "Counter-mapping initiatives employ GIS technology to reinstate original place names",
+      "success": true,
+      "correct": true
+    },
+    "date": {
+      "selector": ".post-timestamp",
+      "type": "css",
+      "extracted_value": "June 10, 2024",
+      "expected_value": "June 10, 2024",
+      "success": true,
+      "correct": true
+    },
+    "author": {
+      "selector": ".byline-author",
+      "type": "css",
+      "extracted_value": "Tariq Whitefeather",
+      "expected_value": "Tariq Whitefeather",
+      "success": true,
+      "correct": true
+    }
+  },
+  "field_accuracy": 1.0,
+  "failure_reason": null
+}

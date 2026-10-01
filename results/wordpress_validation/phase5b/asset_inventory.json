@@ -1,0 +1,137 @@
+[
+  {
+    "url": "https://s.w.org/style/images/code-is-poetry-for-dark-bg.svg",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://wordpress.org/news/wp-includes/blocks/navigation/style.min.css?ver=7.2-alpha-64029",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/style.css?ver=c98b5143585c3e9f06b27f6a917b65c84643cefc",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/style.css?ver=1781190415",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1781190440",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1789655320",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://s.w.org/favicon.ico?2",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://s.w.org/images/wmark.png",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-includes/js/dist/dom-ready.min.js?ver=3fe927cab37bf38d6a23",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-includes/js/dist/script-modules/block-library/navigation/view.min.js?ver=1bf28ded04f9f188bdcb-20240308",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://stats.wp.com/e-202640.js",
+    "resource_type": "javascript",
+    "same_origin": false
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js?ver=1781190414",
+    "resource_type": "javascript",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-latin.woff2",
+    "resource_type": "font",
+    "same_origin": true
+  },
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=300%2C169&ssl=1",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=768%2C432&ssl=1",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1536%2C864&ssl=1",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?w=1600&ssl=1",
+    "resource_type": "image",
+    "same_origin": false
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/style.css?ver=1781196533",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1781196569",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1789655335",
+    "resource_type": "css",
+    "same_origin": true
+  },
+  {
+    "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js?ver=1781196531",
+    "resource_type": "javascript",
+    "same_origin": true
+  }
+]
