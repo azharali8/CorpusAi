@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-177%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-181%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -50,14 +50,15 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **177 passing tests** verified in an isolated offline environment.
-- **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing offline tests on Python 3.11.
+- **Offline Unit Test Suite:** **181 passing tests** verified in an isolated offline environment (`181 / 181 tests passing`).
+- **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
+- **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, and navigation gates.
 - **Real-World WordPress News Validation:**
   - **Phase 5A Discovery:** 10/10 article URLs matched the manually collected ground-truth sample with matching ordering.
   - **Phase 5B HTML Capture:** 3 sampled articles captured with title, publication date, author, canonical URL, and body text manually verified.
   - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
-  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual replay verification in ReplayWeb.page succeeded, including complete offline reading and image rendering (`manual_replay_verified = true`).
+  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded, confirming full article body text, headline, date, author, and main image render faithfully when disconnected from the live network (`manual_replay_verified = true`).
   - **Browser-Backed Replay:** Successfully verified on the single-page WordPress article; broader multi-page portal crawling remains subject to future phases.
 
 > [!NOTE]
@@ -339,44 +340,50 @@ python research/crawling/experiments/run_gated_navigation_experiment.py
 
 All standard unit tests run completely **offline** using local fixtures and deterministic mock responders.
 
+In CI and fresh repository checkouts, synthetic WARC fixtures (`synthetic_portal.warc`, `mixed_content_test.warc`) are deterministically generated via `tests/fixtures/generate_warc_fixtures.py` (or automatically via `conftest.py`).
+
+Continuous Integration (`.github/workflows/tests.yml`) executes:
+1. Deterministic synthetic WARC fixture generation (`python tests/fixtures/generate_warc_fixtures.py`)
+2. Full offline pytest suite (`pytest -v`)
+
 ```bash
 pytest -v
 ```
 
-**Current offline test suite:** `177 passing tests` (0 failures, 0 errors).
-
----
-
-## WARC & Content Architecture
-
-CorpusAI enforces a strict distinction between primary content records and secondary presentation resources:
-
-- **`content_html.warc.gz`:** Contains HTTP response records for known article URLs.
-- **`content_json.warc.gz`:** Contains verified structured content JSON (e.g. WordPress REST API posts).
-- **`assets.warc.gz`:** Reserved exclusively for fetched supporting assets (CSS, JS, images, fonts).
-- **Replay Packages (`.wacz`):** Preserves full browser-level fidelity intact for historical replaying in ReplayWeb.page.
-
-Every record stores immutable metadata in its WARC record headers (`WARC-Record-ID`, `WARC-Target-URI`, `WARC-Date`, `WARC-Source-Archive`, and SHA-256 payload digest).
-
----
-
-## Experimental AI Assistance
-
-An experimental secondary module explores AI-assisted selector proposal using local LLMs:
-
-- **Constrained Inference:** Uses local Ollama models (`qwen2.5-coder:3b`) with zero cloud data transmission.
-- **Strict Verification:** Proposed CSS/XPath selectors must pass statistical validation ($\ge 90\%$ match rate, non-empty values) against representative HTML samples.
-- **Human Approval:** Repaired selector rules are never automatically deployed into production configurations without explicit review.
-- **Separation from Crawler:** AI inference has no role in URL discovery, traversal, or HTTP execution.
-
----
-
-## Limitations
-
-- **Prototype Scope:** CorpusAI is an experimental research framework, not a distributed production web crawler.
-- **Limited Portal Coverage:** Real-world validation has currently been conducted on a small sample of WordPress News pages.
-- **Replay Verification:** Browser-backed visual replay has not yet been performed.
-- **No Access Bypasses:** CorpusAI does not attempt to bypass CAPTCHAs, paywalls, or authentication barriers.
+**Current offline test suite:** `181 passing tests` (`181 / 181 tests passing`, 0 failures, 0 errors).
+ 
+ ---
+ 
+ ## WARC & Content Architecture
+ 
+ CorpusAI enforces a strict distinction between primary content records and secondary presentation resources:
+ 
+ - **`content_html.warc.gz`:** Contains HTTP response records for known article URLs.
+ - **`content_json.warc.gz`:** Contains verified structured content JSON (e.g. WordPress REST API posts).
+ - **`assets.warc.gz`:** Reserved exclusively for fetched supporting assets (CSS, JS, images, fonts).
+ - **Replay Packages (`.wacz`):** Preserves full browser-level fidelity intact for historical replaying in ReplayWeb.page.
+ 
+ Every record stores immutable metadata in its WARC record headers (`WARC-Record-ID`, `WARC-Target-URI`, `WARC-Date`, `WARC-Source-Archive`, and SHA-256 payload digest).
+ 
+ ---
+ 
+ ## Experimental AI Assistance
+ 
+ An experimental secondary module explores AI-assisted selector proposal using local LLMs:
+ 
+ - **Constrained Inference:** Uses local Ollama models (`qwen2.5-coder:3b`) with zero cloud data transmission.
+ - **Strict Verification:** Proposed CSS/XPath selectors must pass statistical validation ($\ge 90\%$ match rate, non-empty values) against representative HTML samples.
+ - **Human Approval:** Repaired selector rules are never automatically deployed into production configurations without explicit review.
+ - **Separation from Crawler:** AI inference has no role in URL discovery, traversal, or HTTP execution.
+ 
+ ---
+ 
+ ## Limitations
+ 
+ - **Prototype Scope:** CorpusAI is an experimental research framework, not a distributed production web crawler.
+ - **Limited Portal Coverage:** Real-world validation has currently been conducted on a single WordPress News article and its archive index.
+ - **Replay Scope:** Browser-backed visual replay has been validated on a single WordPress article in Phase 6A; multi-page full portal replay remains future work.
+ - **No Access Bypasses:** CorpusAI does not attempt to bypass CAPTCHAs, paywalls, or authentication barriers.
 - **Synthetic Generalization:** Benchmark results on simulated portal mutations reflect controlled conditions and may not directly generalize to all CMS architectures.
 - **Politeness:** Crawling relies on polite rate-limiting (1–2s delays) and explicit `robots.txt` compliance.
 
