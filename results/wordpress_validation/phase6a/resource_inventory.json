@@ -1,0 +1,104 @@
+{
+  "article_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "pre_browser_inventory": {
+    "source": "pre_browser_dom_analysis_phase5b",
+    "total_referenced_resources": 27,
+    "by_type": {
+      "document/html": 1,
+      "JSON": 1,
+      "CSS": 8,
+      "JavaScript": 10,
+      "image": 8,
+      "font": 1,
+      "video/audio": 0,
+      "other": 0
+    },
+    "same_origin_count": 18,
+    "cross_origin_count": 9
+  },
+  "browser_observed_inventory": {
+    "source": "browsertrix_cdx_index",
+    "total_records_in_cdx": 37,
+    "total_http_resources": 35,
+    "by_classification": {
+      "HTML/document": 1,
+      "JSON/API/XHR": 0,
+      "CSS": 8,
+      "JavaScript": 11,
+      "image": 7,
+      "font": 3,
+      "media": 0,
+      "other_or_failed": 5
+    },
+    "by_mime": {
+      "application/javascript": 11,
+      "image/png": 4,
+      "image/webp": 1,
+      "image/x-icon": 1,
+      "image/svg+xml": 1,
+      "text/html": 6,
+      "text/css": 8,
+      "application/font-woff2": 3
+    },
+    "status_groups": {
+      "200_OK": 30,
+      "404_NotFound": 5
+    },
+    "same_origin_count": 27,
+    "cross_origin_count": 8,
+    "content_images_captured": [
+      {
+        "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+        "mime": "image/webp",
+        "status": "200"
+      },
+      {
+        "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1536%2C864&ssl=1",
+        "mime": "image/png",
+        "status": "200"
+      },
+      {
+        "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=300%2C169&ssl=1",
+        "mime": "image/png",
+        "status": "200"
+      },
+      {
+        "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=768%2C432&ssl=1",
+        "mime": "image/png",
+        "status": "200"
+      },
+      {
+        "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?w=1600&ssl=1",
+        "mime": "image/png",
+        "status": "200"
+      }
+    ],
+    "failed_resources": [
+      {
+        "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/pause.svg",
+        "status": "404",
+        "mime": "text/html"
+      },
+      {
+        "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/play.svg",
+        "status": "404",
+        "mime": "text/html"
+      },
+      {
+        "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/sound.svg",
+        "status": "404",
+        "mime": "text/html"
+      },
+      {
+        "url": "https://wordpress.org/news/2026/09/owa-president/images/right-arrow-blue.svg",
+        "status": "404",
+        "mime": "text/html"
+      },
+      {
+        "url": "https://wordpress.org/news/2026/09/owa-president/images/right-arrow.svg",
+        "status": "404",
+        "mime": "text/html"
+      }
+    ]
+  }
+}

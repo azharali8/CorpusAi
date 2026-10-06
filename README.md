@@ -7,7 +7,9 @@
 An experimental research prototype for deterministic discovery, revisit policies, multi-level archive traversal, and WARC provenance in digital preservation and corpus construction.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://img.shields.io/badge/tests-168%20passing-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
+[![Tests](https://img.shields.io/badge/tests-177%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -24,7 +26,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 - **Structured content-bearing JSON** alongside rendered HTML
 - **Heterogeneous WARC files** mixing primary text with secondary page assets (CSS, JS, images, fonts)
 
-CorpusAI evaluates deterministic crawler algorithms and architectural boundaries to make corpus acquisition inspectable, reproducible, and verifiable.
+CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival storage layouts, and architectural boundaries to make corpus acquisition inspectable, reproducible, and verifiable.
 
 ---
 
@@ -39,6 +41,8 @@ CorpusAI evaluates deterministic crawler algorithms and architectural boundaries
 | **Multi-page Articles** | Logical multi-component assembly with complete/incomplete provenance tracking | Synthetic benchmarks |
 | **Archival Storage** | WARC response generation with ISO 28500 record IDs, timestamps, and SHA-256 digests | warcio integration |
 | **Content Separation** | Strict separation of content-bearing records (`content_html`, `content_json`) from assets | MIME-based classifier |
+| **Replay & QA Foundation** | Replay validation, tamper-evident manifests, and Browsertrix QA integration foundation | Phase 6A Foundation |
+| **Durable Storage & Deposit** | Immutable run directories (`ArchiveRun`), catalog indexing, and deposit metadata schema | Storage layout design |
 | **Real-World Validation** | Polite, bounded discovery, HTML capture, and REST JSON verification on WordPress News | Live WordPress validation |
 | **AI Selector Proposal** | *Optional secondary module:* Local LLM selector generation with deterministic validation | Experimental (`Ollama`) |
 
@@ -46,13 +50,15 @@ CorpusAI evaluates deterministic crawler algorithms and architectural boundaries
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **168 passing tests** verified in an isolated offline environment.
+- **Offline Unit Test Suite:** **177 passing tests** verified in an isolated offline environment.
+- **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, and navigation gates.
 - **Real-World WordPress News Validation:**
   - **Phase 5A Discovery:** 10/10 article URLs matched the manually collected ground-truth sample with matching ordering.
   - **Phase 5B HTML Capture:** 3 sampled articles captured with title, publication date, author, canonical URL, and body text manually verified.
   - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
-  - **Browser-Backed Replay:** Browser-backed replay has not yet been performed.
+  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual replay verification in ReplayWeb.page succeeded, including complete offline reading and image rendering (`manual_replay_verified = true`).
+  - **Browser-Backed Replay:** Successfully verified on the single-page WordPress article; broader multi-page portal crawling remains subject to future phases.
 
 > [!NOTE]
 > All reported results are from controlled synthetic scenarios and a limited real-world sample (`https://wordpress.org/news/all-posts/`). They should not be generalized to arbitrary websites.
@@ -122,8 +128,11 @@ CorpusAI implements explicit state tracking, visit budgets, and provenance regis
 - **Multi-Page Article Policy (`src/multipage_article_policy.py`):** Logical document collation tracking sequential component URLs.
 - **Article Inspector (`src/article_inspector.py`):** Metadata extraction, referenced asset discovery, lazy-load detection, and content JSON classification.
 
-### 4. Archival & Provenance
+### 4. Archival, Replay & Provenance
 - **WARC Utilities (`src/warc_utils.py`):** Parsing, creating, and validating ISO 28500 WARC/WARC.GZ records with custom provenance headers.
+- **Archive Run Model (`src/archive_run.py`):** Deterministic run IDs (`run-<timestamp>-<config-hash>`), metadata logging, and immutable execution tracking.
+- **Replay Validation (`src/replay_validation.py`):** Manifest validation, SHA-256 tamper-evident integrity checking, and manual replay barrier enforcement.
+- **Deposit Metadata (`src/deposit_metadata.py`):** Schemas for Zenodo/Dataverse research corpus deposits with rights declarations and collection provenance.
 - **Content Separation:** Dedicated separate outputs for HTML content (`content_html.warc.gz`), structured JSON (`content_json.warc.gz`), and supporting assets (`assets.warc.gz`).
 
 ### 5. Experimental AI Module
@@ -146,7 +155,14 @@ Evaluated against **WordPress News** (`https://wordpress.org/news/all-posts/`):
   - Controlled query to the WordPress REST API (`/wp-json/wp/v2/posts?slug=owa-president`).
   - Confirmed structured `content.rendered` availability matching HTML body text with 1.0 normalized Jaccard word similarity.
   - Cataloged 23 referenced assets (images, CSS, JS, fonts) and lazy-load indicators.
-  - *Browser-backed replay has not yet been performed* (documented with `full_page_replay_verified = false`).
+- **Phase 6A — Browser-Backed Archive & Replay (Complete):**
+  - Executed controlled single-page capture using `webrecorder/browsertrix-crawler:1.2.0` with autoscroll/autofetch behaviors and text extraction.
+  - Generated intact standard WACZ (`wordpress-owa-president.wacz`, 1,088,595 bytes, SHA-256 verified) and QA WACZ (`wordpress-owa-president-qa-corrected.wacz`, 141,793 bytes, SHA-256 verified).
+  - Browsertrix QA confirmed `screenshotMatch = 1.0` (0 pixel difference between capture and replay). Text comparison was unavailable as the crawl did not create an isolated `urn:text` WARC record.
+  - Resource counts identified 30 replayed assets, 5 upstream theme SVG 404s, and 3 deferred tracking endpoints (all non-critical for article reading).
+  - Human manual inspection in ReplayWeb.page succeeded, confirming full article text, headline, date, author, and main image render faithfully offline (`manual_replay_verified = true`).
+  - Maintained strict separation between primary corpus content (`content_html.warc.gz`, `content_json.warc.gz`) and supporting replay assets.
+  - Calculated SHA-256 tamper-evident checksums across all artifacts in `checksums.sha256`.
 
 ---
 
@@ -162,6 +178,7 @@ Evaluated against **WordPress News** (`https://wordpress.org/news/all-posts/`):
 | **WordPress Discovery** | 10/10 candidate article URLs matched manual human ground truth | Real-world validation |
 | **Article HTML Capture** | 3/3 sampled articles captured and manually verified against live metadata | Real-world validation |
 | **WordPress REST JSON** | Authoritative article body text confirmed in ~7 KB JSON vs. ~154 KB HTML | Real-world validation |
+| **Archive Run & Integrity** | Deterministic run IDs, SHA-256 manifests, and deposit schema validated | Phase 6A Foundation |
 
 ---
 
@@ -169,9 +186,13 @@ Evaluated against **WordPress News** (`https://wordpress.org/news/all-posts/`):
 
 ```
 CorpusAI/
+├── .github/
+│   └── workflows/
+│       └── tests.yml                              # GitHub Actions offline CI workflow
 ├── config/                                        # Extraction schema and selector configurations
 ├── data/                                          # Local HTML sample fixtures
-├── docs/                                          # Architecture specifications and component references
+├── docs/                                          # Architecture specifications and design docs
+│   └── archive_storage_design.md                  # Durable run directory layout and deposit design
 ├── experiments/                                   # LLM and WARC selector experiments
 │   ├── run_real_llm_experiment.py
 │   ├── run_repair_demo.py
@@ -197,17 +218,21 @@ CorpusAI/
 │       └── wordpress/
 │           ├── article_capture_checklist.md
 │           ├── manual_ground_truth.txt
+│           ├── phase6a_replay_checklist.md
 │           ├── replay_checklist.md
 │           ├── run_article_capture_validation.py
 │           ├── run_asset_capture_validation.py
-│           └── run_discovery_validation.py
+│           ├── run_discovery_validation.py
+│           └── run_phase6a_validation.py
 ├── results/                                       # Structured JSON manifests and metrics
 ├── src/                                           # Core library implementation
 │   ├── archive_graph_policy.py
 │   ├── archive_page_discovery.py
+│   ├── archive_run.py
 │   ├── archive_visit_policy.py
 │   ├── article_inspector.py
 │   ├── content_url_registry.py
+│   ├── deposit_metadata.py
 │   ├── downloader.py
 │   ├── evaluator.py
 │   ├── extractor.py
@@ -215,12 +240,29 @@ CorpusAI/
 │   ├── html_preprocessor.py
 │   ├── multipage_article_policy.py
 │   ├── navigation_gate_policy.py
+│   ├── replay_validation.py
 │   ├── rule_generator.py
 │   ├── rule_repair.py
 │   ├── selector_validator.py
 │   ├── warc_utils.py
 │   └── webarticlecurator_adapter.py
-├── tests/                                         # Comprehensive offline unit test suite (168 tests)
+├── tests/                                         # Comprehensive offline unit test suite (177 tests)
+│   ├── test_archive_graph_policy.py
+│   ├── test_archive_page_discovery.py
+│   ├── test_archive_visit_policy.py
+│   ├── test_article_capture.py
+│   ├── test_asset_capture_replay.py
+│   ├── test_extractor.py
+│   ├── test_head_verification.py
+│   ├── test_html_preprocessor.py
+│   ├── test_navigation_gate_policy.py
+│   ├── test_ollama_generator.py
+│   ├── test_replay_validation.py
+│   ├── test_rule_repair.py
+│   ├── test_validator.py
+│   ├── test_warc_adapter.py
+│   ├── test_warc_classification.py
+│   └── test_warc_utils.py
 ├── pyproject.toml
 ├── requirements.txt
 └── README.md
@@ -268,6 +310,9 @@ python research/real_world/wordpress/run_article_capture_validation.py
 
 # Perform asset inventory and REST API JSON investigation
 python research/real_world/wordpress/run_asset_capture_validation.py
+
+# Execute Phase 6A archive manifest, environment inspection, and checksum generation
+python research/real_world/wordpress/run_phase6a_validation.py
 ```
 
 ### 3. Run Synthetic Crawl Stability Benchmarks
@@ -295,7 +340,7 @@ All standard unit tests run completely **offline** using local fixtures and dete
 pytest -v
 ```
 
-**Current offline test suite:** `168 passing tests` (0 failures, 0 errors).
+**Current offline test suite:** `177 passing tests` (0 failures, 0 errors).
 
 ---
 
@@ -306,6 +351,7 @@ CorpusAI enforces a strict distinction between primary content records and secon
 - **`content_html.warc.gz`:** Contains HTTP response records for known article URLs.
 - **`content_json.warc.gz`:** Contains verified structured content JSON (e.g. WordPress REST API posts).
 - **`assets.warc.gz`:** Reserved exclusively for fetched supporting assets (CSS, JS, images, fonts).
+- **Replay Packages (`.wacz`):** Preserves full browser-level fidelity intact for historical replaying in ReplayWeb.page.
 
 Every record stores immutable metadata in its WARC record headers (`WARC-Record-ID`, `WARC-Target-URI`, `WARC-Date`, `WARC-Source-Archive`, and SHA-256 payload digest).
 
@@ -346,7 +392,23 @@ When executing live real-world experiments, CorpusAI:
 
 ## Roadmap
 
-- [ ] Containerized browser-backed WACZ capture and automated visual replay auditing
-- [ ] Real-world validation across forum and bulletin-board platforms
-- [ ] Incremental day-to-day crawl synchronization and change detection
-- [ ] Integration with downstream TEI/XML corpus transformation pipelines
+1. **Browser-Backed Replay / QA:** Containerized Browsertrix capture and automated replay QA auditing.
+2. **Incremental Full-Portal Crawling:** Head-page sentinel monitoring and state reconciliation across complete portal runs.
+3. **Durable Storage & Repository Deposit:** Automated catalog indexing and Zenodo/Dataverse deposit manifest creation.
+4. **Difficult & Non-Regular Portals:** Real-world validation on forums, bulletin boards, and deep-link structures.
+5. **Downstream Corpus Services:** Full TEI/XML transformation pipelines and linguistic text-mining ingestion.
+
+---
+
+## License
+
+CorpusAI source code and project documentation are licensed under the [Apache License 2.0](LICENSE).
+
+### Third-Party Content
+
+The Apache License 2.0 applies to original CorpusAI source code and project documentation unless otherwise noted.
+
+Archived web pages, WARC/WACZ captures, images, CSS, JavaScript, fonts, datasets, and other third-party materials retain the rights and licensing conditions of their original owners.
+
+CorpusAI's license does not grant redistribution or sublicensing rights for third-party web content captured during research experiments. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details on external software components and attributions.
+

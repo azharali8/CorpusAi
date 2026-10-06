@@ -1,0 +1,32 @@
+{
+  "qa_supported": true,
+  "qa_run": true,
+  "qa_entrypoint_used": "browsertrix-crawler qa",
+  "qa_source_wacz": "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+  "qa_wacz_path": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz",
+  "qa_wacz_size_bytes": 141793,
+  "qa_wacz_sha256": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1",
+  "page_count": 1,
+  "target_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "page_id": "1f0d7d55-1a62-4966-a572-6f5126131e99",
+  "screenshotMatch": 1,
+  "text_comparison_available": false,
+  "textMatch": null,
+  "text_comparison_reason": "Original crawl did not contain the WARC text resource required by Browsertrix QA.",
+  "resourceCounts": {
+    "crawlGood": 32,
+    "crawlBad": 5,
+    "replayGood": 30,
+    "replayBad": 8
+  },
+  "jsErrors": 0,
+  "debug_images": {
+    "crawl_screenshot": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/screenshots/0-0-1f0d7d55-1a62-4966-a572-6f5126131e99-crawl.png",
+    "replay_screenshot": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/screenshots/0-0-1f0d7d55-1a62-4966-a572-6f5126131e99-replay.png",
+    "diff_screenshot": null,
+    "diff_note": "No diff.png generated because screenshotMatch was 1.0 (0 pixel diff)."
+  },
+  "manual_review_status": "verified",
+  "manual_replay_verified": true,
+  "notes": "Browsertrix QA pass executed with official `qa` entrypoint. screenshotMatch achieved 1.0 (exact visual replay fidelity). Resource counts confirm 30 replay resources loaded cleanly. The 5 crawlBad and 8 replayBad represent non-critical external analytics and missing stylesheet SVG icons."
+}
