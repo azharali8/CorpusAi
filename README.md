@@ -246,13 +246,16 @@ CorpusAI/
 │   ├── selector_validator.py
 │   ├── warc_utils.py
 │   └── webarticlecurator_adapter.py
-├── tests/                                         # Comprehensive offline unit test suite (177 tests)
+├── tests/                                         # Comprehensive offline unit test suite (181 tests)
+│   ├── fixtures/
+│   │   └── generate_warc_fixtures.py
 │   ├── test_archive_graph_policy.py
 │   ├── test_archive_page_discovery.py
 │   ├── test_archive_visit_policy.py
 │   ├── test_article_capture.py
 │   ├── test_asset_capture_replay.py
 │   ├── test_extractor.py
+│   ├── test_fixture_generator.py
 │   ├── test_head_verification.py
 │   ├── test_html_preprocessor.py
 │   ├── test_navigation_gate_policy.py
