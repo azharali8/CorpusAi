@@ -13,8 +13,9 @@ WARC_FIXTURE = os.path.join(
 )
 WARC_FIXTURE = os.path.normpath(WARC_FIXTURE)
 
-# Known SHA-256 of the fixture file (computed when file was created)
-KNOWN_SHA256 = "0de78fa112b39ba24c584957c2c9c21b7eb261e7dd0c80d4f60d8dd416fea305"
+# Known SHA-256 of the fixture file (generated deterministically by
+# tests/fixtures/generate_warc_fixtures.py from tracked source HTML files)
+KNOWN_SHA256 = "0e33f0cccaa1c4935a0ed0b6516610d7957e8e136b2d564f7ebe80c08b7f5f7b"
 
 # Expected HTML URLs inside the fixture
 EXPECTED_HTML_URLS = [

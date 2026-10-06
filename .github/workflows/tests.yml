@@ -29,6 +29,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Generate Synthetic WARC Fixtures
+        run: |
+          python tests/fixtures/generate_warc_fixtures.py
+
       - name: Execute Offline Test Suite
         run: |
           pytest -v
