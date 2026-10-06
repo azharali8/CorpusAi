@@ -1,0 +1,97 @@
+{
+  "article_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "pre_browser_static_referenced_count": 27,
+  "browser_observed_count": 35,
+  "common_resources_count": 17,
+  "static_only_count": 10,
+  "browser_only_count": 18,
+  "common_resources": [
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1536%2C864&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=300%2C169&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=768%2C432&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?w=1600&ssl=1",
+    "https://s.w.org/favicon.ico?2",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js?ver=1781190414",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/style.css?ver=c98b5143585c3e9f06b27f6a917b65c84643cefc",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-latin.woff2",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/style.css?ver=1781190415",
+    "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+    "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+    "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+    "https://wordpress.org/news/wp-includes/js/dist/dom-ready.min.js?ver=3fe927cab37bf38d6a23",
+    "https://wordpress.org/news/wp-includes/js/dist/script-modules/block-library/navigation/view.min.js?ver=1bf28ded04f9f188bdcb-20240308"
+  ],
+  "static_only_resources": [
+    "https://s.w.org/images/wmark.png",
+    "https://s.w.org/style/images/code-is-poetry-for-dark-bg.svg",
+    "https://stats.wp.com/e-202640.js",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1789655320",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1789655335",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js?ver=1781196531",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/style.css?ver=1781196533",
+    "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1781190440",
+    "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1781196569",
+    "https://wordpress.org/news/wp-includes/blocks/navigation/style.min.css?ver=7.2-alpha-64029"
+  ],
+  "browser_only_resources": [
+    "https://stats.wp.com/e-202641.js",
+    "https://wordpress.org/news/2026/09/owa-president/",
+    "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/pause.svg",
+    "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/play.svg",
+    "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/sound.svg",
+    "https://wordpress.org/news/2026/09/owa-president/images/right-arrow-blue.svg",
+    "https://wordpress.org/news/2026/09/owa-president/images/right-arrow.svg",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1791211855",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/images/search.svg?ver=96c7098",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/EB-Garamond/EBGaramond-latin.woff2",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-arrows.woff2",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifJP/style.css",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifKR/style.css",
+    "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/NotoSerif/NotoSerifSC/style.css",
+    "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1791211150",
+    "https://wordpress.org/news/wp-includes/blocks/navigation/style.min.css?ver=7.2-alpha-64163",
+    "https://wordpress.org/news/wp-includes/js/dist/script-modules/interactivity/index.min.js?ver=b0929e0bd08daccaa778",
+    "https://www.googletagmanager.com/gtm.js?id=GTM-P24PF4B"
+  ],
+  "responsive_image_variants_captured": [
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1536%2C864&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=300%2C169&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=768%2C432&ssl=1",
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?w=1600&ssl=1"
+  ],
+  "lazy_loaded_resources_captured": [
+    "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1"
+  ],
+  "failed_resources": [
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/pause.svg",
+      "status": "404",
+      "mime": "text/html"
+    },
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/play.svg",
+      "status": "404",
+      "mime": "text/html"
+    },
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/images/podcast-player/sound.svg",
+      "status": "404",
+      "mime": "text/html"
+    },
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/images/right-arrow-blue.svg",
+      "status": "404",
+      "mime": "text/html"
+    },
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/images/right-arrow.svg",
+      "status": "404",
+      "mime": "text/html"
+    }
+  ],
+  "analysis": "Static DOM analysis referenced historical version-stamped CSS/JS bundles. Browser execution fetched current CDN/interactivity bundles, WebP/PNG responsive variants of the main content image, WOFF2 fonts, and analytics scripts."
+}

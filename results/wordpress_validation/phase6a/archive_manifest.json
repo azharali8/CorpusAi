@@ -1,0 +1,81 @@
+{
+  "run_id": "run-20261006T193224Z-228eea55",
+  "article_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "timestamp": "2026-10-06T19:32:24Z",
+  "logical_separation": {
+    "primary_content_representations": {
+      "html_content_warc": {
+        "path": "results/wordpress_validation/phase5b/content_html.warc.gz",
+        "sha256": "7ff1b4f5c357d38ba3f4219875707d595f8baec48f7deb0fa40254772efd6a3b",
+        "classification": "CONTENT"
+      },
+      "rest_json_content_warc": {
+        "path": "results/wordpress_validation/phase5c/content_json.warc.gz",
+        "sha256": "43a4652541318a44efec65136cfb62fb8562e5b5440c8abf25ca526e79edc8db",
+        "classification": "CONTENT"
+      }
+    },
+    "replay_archive": {
+      "wacz_path": "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+      "sha256": "e32141ec3d8e73d98b6b5d6e43fc28189ba5d4934bd56301fd46c4432053b8df",
+      "classification": "SUPPORTING_ASSET_AND_REPLAY",
+      "status": "BROWSERTRIX_EXECUTED"
+    },
+    "qa_replay_archive": {
+      "wacz_path": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz",
+      "sha256": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1",
+      "classification": "QA_EVALUATION_ARCHIVE",
+      "status": "QA_COMPLETED"
+    }
+  },
+  "artifacts": {
+    "environment_metadata": "environment.json",
+    "live_run_log": "live_run_log.json",
+    "resource_inventory": "resource_inventory.json",
+    "static_vs_browser": "static_vs_browser_resources.json",
+    "qa_summary": "qa_summary.json"
+  },
+  "checksums": {
+    "environment.json": "95d083759d837006bf664f7c6abfd8542fe64ebdd6ab194cc65c15669be0eb97",
+    "live_run_log.json": "feeae436f399864fba62c1accdd19037340e687815a76519a8bebf2dad3be463",
+    "resource_inventory.json": "273d615ff965c79432e2203e39346701f93ff0747fcda0082e9bcda4fcd77e90",
+    "static_vs_browser_resources.json": "94e240704c0ec45a2eea7d5642dc936d00eb62b7390f8c4cd9db811d0f5d02e8",
+    "qa_summary.json": "3bad66221246bf8fea0d75f4863cce88c812b5bde7ac78fc7fb8ada37bfd0129",
+    "browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz": "e32141ec3d8e73d98b6b5d6e43fc28189ba5d4934bd56301fd46c4432053b8df",
+    "collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1"
+  },
+  "qa_summary": {
+    "qa_supported": true,
+    "qa_run": true,
+    "qa_entrypoint_used": "browsertrix-crawler qa",
+    "qa_source_wacz": "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+    "qa_wacz_path": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz",
+    "qa_wacz_size_bytes": 141793,
+    "qa_wacz_sha256": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1",
+    "page_count": 1,
+    "target_url": "https://wordpress.org/news/2026/09/owa-president/",
+    "page_id": "1f0d7d55-1a62-4966-a572-6f5126131e99",
+    "screenshotMatch": 1,
+    "text_comparison_available": false,
+    "textMatch": null,
+    "text_comparison_reason": "Original crawl did not contain the WARC text resource required by Browsertrix QA.",
+    "resourceCounts": {
+      "crawlGood": 32,
+      "crawlBad": 5,
+      "replayGood": 30,
+      "replayBad": 8
+    },
+    "jsErrors": 0,
+    "debug_images": {
+      "crawl_screenshot": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/screenshots/0-0-1f0d7d55-1a62-4966-a572-6f5126131e99-crawl.png",
+      "replay_screenshot": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/screenshots/0-0-1f0d7d55-1a62-4966-a572-6f5126131e99-replay.png",
+      "diff_screenshot": null,
+      "diff_note": "No diff.png generated because screenshotMatch was 1.0 (0 pixel diff)."
+    },
+    "manual_review_status": "verified",
+    "manual_replay_verified": true,
+    "notes": "Browsertrix QA pass executed with official `qa` entrypoint. screenshotMatch achieved 1.0 (exact visual replay fidelity). Resource counts confirm 30 replay resources loaded cleanly. The 5 crawlBad and 8 replayBad represent non-critical external analytics and missing stylesheet SVG icons."
+  },
+  "manual_replay_verified": true,
+  "status": "COMPLETED"
+}

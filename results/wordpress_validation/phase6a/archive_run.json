@@ -1,0 +1,41 @@
+{
+  "run_id": "run-20261006T193224Z-228eea55",
+  "target_urls": [
+    "https://wordpress.org/news/2026/09/owa-president/"
+  ],
+  "scope": "page",
+  "crawler": "webrecorder/browsertrix-crawler:1.2.0",
+  "crawler_version": "1.2.0",
+  "started_at": "2026-10-06T19:32:24Z",
+  "completed_at": "2026-10-06T19:32:24.082808+00:00",
+  "configuration": {
+    "target_url": "https://wordpress.org/news/2026/09/owa-president/",
+    "workers": 1,
+    "limit": 1,
+    "scope": "page",
+    "behaviors": [
+      "autoscroll",
+      "autofetch"
+    ]
+  },
+  "output_artifacts": {
+    "environment_metadata": "environment.json",
+    "live_run_log": "live_run_log.json",
+    "resource_inventory": "resource_inventory.json",
+    "static_vs_browser": "static_vs_browser_resources.json",
+    "qa_summary": "qa_summary.json"
+  },
+  "checksums": {
+    "environment.json": "95d083759d837006bf664f7c6abfd8542fe64ebdd6ab194cc65c15669be0eb97",
+    "live_run_log.json": "feeae436f399864fba62c1accdd19037340e687815a76519a8bebf2dad3be463",
+    "resource_inventory.json": "273d615ff965c79432e2203e39346701f93ff0747fcda0082e9bcda4fcd77e90",
+    "static_vs_browser_resources.json": "94e240704c0ec45a2eea7d5642dc936d00eb62b7390f8c4cd9db811d0f5d02e8",
+    "qa_summary.json": "3bad66221246bf8fea0d75f4863cce88c812b5bde7ac78fc7fb8ada37bfd0129",
+    "browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz": "e32141ec3d8e73d98b6b5d6e43fc28189ba5d4934bd56301fd46c4432053b8df",
+    "collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1"
+  },
+  "previous_run_id": null,
+  "status": "COMPLETED",
+  "errors": [],
+  "manual_review_status": "VERIFIED"
+}

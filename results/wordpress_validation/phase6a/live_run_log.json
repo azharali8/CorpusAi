@@ -1,0 +1,27 @@
+{
+  "run_id": "run-20261006T193224Z-228eea55",
+  "timestamp": "2026-10-06T19:32:24Z",
+  "target_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "attempts": 1,
+  "docker_daemon_running": true,
+  "executions": [
+    {
+      "action": "browsertrix_crawl",
+      "status": "COMPLETED",
+      "command": "docker run --rm -v ... webrecorder/browsertrix-crawler:1.2.0 crawl --url https://wordpress.org/news/2026/09/owa-president/ --scopeType page --limit 1 --workers 1 --generateWACZ --screenshot view --behaviors autoscroll,autofetch --text --timeLimit 180 --collection wordpress-owa-president",
+      "wacz_path": "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+      "wacz_size_bytes": 1088595,
+      "wacz_sha256": "e32141ec3d8e73d98b6b5d6e43fc28189ba5d4934bd56301fd46c4432053b8df",
+      "exit_code": 0
+    },
+    {
+      "action": "browsertrix_qa",
+      "status": "COMPLETED",
+      "command": "docker run --rm -v ... webrecorder/browsertrix-crawler:1.2.0 qa --qaSource /crawls/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz --collection wordpress-owa-president-qa-corrected --pageLimit 1 --qaDebugImageDiff --generateWACZ",
+      "qa_wacz_path": "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/wordpress-owa-president-qa-corrected.wacz",
+      "qa_wacz_size_bytes": 141793,
+      "qa_wacz_sha256": "b22b8bc931ebc3b32b79cbd392c6a62fdeca30bd6594641f069f94b80f754ac1",
+      "exit_code": 0
+    }
+  ]
+}

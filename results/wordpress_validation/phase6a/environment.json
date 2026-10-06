@@ -1,0 +1,27 @@
+{
+  "date_time": "2026-10-06T19:32:24Z",
+  "os": "Windows 11 (AMD64)",
+  "python_version": "3.13.9",
+  "docker_installed": true,
+  "docker_version": "Docker version 29.5.3, build d1c06ef",
+  "docker_daemon_running": true,
+  "free_disk_gb": 29.0,
+  "configured_tag": "webrecorder/browsertrix-crawler:1.2.0",
+  "resolved_image": "sha256:6555a9da2d189c885422cb93651a67b0fe8e71329acbe1f3ca17c6909cc5ec08",
+  "resolved_digest": "webrecorder/browsertrix-crawler@sha256:6555a9da2d189c885422cb93651a67b0fe8e71329acbe1f3ca17c6909cc5ec08",
+  "resolved_browsertrix_version": "1.2.0",
+  "browsertrix_image": "webrecorder/browsertrix-crawler",
+  "browsertrix_tag": "1.2.0",
+  "target_url": "https://wordpress.org/news/2026/09/owa-president/",
+  "worker_count": 1,
+  "page_limit": 1,
+  "scope": "page",
+  "behavior_configuration": {
+    "autoscroll": true,
+    "autofetch": true,
+    "autoclick": false,
+    "extract_text": true,
+    "screenshots": true
+  },
+  "reason": null
+}
