@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-181%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-202%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -42,27 +42,34 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 | **Archival Storage** | WARC response generation with ISO 28500 record IDs, timestamps, and SHA-256 digests | warcio integration |
 | **Content Separation** | Strict separation of content-bearing records (`content_html`, `content_json`) from assets | MIME-based classifier |
 | **Replay & QA Foundation** | Replay validation, tamper-evident manifests, and Browsertrix QA integration foundation | Phase 6A Foundation |
+| **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.1 Multi-Page & Incremental |
 | **Durable Storage & Deposit** | Immutable run directories (`ArchiveRun`), catalog indexing, and deposit metadata schema | Storage layout design |
-| **Real-World Validation** | Polite, bounded discovery, HTML capture, and REST JSON verification on WordPress News | Live WordPress validation |
+| **Real-World Validation** | Polite, bounded discovery, HTML capture, REST JSON, and baseline pilot on WordPress News | Live WordPress validation |
 | **AI Selector Proposal** | *Optional secondary module:* Local LLM selector generation with deterministic validation | Experimental (`Ollama`) |
 
 ---
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **181 passing tests** verified in an isolated offline environment (`181 / 181 tests passing`).
+- **Offline Unit Test Suite:** **202 passing tests** verified in an isolated offline environment (`202 / 202 tests passing`).
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
-- **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, and navigation gates.
+- **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
 - **Real-World WordPress News Validation:**
   - **Phase 5A Discovery:** 10/10 article URLs matched the manually collected ground-truth sample with matching ordering.
   - **Phase 5B HTML Capture:** 3 sampled articles captured with title, publication date, author, canonical URL, and body text manually verified.
   - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
-  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded, confirming full article body text, headline, date, author, and main image render faithfully when disconnected from the live network (`manual_replay_verified = true`).
-  - **Browser-Backed Replay:** Successfully verified on the single-page WordPress article; broader multi-page portal crawling remains subject to future phases.
+  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded (`manual_replay_verified = true`).
+  - **Phase 6B Incremental Architecture (Complete):** Head sentinel verification, boundary reconciliation, anomaly detection, and run catalog implemented. 14 deterministic synthetic mutation scenarios (A–N) validated: stable archive reuse, new article detection, cross-page boundary shifts, content/metadata changes, fetch failures, budget exhaustion, access-gate detection, and multi-run lineage.
+  - **Phase 6B.1 Real Incremental Validation & Multi-Page Baseline (Complete):**
+    - *Real no-change incremental reuse validated.* Executed against live WordPress News (`https://wordpress.org/news/all-posts/`). Head fingerprint was unchanged; 10 known article states were reused with `content_capture_status: REUSED`. Only 1 live HTTP request made (head check). This validates the NO-CHANGE / REUSE path on a real archive.
+    - *Bounded five-page baseline established.* Traversed 5 archive pages; discovered 50 canonical article URLs. Full HTML bodies captured for 10 newest articles (`CAPTURED`). Remaining 40 article states registered without content fetch (`NOT_CAPTURED_IN_PILOT`). Exactly 15 live HTTP requests made. `scope_completion: MULTIPAGE_PILOT_COMPLETE`, `full_portal_coverage: false`.
+    - *Manual multi-page sanity review passed.* Project owner verified sampled articles from Page 1 (head + feature article), Page 3 (interior), and Page 5 (boundary). `manual_multipage_review_verified: true`.
+    - *Tamper-evident integrity:* SHA-256 checksums verified across all three run directories (`baseline/`, `incremental_run/`, `multipage_baseline/`). Atomic catalog indexing preserves full three-run lineage.
+    - *Real naturally occurring change handling remains pending.* The NEW article insertion, cross-page boundary shift, and content/metadata change paths are currently validated only via synthetic offline scenarios. The next real experiment should execute a bounded multi-page incremental run using `run-20261007T193716Z-wpnews-multi` as the previous compatible baseline.
 
 > [!NOTE]
-> All reported results are from controlled synthetic scenarios and a limited real-world sample (`https://wordpress.org/news/all-posts/`). They should not be generalized to arbitrary websites.
+> All reported results are from controlled synthetic scenarios and bounded real-world pilots (`https://wordpress.org/news/all-posts/`). Real no-change incremental reuse was validated. Real-world incremental change handling (new articles, mutations, boundary shifts) remains pending real-world validation. `full_portal_coverage = false` for all pilots.
 
 ---
 
@@ -227,6 +234,7 @@ CorpusAI/
 │           └── run_phase6a_validation.py
 ├── results/                                       # Structured JSON manifests and metrics
 ├── src/                                           # Core library implementation
+│   ├── archive_catalog.py
 │   ├── archive_graph_policy.py
 │   ├── archive_page_discovery.py
 │   ├── archive_run.py
@@ -239,15 +247,19 @@ CorpusAI/
 │   ├── extractor.py
 │   ├── head_verification.py
 │   ├── html_preprocessor.py
+│   ├── incremental_archive_policy.py
+│   ├── incremental_run.py
 │   ├── multipage_article_policy.py
 │   ├── navigation_gate_policy.py
+│   ├── portal_state.py
 │   ├── replay_validation.py
 │   ├── rule_generator.py
 │   ├── rule_repair.py
+│   ├── run_comparison.py
 │   ├── selector_validator.py
 │   ├── warc_utils.py
 │   └── webarticlecurator_adapter.py
-├── tests/                                         # Comprehensive offline unit test suite (181 tests)
+├── tests/                                         # Comprehensive offline unit test suite (202 tests)
 │   ├── fixtures/
 │   │   └── generate_warc_fixtures.py
 │   ├── test_archive_graph_policy.py
@@ -259,6 +271,7 @@ CorpusAI/
 │   ├── test_fixture_generator.py
 │   ├── test_head_verification.py
 │   ├── test_html_preprocessor.py
+│   ├── test_incremental_crawling.py
 │   ├── test_navigation_gate_policy.py
 │   ├── test_ollama_generator.py
 │   ├── test_replay_validation.py
@@ -350,7 +363,7 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `181 passing tests` (`181 / 181 tests passing`, 0 failures, 0 errors).
+**Current offline test suite:** `202 passing tests` (`202 / 202 tests passing`, 0 failures, 0 errors).
  
  ---
  

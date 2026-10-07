@@ -1,0 +1,57 @@
+{
+  "portal_id": "wordpress-news",
+  "latest_successful_run_id": "run-20261007T193716Z-wpnews-multi",
+  "first_capture": "2026-10-07T19:24:16Z",
+  "latest_capture": "2026-10-07T19:38:15Z",
+  "all_run_ids": [
+    "run-20261007T192416Z-wpnews",
+    "run-20261007T193712Z-wpnews-inc",
+    "run-20261007T193716Z-wpnews-multi"
+  ],
+  "runs": {
+    "run-20261007T192416Z-wpnews": {
+      "run_id": "run-20261007T192416Z-wpnews",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-07T19:24:16Z",
+      "completed_at": "2026-10-07T19:25:01Z",
+      "status": "CONVERGED",
+      "article_count": 10,
+      "new_article_count": 10,
+      "changed_article_count": 0,
+      "run_dir": "baseline",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    },
+    "run-20261007T193712Z-wpnews-inc": {
+      "run_id": "run-20261007T193712Z-wpnews-inc",
+      "previous_run_id": "run-20261007T192416Z-wpnews",
+      "mode": "INCREMENTAL",
+      "started_at": "2026-10-07T19:37:12Z",
+      "completed_at": "2026-10-07T19:37:16Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 10,
+      "new_article_count": 0,
+      "changed_article_count": 0,
+      "run_dir": "incremental_run",
+      "manual_review_status": "NOT_APPLICABLE",
+      "anomalies": []
+    },
+    "run-20261007T193716Z-wpnews-multi": {
+      "run_id": "run-20261007T193716Z-wpnews-multi",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-07T19:37:16Z",
+      "completed_at": "2026-10-07T19:38:15Z",
+      "status": "MULTIPAGE_PILOT_COMPLETE",
+      "article_count": 50,
+      "new_article_count": 50,
+      "changed_article_count": 0,
+      "run_dir": "multipage_baseline",
+      "manual_review_status": "VERIFIED",
+      "anomalies": []
+    }
+  },
+  "schema_version": "1",
+  "updated_at": "2026-10-07T19:38:15.944416+00:00"
+}

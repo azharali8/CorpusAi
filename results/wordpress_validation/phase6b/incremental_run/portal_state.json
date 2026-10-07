@@ -1,0 +1,301 @@
+{
+  "portal_id": "wordpress-news",
+  "run_id": "run-20261007T193712Z-wpnews-inc",
+  "schema_version": "1",
+  "captured_at": "2026-10-07T19:37:16.615622+00:00",
+  "archive_pages": {
+    "https://wordpress.org/news/all-posts/": {
+      "url": "https://wordpress.org/news/all-posts/",
+      "ordered_fingerprint": "b363e4a2bfc42d3724eb2318a5b30ab59edf2b112de727bc4c576272373b3893",
+      "unordered_fingerprint": "edd08a43352ee4d84cb182b305dd0b341ddab426c813e54cc261f34a41a89e2b",
+      "article_urls": [
+        "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+        "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+        "https://wordpress.org/news/2026/09/owa-president",
+        "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+        "https://wordpress.org/news/2026/09/108-student-websites",
+        "https://wordpress.org/news/2026/08/open-weight",
+        "https://wordpress.org/news/2026/08/wcus-2026-recap",
+        "https://wordpress.org/news/2026/08/mary-lou",
+        "https://wordpress.org/news/2026/08/browser-extension",
+        "https://wordpress.org/news/2026/08/wordpress-7-0-4-release"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/2/",
+      "previous_page_url": null,
+      "page_number": 1,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:16.615541+00:00"
+    }
+  },
+  "articles": {
+    "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release": {
+      "canonical_url": "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress 7.1.3 Maintenance and Security Release",
+      "published_at": "2026-10-06T17:00:00+00:00",
+      "author": "Jake Spurlock",
+      "content_hash": "ce2a6cff47545b37d72a9c67de9255b92afb2d0b7c40c8947ba636b74faf9cb0",
+      "raw_hash": "ce2a6cff47545b37d72a9c67de9255b92afb2d0b7c40c8947ba636b74faf9cb0",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.3 Maintenance and Security Release – WordPress News",
+        "heading": "WordPress 7.1.3 Maintenance and Security Release",
+        "publication_date": "2026-10-06T17:00:00+00:00",
+        "author": "Jake Spurlock",
+        "canonical_url": "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:23Z"
+    },
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release": {
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress 7.1.2 Release",
+      "published_at": "2026-09-22T14:01:20+00:00",
+      "author": "John Blackbourn",
+      "content_hash": "adbde93f62fb510f2410ebd6b6e7986cf02b03c1715d2b4cd02747c4142f6a3b",
+      "raw_hash": "adbde93f62fb510f2410ebd6b6e7986cf02b03c1715d2b4cd02747c4142f6a3b",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.2 Release – WordPress News",
+        "heading": "WordPress 7.1.2 Release",
+        "publication_date": "2026-09-22T14:01:20+00:00",
+        "author": "John Blackbourn",
+        "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:27Z"
+    },
+    "https://wordpress.org/news/2026/09/owa-president": {
+      "canonical_url": "https://wordpress.org/news/2026/09/owa-president",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress Takes Its Turn Leading the Open Website Alliance",
+      "published_at": "2026-09-21T14:28:41+00:00",
+      "author": "Mary Hubbard",
+      "content_hash": "c37dd682924acb538c6576d1398945747430f6e8635f4a18c7c76f02b7c88735",
+      "raw_hash": "c37dd682924acb538c6576d1398945747430f6e8635f4a18c7c76f02b7c88735",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress Takes Its Turn Leading the Open Website Alliance – WordPress News",
+        "heading": "WordPress Takes Its Turn Leading the Open Website Alliance",
+        "publication_date": "2026-09-21T14:28:41+00:00",
+        "author": "Mary Hubbard",
+        "canonical_url": "https://wordpress.org/news/2026/09/owa-president/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:31Z"
+    },
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release": {
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress 7.1.1 Maintenance and Security Release",
+      "published_at": "2026-09-17T19:53:09+00:00",
+      "author": "Aaron Jorbin",
+      "content_hash": "1d27a4201eab69832604370f80ccb4e2001e1436666c4c494b66e15358e9d1cc",
+      "raw_hash": "1d27a4201eab69832604370f80ccb4e2001e1436666c4c494b66e15358e9d1cc",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.1 Maintenance and Security Release – WordPress News",
+        "heading": "WordPress 7.1.1 Maintenance and Security Release",
+        "publication_date": "2026-09-17T19:53:09+00:00",
+        "author": "Aaron Jorbin",
+        "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:35Z"
+    },
+    "https://wordpress.org/news/2026/09/108-student-websites": {
+      "canonical_url": "https://wordpress.org/news/2026/09/108-student-websites",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "Students Built 108 Websites in Two Weeks in Bangladesh",
+      "published_at": "2026-09-07T23:19:34+00:00",
+      "author": "Destiny Kanno",
+      "content_hash": "a92fb760ac7046f55357a84813ab2d970f03e80e00d4c174505fb03db2035318",
+      "raw_hash": "a92fb760ac7046f55357a84813ab2d970f03e80e00d4c174505fb03db2035318",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Students Built 108 Websites in Two Weeks in Bangladesh – WordPress News",
+        "heading": "Students Built 108 Websites in Two Weeks in Bangladesh",
+        "publication_date": "2026-09-07T23:19:34+00:00",
+        "author": "Destiny Kanno",
+        "canonical_url": "https://wordpress.org/news/2026/09/108-student-websites/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:40Z"
+    },
+    "https://wordpress.org/news/2026/08/open-weight": {
+      "canonical_url": "https://wordpress.org/news/2026/08/open-weight",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress Signs the Open Weights and American AI Leadership Letter",
+      "published_at": "2026-08-27T17:00:32+00:00",
+      "author": "Mary Hubbard",
+      "content_hash": "8957b333443cf7460eaef21d5c346ac4e06a9eb1c7919a8e6be2389d1a59debb",
+      "raw_hash": "8957b333443cf7460eaef21d5c346ac4e06a9eb1c7919a8e6be2389d1a59debb",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress Signs the Open Weights and American AI Leadership Letter – WordPress News",
+        "heading": "WordPress Signs the Open Weights and American AI Leadership Letter",
+        "publication_date": "2026-08-27T17:00:32+00:00",
+        "author": "Mary Hubbard",
+        "canonical_url": "https://wordpress.org/news/2026/08/open-weight/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:44Z"
+    },
+    "https://wordpress.org/news/2026/08/wcus-2026-recap": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wcus-2026-recap",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "AI Creates Opportunity While Artists Ship at WordCamp US 2026",
+      "published_at": "2026-08-20T05:51:52+00:00",
+      "author": "Nicholas Garofalo",
+      "content_hash": "18aed115e3705330f8091b60fc75341d72d59f063abc0985536bcdf0a2c8697f",
+      "raw_hash": "18aed115e3705330f8091b60fc75341d72d59f063abc0985536bcdf0a2c8697f",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "AI Creates Opportunity While Artists Ship at WordCamp US 2026 – WordPress News",
+        "heading": "AI Creates Opportunity While Artists Ship at WordCamp US 2026",
+        "publication_date": "2026-08-20T05:51:52+00:00",
+        "author": "Nicholas Garofalo",
+        "canonical_url": "https://wordpress.org/news/2026/08/wcus-2026-recap/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:48Z"
+    },
+    "https://wordpress.org/news/2026/08/mary-lou": {
+      "canonical_url": "https://wordpress.org/news/2026/08/mary-lou",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress 7.1 “Mary Lou”",
+      "published_at": "2026-08-19T23:33:49+00:00",
+      "author": "annezazu",
+      "content_hash": "e6faf413ace2abd0183df1718290beca433ef63450679e22c0c27e6e287c970b",
+      "raw_hash": "e6faf413ace2abd0183df1718290beca433ef63450679e22c0c27e6e287c970b",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1 “Mary Lou” – WordPress News",
+        "heading": "WordPress 7.1 “Mary Lou”",
+        "publication_date": "2026-08-19T23:33:49+00:00",
+        "author": "annezazu",
+        "canonical_url": "https://wordpress.org/news/2026/08/mary-lou/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:53Z"
+    },
+    "https://wordpress.org/news/2026/08/browser-extension": {
+      "canonical_url": "https://wordpress.org/news/2026/08/browser-extension",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "Introducing the WordPress Browser Extension",
+      "published_at": "2026-08-13T16:29:42+00:00",
+      "author": "Jake Goldman",
+      "content_hash": "589355b03dc1aad84ed45e2db3e167a5ed9554f4e6ec816263c7a850b87347f4",
+      "raw_hash": "589355b03dc1aad84ed45e2db3e167a5ed9554f4e6ec816263c7a850b87347f4",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Introducing the WordPress Browser Extension – WordPress News",
+        "heading": "Introducing the WordPress Browser Extension",
+        "publication_date": "2026-08-13T16:29:42+00:00",
+        "author": "Jake Goldman",
+        "canonical_url": "https://wordpress.org/news/2026/08/browser-extension/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:24:57Z"
+    },
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+      "first_seen_run_id": "run-20261007T192416Z-wpnews",
+      "last_seen_run_id": "run-20261007T193712Z-wpnews-inc",
+      "title": "WordPress 7.0.4 Release",
+      "published_at": "2026-08-12T14:45:53+00:00",
+      "author": "John Blackbourn",
+      "content_hash": "242457bbe9ccfaaf28116a4d32154ac0cc5c392884a245298be178f7190aaac9",
+      "raw_hash": "242457bbe9ccfaaf28116a4d32154ac0cc5c392884a245298be178f7190aaac9",
+      "status": "UNCHANGED",
+      "content_capture_status": "REUSED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.0.4 Release – WordPress News",
+        "heading": "WordPress 7.0.4 Release",
+        "publication_date": "2026-08-12T14:45:53+00:00",
+        "author": "John Blackbourn",
+        "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-0-4-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:25:01Z"
+    }
+  },
+  "archive_order": [
+    "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "https://wordpress.org/news/2026/09/owa-president",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/108-student-websites",
+    "https://wordpress.org/news/2026/08/open-weight",
+    "https://wordpress.org/news/2026/08/wcus-2026-recap",
+    "https://wordpress.org/news/2026/08/mary-lou",
+    "https://wordpress.org/news/2026/08/browser-extension",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release"
+  ],
+  "head_fingerprint": "edd08a43352ee4d84cb182b305dd0b341ddab426c813e54cc261f34a41a89e2b",
+  "boundary_fingerprints": {},
+  "last_complete_archive_page": "https://wordpress.org/news/all-posts/",
+  "last_potentially_incomplete_page": null,
+  "total_articles_count": 10,
+  "total_archive_pages_count": 1,
+  "source_manifest": null
+}
