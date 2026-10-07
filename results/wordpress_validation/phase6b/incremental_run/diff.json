@@ -1,0 +1,31 @@
+{
+  "previous_run_id": "run-20261007T192416Z-wpnews",
+  "current_run_id": "run-20261007T193712Z-wpnews-inc",
+  "new_articles": [],
+  "unchanged_articles": [
+    "https://wordpress.org/news/2026/08/browser-extension",
+    "https://wordpress.org/news/2026/08/mary-lou",
+    "https://wordpress.org/news/2026/08/open-weight",
+    "https://wordpress.org/news/2026/08/wcus-2026-recap",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+    "https://wordpress.org/news/2026/09/108-student-websites",
+    "https://wordpress.org/news/2026/09/owa-president",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release"
+  ],
+  "changed_articles": [],
+  "metadata_changed_articles": [],
+  "missing_candidates": [],
+  "not_observed_in_scope": [],
+  "reordered_articles": [],
+  "fetch_failures": [],
+  "archive_page_changes": {
+    "https://wordpress.org/news/all-posts/": "UNCHANGED"
+  },
+  "head_changed": false,
+  "pagination_changed": false,
+  "anomalies": [],
+  "warnings": [],
+  "manual_review_required": false
+}

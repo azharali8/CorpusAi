@@ -1,0 +1,17 @@
+{
+  "run_id": "run-20261007T192416Z-wpnews",
+  "mode": "BASELINE",
+  "target_portal": "wordpress-news",
+  "seed_url": "https://wordpress.org/news/all-posts/",
+  "archive_pages_fetched": 1,
+  "articles_discovered": 10,
+  "exact_requests_made": 11,
+  "convergence_status": "PILOT_SCOPE_CONVERGED",
+  "scope_completion": "PILOT_SCOPE_CONVERGED",
+  "full_portal_coverage": false,
+  "boundary_status": "BOUNDARY_RECONCILED",
+  "head_changed": false,
+  "manual_review_required": false,
+  "started_at": "2026-10-07T19:24:16Z",
+  "completed_at": "2026-10-07T19:25:01Z"
+}
