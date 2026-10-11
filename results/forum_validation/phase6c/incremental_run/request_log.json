@@ -1,0 +1,16 @@
+[
+  {
+    "url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/",
+    "status_code": 200,
+    "duration_seconds": 2.141,
+    "content_length_bytes": 213692,
+    "timestamp": "2026-10-10T19:12:16Z"
+  },
+  {
+    "url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2",
+    "status_code": 200,
+    "duration_seconds": 1.972,
+    "content_length_bytes": 210125,
+    "timestamp": "2026-10-10T19:12:20Z"
+  }
+]

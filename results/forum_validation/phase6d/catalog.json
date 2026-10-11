@@ -1,0 +1,42 @@
+{
+  "portal_id": "wordpress-support-thread-pagination",
+  "latest_successful_run_id": "run-20261011T112803Z-wpthread-inc",
+  "first_capture": "2026-10-11T11:27:54Z",
+  "latest_capture": "2026-10-11T11:28:12Z",
+  "all_run_ids": [
+    "run-20261011T112754Z-wpthread-base",
+    "run-20261011T112803Z-wpthread-inc"
+  ],
+  "runs": {
+    "run-20261011T112754Z-wpthread-base": {
+      "run_id": "run-20261011T112754Z-wpthread-base",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-11T11:27:54Z",
+      "completed_at": "2026-10-11T11:28:03Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 19,
+      "new_article_count": 19,
+      "changed_article_count": 0,
+      "run_dir": "baseline",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    },
+    "run-20261011T112803Z-wpthread-inc": {
+      "run_id": "run-20261011T112803Z-wpthread-inc",
+      "previous_run_id": "run-20261011T112754Z-wpthread-base",
+      "mode": "INCREMENTAL",
+      "started_at": "2026-10-11T11:28:03Z",
+      "completed_at": "2026-10-11T11:28:12Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 19,
+      "new_article_count": 0,
+      "changed_article_count": 0,
+      "run_dir": "incremental_run",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    }
+  },
+  "schema_version": "1",
+  "updated_at": "2026-10-11T11:28:12.517575+00:00"
+}

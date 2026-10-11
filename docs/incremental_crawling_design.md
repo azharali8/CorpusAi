@@ -107,17 +107,25 @@ results/wordpress_validation/phase6b/
 ├── incremental_run/                      # 1-page incremental update check (run-20261007T193712Z-wpnews-inc)
 │   ├── manifest.json                     # Scope: PILOT_SCOPE_CONVERGED
 │   ├── portal_state.json                 # 10 articles reused (content_capture_status: REUSED)
-│   ├── diff.json                         # IncrementalDiff against baseline
+│   ├── diff.json                         # IncrementalDiff against 1-page baseline
 │   ├── run_summary.json
 │   ├── incremental_report.md
 │   ├── request_log.json                  # Exactly 1 HTTP request (head check)
 │   └── checksums.sha256
-└── multipage_baseline/                   # 5-page baseline snapshot (run-20261007T193716Z-wpnews-multi)
-    ├── manifest.json                     # Scope: MULTIPAGE_PILOT_COMPLETE
-    ├── portal_state.json                 # 50 discovered, 10 captured, 40 NOT_CAPTURED_IN_PILOT
+├── multipage_baseline/                   # 5-page baseline snapshot (run-20261007T193716Z-wpnews-multi)
+│   ├── manifest.json                     # Scope: MULTIPAGE_PILOT_COMPLETE
+│   ├── portal_state.json                 # 50 discovered, 10 captured, 40 NOT_CAPTURED_IN_PILOT
+│   ├── run_summary.json
+│   ├── multipage_report.md
+│   ├── request_log.json                  # Exactly 15 HTTP requests (5 pages + 10 articles)
+│   └── checksums.sha256
+└── multipage_incremental_run/            # 5-page incremental update check (run-20261010T185118Z-wpnews-multi-inc)
+    ├── manifest.json                     # Scope: MULTIPAGE_PILOT_COMPLETE, previous: run-20261007T193716Z-wpnews-multi
+    ├── portal_state.json                 # 50 articles (10 REUSED, 40 NOT_CAPTURED_IN_PILOT)
+    ├── diff.json                         # IncrementalDiff against 5-page baseline
     ├── run_summary.json
-    ├── multipage_report.md
-    ├── request_log.json                  # Exactly 15 HTTP requests (5 pages + 10 articles)
+    ├── multipage_incremental_report.md
+    ├── request_log.json                  # Exactly 5 HTTP requests (5 archive pages, 0 body fetches)
     └── checksums.sha256
 ```
 
@@ -150,29 +158,14 @@ For scalable multi-page baseline indexing:
 
 > Phase 6B.1 validated run-to-run incremental state reuse on a real WordPress archive when the head remained unchanged, and established a manually reviewed, bounded five-page baseline for future real incremental comparisons.
 
-The following is a precise accounting of what was and was not validated:
-
-| Claim | Status |
-|---|---|
-| Incremental architecture implemented and tested synthetically | ✅ Validated (Scenarios A–N) |
-| Real no-change incremental reuse validated on live WordPress | ✅ Validated |
-| Bounded 5-page baseline established and manually reviewed | ✅ Validated |
-| Naturally occurring NEW article insertion validated in real-world | ❌ Pending |
-| Real cross-page boundary mutation validated | ❌ Pending |
-| Real content/metadata change observed on live portal | ❌ Pending |
-| Full portal incremental crawling proven | ❌ Not claimed |
-| Production readiness | ❌ Not claimed |
-
-### 7.2 Real Incremental Run Result
+### 7.2 Real Incremental Run Result (1-Page)
 
 - **Factual outcome:** `REAL_INCREMENTAL_NO_CHANGE`
 - The head archive fingerprint at the time of the incremental check was identical to the baseline fingerprint.
 - All 10 known article states were reused (`content_capture_status: REUSED`) without any new content fetches.
 - Exactly 1 live HTTP request was issued (the head page check, plus 1 robots.txt fetch).
-- This validates the NO-CHANGE / REUSE path of the incremental algorithm on a real live archive.
-- The NEW / CONTENT_CHANGED / cross-page mutation paths remain validated only via synthetic offline scenarios.
 
-### 7.3 Manual Multi-Page Review
+### 7.3 Manual Multi-Page Baseline Review
 
 The five-page multi-page baseline was manually reviewed by the project owner against live WordPress News archive pages after automated discovery.
 
@@ -182,41 +175,64 @@ The five-page multi-page baseline was manually reviewed by the project owner aga
 
 ---
 
-## 8. Compatible Run Lineage
+## 8. Phase 6B.2 Real Multi-Page Incremental Crawling Validation
+
+### 8.1 Multi-Page Incremental Execution
+
+Phase 6B.2 executed a live multi-page incremental crawl referencing the compatible baseline `run-20261007T193716Z-wpnews-multi`:
+
+- **Run ID:** `run-20261010T185118Z-wpnews-multi-inc`
+- **Previous Run ID:** `run-20261007T193716Z-wpnews-multi`
+- **Scope:** 5 archive pages, 50 canonical article URLs.
+- **Article State Decisions:**
+  - 10 article bodies previously captured were successfully reused (`content_capture_status: REUSED`).
+  - 40 article states were maintained as deferred (`content_capture_status: NOT_CAPTURED_IN_PILOT`).
+  - 0 redundant article content body HTTP requests were issued.
+- **Total Live Requests:** Exactly 5 HTTP requests (5 archive page fetches).
+- **Factual Outcome:** `REAL_MULTIPAGE_INCREMENTAL_NO_CHANGE`.
+- **Integrity:** Verified SHA-256 checksums across all 6 run artifacts. Catalog pointer advanced to `run-20261010T185118Z-wpnews-multi-inc`.
+
+### 8.2 Summary of Validated Claims vs Pending Work
+
+| Claim | Status |
+|---|---|
+| Incremental architecture implemented and tested synthetically | ✅ Validated (Scenarios A–N) |
+| Real 1-page no-change incremental reuse validated | ✅ Validated (`run-20261007T193712Z-wpnews-inc`) |
+| Real 5-page baseline established & manually reviewed | ✅ Validated (`run-20261007T193716Z-wpnews-multi`) |
+| Real 5-page no-change incremental reuse validated | ✅ Validated (`run-20261010T185118Z-wpnews-multi-inc`) |
+| Naturally occurring NEW article insertion on live portal | ❌ Pending |
+| Real cross-page boundary mutation on live portal | ❌ Pending |
+| Real content/metadata change observed on live portal | ❌ Pending |
+| Full portal incremental crawling proven | ❌ Not claimed |
+| Production readiness | ❌ Not claimed |
+
+---
+
+## 9. Compatible Run Lineage
 
 Runs are organized into two independent lineage chains based on their original scope. **These lineages must not be crossed.**
 
-### 8.1 One-Page Lineage
+### 9.1 One-Page Lineage
 
 ```
 run-20261007T192416Z-wpnews   (BASELINE, 1 page, 10 articles, PILOT_SCOPE_CONVERGED)
     ↓  previous_run_id
 run-20261007T193712Z-wpnews-inc  (INCREMENTAL, 1 page head check, REAL_INCREMENTAL_NO_CHANGE)
-    ↓  future
-(next 1-page incremental run, if applicable)
 ```
 
-### 8.2 Multi-Page Lineage
+### 9.2 Multi-Page Lineage
 
 ```
 run-20261007T193716Z-wpnews-multi  (BASELINE, 5 pages, 50 discovered, MULTIPAGE_PILOT_COMPLETE, VERIFIED)
     ↓  previous_run_id
-(future real multi-page incremental run — REAL_MULTIPAGE_INCREMENTAL_PENDING)
+run-20261010T185118Z-wpnews-multi-inc  (INCREMENTAL, 5 pages, 10 REUSED, 40 NOT_CAPTURED_IN_PILOT, 5 requests)
+    ↓  future
+(future real multi-page incremental run when a live change naturally occurs)
 ```
 
 > [!IMPORTANT]
-> A future 5-page incremental run **MUST** use `previous_run_id = run-20261007T193716Z-wpnews-multi`.
-> It **MUST NOT** compare against `run-20261007T192416Z-wpnews` (1-page scope) because incompatible scopes produce false `not_observed_in_scope` classifications for articles on pages 2–5.
+> Any future multi-page incremental run **MUST** reference `run-20261010T185118Z-wpnews-multi-inc` or `run-20261007T193716Z-wpnews-multi`.
+> It **MUST NOT** compare against `run-20261007T192416Z-wpnews` (1-page scope) because incompatible scopes produce false `not_observed_in_scope` classifications.
 
-### 8.3 Future Real Multi-Page Incremental Run
-
-The next real experiment should be a bounded multi-page incremental run against WordPress News using `run-20261007T193716Z-wpnews-multi` as the previous compatible baseline.
-
-The goal is to observe one of the following natural live changes:
-- New article insertion at the head
-- Cross-page boundary shift (existing articles pushed to page 2)
-- Real metadata or content update on a known article
-
-**Status: `REAL_MULTIPAGE_INCREMENTAL_PENDING`** — Do not execute repeated polling. Execute as a single bounded experiment when ready.
 
 

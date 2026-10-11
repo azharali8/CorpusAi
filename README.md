@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-202%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-221%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -42,16 +42,18 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 | **Archival Storage** | WARC response generation with ISO 28500 record IDs, timestamps, and SHA-256 digests | warcio integration |
 | **Content Separation** | Strict separation of content-bearing records (`content_html`, `content_json`) from assets | MIME-based classifier |
 | **Replay & QA Foundation** | Replay validation, tamper-evident manifests, and Browsertrix QA integration foundation | Phase 6A Foundation |
-| **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.1 Multi-Page & Incremental |
+| **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.2 Multi-Page Incremental |
+| **Multi-Level Forum Crawling** | 4-level forum hierarchy (Category -> Pages -> Topics -> Posts/Replies) and fragment normalization | Phase 6C Live Forum Validation |
+| **Deep Thread Pagination** | Multi-page bbPress thread traversal, per-page post-ID fingerprinting, OP deduplication, and reply-level incremental reuse | Phase 6D Live Thread Validation |
 | **Durable Storage & Deposit** | Immutable run directories (`ArchiveRun`), catalog indexing, and deposit metadata schema | Storage layout design |
-| **Real-World Validation** | Polite, bounded discovery, HTML capture, REST JSON, and baseline pilot on WordPress News | Live WordPress validation |
+| **Real-World Validation** | Polite, bounded discovery, HTML capture, REST JSON, and multi-level forum validation | Live WordPress & Forum validation |
 | **AI Selector Proposal** | *Optional secondary module:* Local LLM selector generation with deterministic validation | Experimental (`Ollama`) |
 
 ---
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **202 passing tests** verified in an isolated offline environment (`202 / 202 tests passing`).
+- **Offline Unit Test Suite:** **221 passing tests** verified in an isolated offline environment (`221 / 221 tests passing`).
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
@@ -61,15 +63,26 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
   - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
   - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded (`manual_replay_verified = true`).
   - **Phase 6B Incremental Architecture (Complete):** Head sentinel verification, boundary reconciliation, anomaly detection, and run catalog implemented. 14 deterministic synthetic mutation scenarios (A–N) validated: stable archive reuse, new article detection, cross-page boundary shifts, content/metadata changes, fetch failures, budget exhaustion, access-gate detection, and multi-run lineage.
-  - **Phase 6B.1 Real Incremental Validation & Multi-Page Baseline (Complete):**
-    - *Real no-change incremental reuse validated.* Executed against live WordPress News (`https://wordpress.org/news/all-posts/`). Head fingerprint was unchanged; 10 known article states were reused with `content_capture_status: REUSED`. Only 1 live HTTP request made (head check). This validates the NO-CHANGE / REUSE path on a real archive.
-    - *Bounded five-page baseline established.* Traversed 5 archive pages; discovered 50 canonical article URLs. Full HTML bodies captured for 10 newest articles (`CAPTURED`). Remaining 40 article states registered without content fetch (`NOT_CAPTURED_IN_PILOT`). Exactly 15 live HTTP requests made. `scope_completion: MULTIPAGE_PILOT_COMPLETE`, `full_portal_coverage: false`.
-    - *Manual multi-page sanity review passed.* Project owner verified sampled articles from Page 1 (head + feature article), Page 3 (interior), and Page 5 (boundary). `manual_multipage_review_verified: true`.
-    - *Tamper-evident integrity:* SHA-256 checksums verified across all three run directories (`baseline/`, `incremental_run/`, `multipage_baseline/`). Atomic catalog indexing preserves full three-run lineage.
-    - *Real naturally occurring change handling remains pending.* The NEW article insertion, cross-page boundary shift, and content/metadata change paths are currently validated only via synthetic offline scenarios. The next real experiment should execute a bounded multi-page incremental run using `run-20261007T193716Z-wpnews-multi` as the previous compatible baseline.
+  - **Phase 6B.1 Real Incremental Validation & Multi-Page Baseline (Complete):** Real no-change incremental reuse validated across 1-page baseline (`run-20261007T192416Z-wpnews`) and 5-page baseline (`run-20261007T193716Z-wpnews-multi`).
+  - **Phase 6B.2 Real Multi-Page Incremental Crawling Validation (Complete):** Validated 5-page incremental state reuse against baseline `run-20261007T193716Z-wpnews-multi` with zero redundant article content requests (`run-20261010T185118Z-wpnews-multi-inc`).
+  - **Phase 6B.3 Natural Live Change Detection Check (Complete):** Controlled single-request live check confirmed archive head fingerprint match; honestly recorded `PENDING` without forcing artificial mutations.
+- **Real-World Multi-Level Forum Crawling Validation (Phase 6C Complete):**
+  - *Target Hierarchy:* WordPress Support Forum (`https://wordpress.org/support/forum/how-to-and-troubleshooting/`).
+  - *4-Level Hierarchy Traversal:* Category root -> Pagination boundary (Pages 1 & 2) -> 60 canonical topic URLs discovered -> 5 topic thread bodies captured.
+  - *Fragment URL Normalization:* bbPress reply and post fragment identifiers (`#post-...`) successfully normalized to root topic canonical URLs.
+  - *Incremental Reuse:* Incremental run (`run-20261010T191213Z-wpforum-inc`) referenced baseline (`run-20261010T191142Z-wpforum-base`), reusing all 5 previously captured topic bodies with 0 redundant content requests and making exactly 2 index page requests.
+  - *Strict Request Budgeting:* Entire baseline and incremental validation executed within 9 live HTTP requests (far below the 25 request safety limit).
+- **Real-World Deep Thread Pagination Validation (Phase 6D Complete):**
+  - *Target Thread:* `https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/` (18 replies across 2 genuine pages, confirmed real-world multi-page bbPress thread).
+  - *Thread Traversal:* Both thread pages fetched; page-level `next` link traversal terminated correctly after page 2 (no spurious empty-page fetch).
+  - *Per-Page Post-ID Fingerprinting:* Ordered and unordered fingerprints computed from bbPress post IDs; stable and deterministic across runs.
+  - *OP Deduplication:* Original post (`#post-19031471`) appears on all thread pages — correctly excluded from per-page unique-reply counts.
+  - *Page 1:* 16 post IDs (1 OP + 15 replies). *Page 2:* 4 post IDs (OP repeated + 3 unique new replies). *Global unique post count:* 19.
+  - *Incremental Reuse:* Second run (`run-20261011T112803Z-wpthread-inc`) compared fingerprints against baseline (`run-20261011T112754Z-wpthread-base`): both pages `UNCHANGED`, 0 new posts, factual result `REAL_THREAD_INCREMENTAL_NO_CHANGE`.
+  - *Strict Request Budgeting:* Baseline and incremental each used exactly 2 live HTTP requests (well within 25-request limit).
 
 > [!NOTE]
-> All reported results are from controlled synthetic scenarios and bounded real-world pilots (`https://wordpress.org/news/all-posts/`). Real no-change incremental reuse was validated. Real-world incremental change handling (new articles, mutations, boundary shifts) remains pending real-world validation. `full_portal_coverage = false` for all pilots.
+> All reported results are from controlled synthetic scenarios and bounded real-world pilots (`https://wordpress.org/news/all-posts/`, `https://wordpress.org/support/forum/how-to-and-troubleshooting/`, `https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/`). `full_portal_coverage = false` across all experiments.
 
 ---
 
@@ -259,7 +272,7 @@ CorpusAI/
 │   ├── selector_validator.py
 │   ├── warc_utils.py
 │   └── webarticlecurator_adapter.py
-├── tests/                                         # Comprehensive offline unit test suite (202 tests)
+├── tests/                                         # Comprehensive offline unit test suite (206 tests)
 │   ├── fixtures/
 │   │   └── generate_warc_fixtures.py
 │   ├── test_archive_graph_policy.py
@@ -269,6 +282,7 @@ CorpusAI/
 │   ├── test_asset_capture_replay.py
 │   ├── test_extractor.py
 │   ├── test_fixture_generator.py
+│   ├── test_forum_crawling.py
 │   ├── test_head_verification.py
 │   ├── test_html_preprocessor.py
 │   ├── test_incremental_crawling.py
@@ -363,7 +377,7 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `202 passing tests` (`202 / 202 tests passing`, 0 failures, 0 errors).
+**Current offline test suite:** `206 passing tests` (`206 / 206 tests passing`, 0 failures, 0 errors).
  
  ---
  
