@@ -1,0 +1,18 @@
+{
+  "run_id": "run-20261010T191142Z-wpforum-base",
+  "mode": "BASELINE",
+  "target_portal": "wordpress-support-forum",
+  "seed_url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/",
+  "category_level": "Fixing WordPress / How-To and Troubleshooting",
+  "archive_pages_fetched": 2,
+  "topics_discovered": 60,
+  "topics_content_captured": 5,
+  "topics_deferred_in_pilot": 55,
+  "exact_requests_made": 7,
+  "convergence_status": "PILOT_SCOPE_CONVERGED",
+  "scope_completion": "PILOT_SCOPE_CONVERGED",
+  "full_portal_coverage": false,
+  "boundary_status": "BOUNDARY_RECONCILED",
+  "started_at": "2026-10-10T19:11:42Z",
+  "completed_at": "2026-10-10T19:12:12Z"
+}

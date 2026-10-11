@@ -1,0 +1,37 @@
+[
+  {
+    "url": "https://wordpress.org/news/all-posts/",
+    "status_code": 200,
+    "duration_seconds": 1.78,
+    "content_length_bytes": 160427,
+    "timestamp": "2026-10-10T18:51:21Z"
+  },
+  {
+    "url": "https://wordpress.org/news/all-posts/page/2/",
+    "status_code": 200,
+    "duration_seconds": 1.837,
+    "content_length_bytes": 165811,
+    "timestamp": "2026-10-10T18:51:25Z"
+  },
+  {
+    "url": "https://wordpress.org/news/all-posts/page/3/",
+    "status_code": 200,
+    "duration_seconds": 1.744,
+    "content_length_bytes": 166022,
+    "timestamp": "2026-10-10T18:51:28Z"
+  },
+  {
+    "url": "https://wordpress.org/news/all-posts/page/4/",
+    "status_code": 200,
+    "duration_seconds": 1.963,
+    "content_length_bytes": 168008,
+    "timestamp": "2026-10-10T18:51:32Z"
+  },
+  {
+    "url": "https://wordpress.org/news/all-posts/page/5/",
+    "status_code": 200,
+    "duration_seconds": 1.765,
+    "content_length_bytes": 165257,
+    "timestamp": "2026-10-10T18:51:35Z"
+  }
+]

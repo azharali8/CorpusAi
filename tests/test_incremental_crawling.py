@@ -475,6 +475,72 @@ def test_content_capture_status_differentiation():
     assert d2["content_capture_status"] == "NOT_CAPTURED_IN_PILOT"
 
 
+def test_multipage_incremental_run_reuse_and_diff(tmp_path):
+    """Verify multi-page incremental run reuses captured content and produces accurate diff."""
+    # Baseline with 5 pages and 50 articles (10 captured, 40 not captured)
+    base_articles = {}
+    base_pages = {}
+    for p in range(1, 6):
+        p_url = f"https://portal.test/page/{p}"
+        art_urls = [f"https://portal.test/article/{p}_{i}" for i in range(1, 11)]
+        base_pages[p_url] = ArchivePageState(
+            url=p_url,
+            ordered_fingerprint=f"ord_{p}",
+            unordered_fingerprint=f"unord_{p}",
+            article_urls=art_urls,
+            page_number=p,
+        )
+        for idx, u in enumerate(art_urls):
+            is_captured = (p == 1)
+            base_articles[u] = ArticleState(
+                canonical_url=u,
+                first_seen_run_id="run-base-001",
+                last_seen_run_id="run-base-001",
+                title=f"Article {p}_{idx+1}" if is_captured else None,
+                content_hash=f"hash_{p}_{idx+1}" if is_captured else None,
+                content_capture_status="CAPTURED" if is_captured else "NOT_CAPTURED_IN_PILOT",
+            )
+
+    base_state = PortalState(
+        portal_id="test-portal",
+        run_id="run-base-001",
+        archive_pages=base_pages,
+        articles=base_articles,
+        archive_order=list(base_articles.keys()),
+        head_fingerprint="unord_1",
+    )
+
+    # Incremental run observes same 5 pages: reuse 10 captured, reuse 40 not captured
+    inc_articles = {}
+    for u, prev_art in base_articles.items():
+        inc_articles[u] = ArticleState(
+            canonical_url=u,
+            first_seen_run_id=prev_art.first_seen_run_id,
+            last_seen_run_id="run-inc-001",
+            title=prev_art.title,
+            content_hash=prev_art.content_hash,
+            status="UNCHANGED",
+            content_capture_status="REUSED" if prev_art.content_capture_status == "CAPTURED" else "NOT_CAPTURED_IN_PILOT",
+        )
+
+    inc_state = PortalState(
+        portal_id="test-portal",
+        run_id="run-inc-001",
+        archive_pages=base_pages,
+        articles=inc_articles,
+        archive_order=list(inc_articles.keys()),
+        head_fingerprint="unord_1",
+    )
+
+    diff = RunComparisonEngine.compare_states(base_state, inc_state)
+    assert len(diff.new_articles) == 0
+    assert len(diff.unchanged_articles) == 50
+    assert len(diff.changed_articles) == 0
+    assert len(diff.missing_candidates) == 0
+    assert diff.head_changed is False
+    assert diff.manual_review_required is False
+
+
 def test_multipage_traversal_deduplication_and_catalog_advancement(tmp_path):
     """Verify 5-page traversal deduplication and catalog tracking."""
     cat_file = str(tmp_path / "catalog.json")
@@ -499,4 +565,6 @@ def test_multipage_traversal_deduplication_and_catalog_advancement(tmp_path):
     loaded_catalog = ArchiveCatalog.load_from_json(cat_file)
     assert loaded_catalog.latest_successful_run_id == "run-multi-001"
     assert "run-multi-001" in loaded_catalog.runs
+
+
 

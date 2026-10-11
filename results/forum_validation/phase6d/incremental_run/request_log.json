@@ -1,0 +1,16 @@
+[
+  {
+    "url": "https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4",
+    "status_code": 200,
+    "duration_seconds": 3.852,
+    "content_length_bytes": 205631,
+    "timestamp": "2026-10-11T11:28:09Z"
+  },
+  {
+    "url": "https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/page/2",
+    "status_code": 200,
+    "duration_seconds": 1.663,
+    "content_length_bytes": 181638,
+    "timestamp": "2026-10-11T11:28:12Z"
+  }
+]

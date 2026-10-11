@@ -1,0 +1,20 @@
+{
+  "run_id": "run-20261010T191213Z-wpforum-inc",
+  "mode": "INCREMENTAL",
+  "previous_run_id": "run-20261010T191142Z-wpforum-base",
+  "target_portal": "wordpress-support-forum",
+  "seed_url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/",
+  "archive_pages_fetched": 2,
+  "topics_discovered": 60,
+  "topics_reused": 5,
+  "topics_deferred_in_pilot": 55,
+  "exact_requests_made": 2,
+  "convergence_status": "PILOT_SCOPE_CONVERGED",
+  "scope_completion": "PILOT_SCOPE_CONVERGED",
+  "full_portal_coverage": false,
+  "boundary_status": "BOUNDARY_RECONCILED",
+  "head_changed": false,
+  "factual_result": "REAL_FORUM_INCREMENTAL_NO_CHANGE",
+  "started_at": "2026-10-10T19:12:13Z",
+  "completed_at": "2026-10-10T19:12:20Z"
+}

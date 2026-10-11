@@ -1,0 +1,37 @@
+{
+  "run_id": "run-20261011T112803Z-wpthread-inc",
+  "mode": "INCREMENTAL",
+  "previous_run_id": "run-20261011T112754Z-wpthread-base",
+  "target_portal": "wordpress-support-thread-pagination",
+  "thread_url": "https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/",
+  "thread_pages_fetched": 2,
+  "total_unique_post_ids": 19,
+  "new_post_ids": [],
+  "reused_post_ids_count": 19,
+  "pages_unchanged": 2,
+  "pages_changed": 0,
+  "pages_new": 0,
+  "head_changed": false,
+  "factual_result": "REAL_THREAD_INCREMENTAL_NO_CHANGE",
+  "requests_made": 2,
+  "page_comparison": [
+    {
+      "page_number": 1,
+      "url": "https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4",
+      "page_status": "UNCHANGED",
+      "post_count": 16,
+      "ordered_fingerprint": "ac47b9669a8d06699435a474184e26bd8d22946fd901dfaad685da4f4e6a7e3a",
+      "baseline_fingerprint": "ac47b9669a8d06699435a474184e26bd8d22946fd901dfaad685da4f4e6a7e3a"
+    },
+    {
+      "page_number": 2,
+      "url": "https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/page/2",
+      "page_status": "UNCHANGED",
+      "post_count": 4,
+      "ordered_fingerprint": "87bc178f663c72722b1e3267113a8bf792d55e17122b6bbcc6182922014f542a",
+      "baseline_fingerprint": "87bc178f663c72722b1e3267113a8bf792d55e17122b6bbcc6182922014f542a"
+    }
+  ],
+  "started_at": "2026-10-11T11:28:03Z",
+  "completed_at": "2026-10-11T11:28:12Z"
+}
