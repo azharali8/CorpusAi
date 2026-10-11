@@ -11,7 +11,7 @@
   "prompt_version": "1.0",
   "warc": {
     "filename": "synthetic_portal.warc",
-    "path": "C:\\Users\\evo\\CorpusAI\\data\\warc\\synthetic_portal.warc",
+    "path": "data/warc/synthetic_portal.warc",
     "sha256": "0de78fa112b39ba24c584957c2c9c21b7eb261e7dd0c80d4f60d8dd416fea305",
     "file_size_bytes": 11532,
     "total_records": 8,

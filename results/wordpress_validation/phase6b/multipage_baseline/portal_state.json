@@ -1,0 +1,1151 @@
+{
+  "portal_id": "wordpress-news",
+  "run_id": "run-20261007T193716Z-wpnews-multi",
+  "schema_version": "1",
+  "captured_at": "2026-10-07T19:38:15.909997+00:00",
+  "archive_pages": {
+    "https://wordpress.org/news/all-posts/": {
+      "url": "https://wordpress.org/news/all-posts/",
+      "ordered_fingerprint": "b363e4a2bfc42d3724eb2318a5b30ab59edf2b112de727bc4c576272373b3893",
+      "unordered_fingerprint": "edd08a43352ee4d84cb182b305dd0b341ddab426c813e54cc261f34a41a89e2b",
+      "article_urls": [
+        "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+        "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+        "https://wordpress.org/news/2026/09/owa-president",
+        "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+        "https://wordpress.org/news/2026/09/108-student-websites",
+        "https://wordpress.org/news/2026/08/open-weight",
+        "https://wordpress.org/news/2026/08/wcus-2026-recap",
+        "https://wordpress.org/news/2026/08/mary-lou",
+        "https://wordpress.org/news/2026/08/browser-extension",
+        "https://wordpress.org/news/2026/08/wordpress-7-0-4-release"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/2/",
+      "previous_page_url": null,
+      "page_number": 1,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:20.077421+00:00"
+    },
+    "https://wordpress.org/news/all-posts/page/2/": {
+      "url": "https://wordpress.org/news/all-posts/page/2/",
+      "ordered_fingerprint": "4b95e2cc7f55438b01688ee8c7cfffe8626094a1cdc276a1e2859d4b0ac5babb",
+      "unordered_fingerprint": "e06c2118739471458b306a7498288992a4205163ed8067ccb3b94222e0958667",
+      "article_urls": [
+        "https://wordpress.org/news/2026/08/wordpress-7-0-3-release",
+        "https://wordpress.org/news/2026/08/wordpress-7-1-release-candidate-1",
+        "https://wordpress.org/news/2026/07/wordpress-7-1-beta-4",
+        "https://wordpress.org/news/2026/07/wordpress-7-1-beta-3",
+        "https://wordpress.org/news/2026/07/wordpress-7-0-2-release",
+        "https://wordpress.org/news/2026/07/wordpress-7-1-beta-1",
+        "https://wordpress.org/news/2026/07/wcus-2026-guide",
+        "https://wordpress.org/news/2026/07/wordpress-7-0-1-maintenance-release",
+        "https://wordpress.org/news/2026/06/ai-leaders-graduates",
+        "https://wordpress.org/news/2026/06/open-web-merch"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/3/",
+      "previous_page_url": "https://wordpress.org/news/all-posts/",
+      "page_number": 2,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:23.564482+00:00"
+    },
+    "https://wordpress.org/news/all-posts/page/3/": {
+      "url": "https://wordpress.org/news/all-posts/page/3/",
+      "ordered_fingerprint": "9b41de9c027998b7a4c02cabadc12dfb26571899e4282b215e0e982c4ed1cb3a",
+      "unordered_fingerprint": "a508fc6a4cc0533b8ccc407b5c595f70c9cd59110cd3dd218873eb130ac4debd",
+      "article_urls": [
+        "https://wordpress.org/news/2026/06/kim-parsell-wcus-scholarship",
+        "https://wordpress.org/news/2026/06/global-partners-first-half-2026",
+        "https://wordpress.org/news/2026/06/wceu-2026-recap",
+        "https://wordpress.org/news/2026/06/pts",
+        "https://wordpress.org/news/2026/05/wp23",
+        "https://wordpress.org/news/2026/05/wceu-2026-sessions",
+        "https://wordpress.org/news/2026/05/armstrong",
+        "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-4",
+        "https://wordpress.org/news/2026/05/wcus-2026-get-tickets",
+        "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-3"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/4/",
+      "previous_page_url": "https://wordpress.org/news/all-posts/page/2/",
+      "page_number": 3,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:26.851807+00:00"
+    },
+    "https://wordpress.org/news/all-posts/page/4/": {
+      "url": "https://wordpress.org/news/all-posts/page/4/",
+      "ordered_fingerprint": "6064037f25e88b230312ade71fed99c347eec34f49d56dd314f9c65e4983c47e",
+      "unordered_fingerprint": "77539022d21f1c65022d8d283fa83121f5f376668b94608eb5c6e99cd27b273c",
+      "article_urls": [
+        "https://wordpress.org/news/2026/05/wcus-2026-get-involved",
+        "https://wordpress.org/news/2026/04/student-clubs-build-momentum",
+        "https://wordpress.org/news/2026/04/celebrating-wcasia-2026",
+        "https://wordpress.org/news/2026/04/watch-wc-asia-2026-live",
+        "https://wordpress.org/news/2026/04/wcasia-2026-sessions",
+        "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-2",
+        "https://wordpress.org/news/2026/03/wp-packages",
+        "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-1",
+        "https://wordpress.org/news/2026/03/wordpress-7-0-beta-5",
+        "https://wordpress.org/news/2026/03/wordpress-6-9-4-release"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/5/",
+      "previous_page_url": "https://wordpress.org/news/all-posts/page/3/",
+      "page_number": 4,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:30.716845+00:00"
+    },
+    "https://wordpress.org/news/all-posts/page/5/": {
+      "url": "https://wordpress.org/news/all-posts/page/5/",
+      "ordered_fingerprint": "08a40a5e1f5614673a60859e50fd0de85127305eed9ef39bb37f667fafa5b4ee",
+      "unordered_fingerprint": "e9b142c6bfe2c0ce6084394cdcfb2df60a8b9cf631b035d1049ad4ca95ca9e75",
+      "article_urls": [
+        "https://wordpress.org/news/2026/03/announcing-my-wordpress",
+        "https://wordpress.org/news/2026/03/wordpress-6-9-3-and-7-0-beta-4",
+        "https://wordpress.org/news/2026/03/wordpress-6-9-2-release",
+        "https://wordpress.org/news/2026/03/wordpress-7-0-beta-3",
+        "https://wordpress.org/news/2026/02/wordpress-7-0-beta-2",
+        "https://wordpress.org/news/2026/02/wordpress-7-0-beta-1",
+        "https://wordpress.org/news/2026/02/ai-leaders-credential",
+        "https://wordpress.org/news/2026/02/wordpress-6-9-1-maintenance-release",
+        "https://wordpress.org/news/2026/01/new-ai-agent-skill",
+        "https://wordpress.org/news/2026/01/wordcamp-asia-2026"
+      ],
+      "next_page_url": "https://wordpress.org/news/all-posts/page/6/",
+      "previous_page_url": "https://wordpress.org/news/all-posts/page/4/",
+      "page_number": 5,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-07T19:37:33.979313+00:00"
+    }
+  },
+  "articles": {
+    "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release": {
+      "canonical_url": "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress 7.1.3 Maintenance and Security Release",
+      "published_at": "2026-10-06T17:00:00+00:00",
+      "author": "Jake Spurlock",
+      "content_hash": "e3c83c314fa13497298e6f3d76a9b5e0a104715f44901e2476cdc3fa357b5099",
+      "raw_hash": "e3c83c314fa13497298e6f3d76a9b5e0a104715f44901e2476cdc3fa357b5099",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.3 Maintenance and Security Release – WordPress News",
+        "heading": "WordPress 7.1.3 Maintenance and Security Release",
+        "publication_date": "2026-10-06T17:00:00+00:00",
+        "author": "Jake Spurlock",
+        "canonical_url": "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:37Z"
+    },
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release": {
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress 7.1.2 Release",
+      "published_at": "2026-09-22T14:01:20+00:00",
+      "author": "John Blackbourn",
+      "content_hash": "adbde93f62fb510f2410ebd6b6e7986cf02b03c1715d2b4cd02747c4142f6a3b",
+      "raw_hash": "adbde93f62fb510f2410ebd6b6e7986cf02b03c1715d2b4cd02747c4142f6a3b",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.2 Release – WordPress News",
+        "heading": "WordPress 7.1.2 Release",
+        "publication_date": "2026-09-22T14:01:20+00:00",
+        "author": "John Blackbourn",
+        "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:41Z"
+    },
+    "https://wordpress.org/news/2026/09/owa-president": {
+      "canonical_url": "https://wordpress.org/news/2026/09/owa-president",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress Takes Its Turn Leading the Open Website Alliance",
+      "published_at": "2026-09-21T14:28:41+00:00",
+      "author": "Mary Hubbard",
+      "content_hash": "cbfe5d0c46aca4f4d25cac6258daae4c673250cb796bd9337061dcee02944301",
+      "raw_hash": "cbfe5d0c46aca4f4d25cac6258daae4c673250cb796bd9337061dcee02944301",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress Takes Its Turn Leading the Open Website Alliance – WordPress News",
+        "heading": "WordPress Takes Its Turn Leading the Open Website Alliance",
+        "publication_date": "2026-09-21T14:28:41+00:00",
+        "author": "Mary Hubbard",
+        "canonical_url": "https://wordpress.org/news/2026/09/owa-president/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:45Z"
+    },
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release": {
+      "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress 7.1.1 Maintenance and Security Release",
+      "published_at": "2026-09-17T19:53:09+00:00",
+      "author": "Aaron Jorbin",
+      "content_hash": "1d27a4201eab69832604370f80ccb4e2001e1436666c4c494b66e15358e9d1cc",
+      "raw_hash": "1d27a4201eab69832604370f80ccb4e2001e1436666c4c494b66e15358e9d1cc",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1.1 Maintenance and Security Release – WordPress News",
+        "heading": "WordPress 7.1.1 Maintenance and Security Release",
+        "publication_date": "2026-09-17T19:53:09+00:00",
+        "author": "Aaron Jorbin",
+        "canonical_url": "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:50Z"
+    },
+    "https://wordpress.org/news/2026/09/108-student-websites": {
+      "canonical_url": "https://wordpress.org/news/2026/09/108-student-websites",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "Students Built 108 Websites in Two Weeks in Bangladesh",
+      "published_at": "2026-09-07T23:19:34+00:00",
+      "author": "Destiny Kanno",
+      "content_hash": "83490a3e07a32f377fcabf09deaa68de80c51b5f1c9a5965c6cb3bb8b6539223",
+      "raw_hash": "83490a3e07a32f377fcabf09deaa68de80c51b5f1c9a5965c6cb3bb8b6539223",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Students Built 108 Websites in Two Weeks in Bangladesh – WordPress News",
+        "heading": "Students Built 108 Websites in Two Weeks in Bangladesh",
+        "publication_date": "2026-09-07T23:19:34+00:00",
+        "author": "Destiny Kanno",
+        "canonical_url": "https://wordpress.org/news/2026/09/108-student-websites/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:54Z"
+    },
+    "https://wordpress.org/news/2026/08/open-weight": {
+      "canonical_url": "https://wordpress.org/news/2026/08/open-weight",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress Signs the Open Weights and American AI Leadership Letter",
+      "published_at": "2026-08-27T17:00:32+00:00",
+      "author": "Mary Hubbard",
+      "content_hash": "c10a9fc6d70177b47d702051dae1de6981bb653badfa3e8c5cab49c80804ed21",
+      "raw_hash": "c10a9fc6d70177b47d702051dae1de6981bb653badfa3e8c5cab49c80804ed21",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress Signs the Open Weights and American AI Leadership Letter – WordPress News",
+        "heading": "WordPress Signs the Open Weights and American AI Leadership Letter",
+        "publication_date": "2026-08-27T17:00:32+00:00",
+        "author": "Mary Hubbard",
+        "canonical_url": "https://wordpress.org/news/2026/08/open-weight/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:37:58Z"
+    },
+    "https://wordpress.org/news/2026/08/wcus-2026-recap": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wcus-2026-recap",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "AI Creates Opportunity While Artists Ship at WordCamp US 2026",
+      "published_at": "2026-08-20T05:51:52+00:00",
+      "author": "Nicholas Garofalo",
+      "content_hash": "305d3c3ada566d66fcb642558be8aa25d969d3c76c98354246b395c9604a1efe",
+      "raw_hash": "305d3c3ada566d66fcb642558be8aa25d969d3c76c98354246b395c9604a1efe",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "AI Creates Opportunity While Artists Ship at WordCamp US 2026 – WordPress News",
+        "heading": "AI Creates Opportunity While Artists Ship at WordCamp US 2026",
+        "publication_date": "2026-08-20T05:51:52+00:00",
+        "author": "Nicholas Garofalo",
+        "canonical_url": "https://wordpress.org/news/2026/08/wcus-2026-recap/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:38:02Z"
+    },
+    "https://wordpress.org/news/2026/08/mary-lou": {
+      "canonical_url": "https://wordpress.org/news/2026/08/mary-lou",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress 7.1 “Mary Lou”",
+      "published_at": "2026-08-19T23:33:49+00:00",
+      "author": "annezazu",
+      "content_hash": "a648de837958fc68558f41f9e67e62e14328c711c1f1375e9f92ce61ebe3ea9b",
+      "raw_hash": "a648de837958fc68558f41f9e67e62e14328c711c1f1375e9f92ce61ebe3ea9b",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.1 “Mary Lou” – WordPress News",
+        "heading": "WordPress 7.1 “Mary Lou”",
+        "publication_date": "2026-08-19T23:33:49+00:00",
+        "author": "annezazu",
+        "canonical_url": "https://wordpress.org/news/2026/08/mary-lou/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:38:07Z"
+    },
+    "https://wordpress.org/news/2026/08/browser-extension": {
+      "canonical_url": "https://wordpress.org/news/2026/08/browser-extension",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "Introducing the WordPress Browser Extension",
+      "published_at": "2026-08-13T16:29:42+00:00",
+      "author": "Jake Goldman",
+      "content_hash": "04572b94bfab01999454331f5fe71753dc867e1731ea1f0388b0f76660d6dbe0",
+      "raw_hash": "04572b94bfab01999454331f5fe71753dc867e1731ea1f0388b0f76660d6dbe0",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Introducing the WordPress Browser Extension – WordPress News",
+        "heading": "Introducing the WordPress Browser Extension",
+        "publication_date": "2026-08-13T16:29:42+00:00",
+        "author": "Jake Goldman",
+        "canonical_url": "https://wordpress.org/news/2026/08/browser-extension/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:38:11Z"
+    },
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": "WordPress 7.0.4 Release",
+      "published_at": "2026-08-12T14:45:53+00:00",
+      "author": "John Blackbourn",
+      "content_hash": "08616299569934d121e951c81f0d0a2e6877a2baee9685791ac2dabd8d06cc40",
+      "raw_hash": "08616299569934d121e951c81f0d0a2e6877a2baee9685791ac2dabd8d06cc40",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "WordPress 7.0.4 Release – WordPress News",
+        "heading": "WordPress 7.0.4 Release",
+        "publication_date": "2026-08-12T14:45:53+00:00",
+        "author": "John Blackbourn",
+        "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-0-4-release/",
+        "rest_api_url": "https://wordpress.org/news/wp-json/"
+      },
+      "last_captured_at": "2026-10-07T19:38:15Z"
+    },
+    "https://wordpress.org/news/2026/08/wordpress-7-0-3-release": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-0-3-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/08/wordpress-7-1-release-candidate-1": {
+      "canonical_url": "https://wordpress.org/news/2026/08/wordpress-7-1-release-candidate-1",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-4": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wordpress-7-1-beta-4",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-3": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wordpress-7-1-beta-3",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wordpress-7-0-2-release": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wordpress-7-0-2-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-1": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wordpress-7-1-beta-1",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wcus-2026-guide": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wcus-2026-guide",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/07/wordpress-7-0-1-maintenance-release": {
+      "canonical_url": "https://wordpress.org/news/2026/07/wordpress-7-0-1-maintenance-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/ai-leaders-graduates": {
+      "canonical_url": "https://wordpress.org/news/2026/06/ai-leaders-graduates",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/open-web-merch": {
+      "canonical_url": "https://wordpress.org/news/2026/06/open-web-merch",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/2/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/kim-parsell-wcus-scholarship": {
+      "canonical_url": "https://wordpress.org/news/2026/06/kim-parsell-wcus-scholarship",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/global-partners-first-half-2026": {
+      "canonical_url": "https://wordpress.org/news/2026/06/global-partners-first-half-2026",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/wceu-2026-recap": {
+      "canonical_url": "https://wordpress.org/news/2026/06/wceu-2026-recap",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/06/pts": {
+      "canonical_url": "https://wordpress.org/news/2026/06/pts",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wp23": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wp23",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wceu-2026-sessions": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wceu-2026-sessions",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/armstrong": {
+      "canonical_url": "https://wordpress.org/news/2026/05/armstrong",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-4": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-4",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wcus-2026-get-tickets": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wcus-2026-get-tickets",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-3": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-3",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/3/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/05/wcus-2026-get-involved": {
+      "canonical_url": "https://wordpress.org/news/2026/05/wcus-2026-get-involved",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/04/student-clubs-build-momentum": {
+      "canonical_url": "https://wordpress.org/news/2026/04/student-clubs-build-momentum",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/04/celebrating-wcasia-2026": {
+      "canonical_url": "https://wordpress.org/news/2026/04/celebrating-wcasia-2026",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/04/watch-wc-asia-2026-live": {
+      "canonical_url": "https://wordpress.org/news/2026/04/watch-wc-asia-2026-live",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/04/wcasia-2026-sessions": {
+      "canonical_url": "https://wordpress.org/news/2026/04/wcasia-2026-sessions",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-2": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-2",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wp-packages": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wp-packages",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-1": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-1",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-7-0-beta-5": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-7-0-beta-5",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-6-9-4-release": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-6-9-4-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/4/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/announcing-my-wordpress": {
+      "canonical_url": "https://wordpress.org/news/2026/03/announcing-my-wordpress",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-6-9-3-and-7-0-beta-4": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-6-9-3-and-7-0-beta-4",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-6-9-2-release": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-6-9-2-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/03/wordpress-7-0-beta-3": {
+      "canonical_url": "https://wordpress.org/news/2026/03/wordpress-7-0-beta-3",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/02/wordpress-7-0-beta-2": {
+      "canonical_url": "https://wordpress.org/news/2026/02/wordpress-7-0-beta-2",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/02/wordpress-7-0-beta-1": {
+      "canonical_url": "https://wordpress.org/news/2026/02/wordpress-7-0-beta-1",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/02/ai-leaders-credential": {
+      "canonical_url": "https://wordpress.org/news/2026/02/ai-leaders-credential",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/02/wordpress-6-9-1-maintenance-release": {
+      "canonical_url": "https://wordpress.org/news/2026/02/wordpress-6-9-1-maintenance-release",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/01/new-ai-agent-skill": {
+      "canonical_url": "https://wordpress.org/news/2026/01/new-ai-agent-skill",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/news/2026/01/wordcamp-asia-2026": {
+      "canonical_url": "https://wordpress.org/news/2026/01/wordcamp-asia-2026",
+      "first_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "last_seen_run_id": "run-20261007T193716Z-wpnews-multi",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/news/all-posts/page/5/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    }
+  },
+  "archive_order": [
+    "https://wordpress.org/news/2026/10/wordpress-7-1-3-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-2-release",
+    "https://wordpress.org/news/2026/09/owa-president",
+    "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release",
+    "https://wordpress.org/news/2026/09/108-student-websites",
+    "https://wordpress.org/news/2026/08/open-weight",
+    "https://wordpress.org/news/2026/08/wcus-2026-recap",
+    "https://wordpress.org/news/2026/08/mary-lou",
+    "https://wordpress.org/news/2026/08/browser-extension",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-4-release",
+    "https://wordpress.org/news/2026/08/wordpress-7-0-3-release",
+    "https://wordpress.org/news/2026/08/wordpress-7-1-release-candidate-1",
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-4",
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-3",
+    "https://wordpress.org/news/2026/07/wordpress-7-0-2-release",
+    "https://wordpress.org/news/2026/07/wordpress-7-1-beta-1",
+    "https://wordpress.org/news/2026/07/wcus-2026-guide",
+    "https://wordpress.org/news/2026/07/wordpress-7-0-1-maintenance-release",
+    "https://wordpress.org/news/2026/06/ai-leaders-graduates",
+    "https://wordpress.org/news/2026/06/open-web-merch",
+    "https://wordpress.org/news/2026/06/kim-parsell-wcus-scholarship",
+    "https://wordpress.org/news/2026/06/global-partners-first-half-2026",
+    "https://wordpress.org/news/2026/06/wceu-2026-recap",
+    "https://wordpress.org/news/2026/06/pts",
+    "https://wordpress.org/news/2026/05/wp23",
+    "https://wordpress.org/news/2026/05/wceu-2026-sessions",
+    "https://wordpress.org/news/2026/05/armstrong",
+    "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-4",
+    "https://wordpress.org/news/2026/05/wcus-2026-get-tickets",
+    "https://wordpress.org/news/2026/05/wordpress-7-0-release-candidate-3",
+    "https://wordpress.org/news/2026/05/wcus-2026-get-involved",
+    "https://wordpress.org/news/2026/04/student-clubs-build-momentum",
+    "https://wordpress.org/news/2026/04/celebrating-wcasia-2026",
+    "https://wordpress.org/news/2026/04/watch-wc-asia-2026-live",
+    "https://wordpress.org/news/2026/04/wcasia-2026-sessions",
+    "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-2",
+    "https://wordpress.org/news/2026/03/wp-packages",
+    "https://wordpress.org/news/2026/03/wordpress-7-0-release-candidate-1",
+    "https://wordpress.org/news/2026/03/wordpress-7-0-beta-5",
+    "https://wordpress.org/news/2026/03/wordpress-6-9-4-release",
+    "https://wordpress.org/news/2026/03/announcing-my-wordpress",
+    "https://wordpress.org/news/2026/03/wordpress-6-9-3-and-7-0-beta-4",
+    "https://wordpress.org/news/2026/03/wordpress-6-9-2-release",
+    "https://wordpress.org/news/2026/03/wordpress-7-0-beta-3",
+    "https://wordpress.org/news/2026/02/wordpress-7-0-beta-2",
+    "https://wordpress.org/news/2026/02/wordpress-7-0-beta-1",
+    "https://wordpress.org/news/2026/02/ai-leaders-credential",
+    "https://wordpress.org/news/2026/02/wordpress-6-9-1-maintenance-release",
+    "https://wordpress.org/news/2026/01/new-ai-agent-skill",
+    "https://wordpress.org/news/2026/01/wordcamp-asia-2026"
+  ],
+  "head_fingerprint": "edd08a43352ee4d84cb182b305dd0b341ddab426c813e54cc261f34a41a89e2b",
+  "boundary_fingerprints": {
+    "https://wordpress.org/news/all-posts/page/5/": "e9b142c6bfe2c0ce6084394cdcfb2df60a8b9cf631b035d1049ad4ca95ca9e75"
+  },
+  "last_complete_archive_page": "https://wordpress.org/news/all-posts/page/5/",
+  "last_potentially_incomplete_page": null,
+  "total_articles_count": 50,
+  "total_archive_pages_count": 5,
+  "source_manifest": null
+}

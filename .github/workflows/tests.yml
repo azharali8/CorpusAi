@@ -2,7 +2,7 @@ name: Offline Test Suite
 
 on:
   push:
-    branches: [ main, master, phase6-browser-replay ]
+    branches: [ main, master, phase6-browser-replay, phase6b-incremental-crawling ]
   pull_request:
     branches: [ main, master ]
 

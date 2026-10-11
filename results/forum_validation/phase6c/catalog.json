@@ -1,0 +1,72 @@
+{
+  "portal_id": "wordpress-support-forum",
+  "latest_successful_run_id": "run-20261010T191213Z-wpforum-inc",
+  "first_capture": "2026-10-10T19:08:52Z",
+  "latest_capture": "2026-10-10T19:12:20Z",
+  "all_run_ids": [
+    "run-20261010T190852Z-wpforum-base",
+    "run-20261010T190923Z-wpforum-inc",
+    "run-20261010T191142Z-wpforum-base",
+    "run-20261010T191213Z-wpforum-inc"
+  ],
+  "runs": {
+    "run-20261010T190852Z-wpforum-base": {
+      "run_id": "run-20261010T190852Z-wpforum-base",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-10T19:08:52Z",
+      "completed_at": "2026-10-10T19:09:23Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 30,
+      "new_article_count": 30,
+      "changed_article_count": 0,
+      "run_dir": "baseline",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    },
+    "run-20261010T190923Z-wpforum-inc": {
+      "run_id": "run-20261010T190923Z-wpforum-inc",
+      "previous_run_id": "run-20261010T190852Z-wpforum-base",
+      "mode": "INCREMENTAL",
+      "started_at": "2026-10-10T19:09:23Z",
+      "completed_at": "2026-10-10T19:09:27Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 30,
+      "new_article_count": 0,
+      "changed_article_count": 0,
+      "run_dir": "incremental_run",
+      "manual_review_status": "VERIFIED",
+      "anomalies": []
+    },
+    "run-20261010T191142Z-wpforum-base": {
+      "run_id": "run-20261010T191142Z-wpforum-base",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-10T19:11:42Z",
+      "completed_at": "2026-10-10T19:12:12Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 60,
+      "new_article_count": 60,
+      "changed_article_count": 0,
+      "run_dir": "baseline",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    },
+    "run-20261010T191213Z-wpforum-inc": {
+      "run_id": "run-20261010T191213Z-wpforum-inc",
+      "previous_run_id": "run-20261010T191142Z-wpforum-base",
+      "mode": "INCREMENTAL",
+      "started_at": "2026-10-10T19:12:13Z",
+      "completed_at": "2026-10-10T19:12:20Z",
+      "status": "PILOT_SCOPE_CONVERGED",
+      "article_count": 60,
+      "new_article_count": 0,
+      "changed_article_count": 0,
+      "run_dir": "incremental_run",
+      "manual_review_status": "VERIFIED",
+      "anomalies": []
+    }
+  },
+  "schema_version": "1",
+  "updated_at": "2026-10-10T19:12:20.358063+00:00"
+}

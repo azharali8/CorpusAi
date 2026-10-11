@@ -1,0 +1,1283 @@
+{
+  "portal_id": "wordpress-support-forum",
+  "run_id": "run-20261010T191142Z-wpforum-base",
+  "schema_version": "1",
+  "captured_at": "2026-10-10T19:12:12.912836+00:00",
+  "archive_pages": {
+    "https://wordpress.org/support/forum/how-to-and-troubleshooting/": {
+      "url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/",
+      "ordered_fingerprint": "cfa22d10be82793f60e430ce9e66f1920b8afe91cfb33fb74800113d13ea6ffd",
+      "unordered_fingerprint": "b5e4c1a28edd27a9aae53749d1844b83cd2c613c72b2f17970ca755ce4480598",
+      "article_urls": [
+        "https://wordpress.org/support/topic/read-this-first-wordpress-7-1",
+        "https://wordpress.org/support/topic/read-this-first-wordpress-master-list",
+        "https://wordpress.org/support/topic/welcome-to-the-how-to-forum",
+        "https://wordpress.org/support/topic/esen-haber-temasi-guncellemesi-sonrasi-reklam-yerlesimi-ve-siyah-serit-sorunu",
+        "https://wordpress.org/support/topic/there-has-been-a-critical-error-on-this-website-467",
+        "https://wordpress.org/support/topic/website-not-open-show-this-msg",
+        "https://wordpress.org/support/topic/extracting-site-content-to-my-local-computer",
+        "https://wordpress.org/support/topic/embedd-twitterx-feed-on-a-wp-site-how-to-achieve-that",
+        "https://wordpress.org/support/topic/wp-admin-and-wp-login-php-redirect-to-homepage-not-admin",
+        "https://wordpress.org/support/topic/site-menu-not-working-on-iphone-chrome-browser",
+        "https://wordpress.org/support/topic/quick-question-about-learning-wordpress-basics",
+        "https://wordpress.org/support/topic/updating-site-5",
+        "https://wordpress.org/support/topic/unwanted-rectangular-popup-appearing-on-blog-posts",
+        "https://wordpress.org/support/topic/%e7%bc%96%e8%be%91%e7%ab%99%e7%82%b9%e9%a1%b5%e9%9d%a2%e7%a9%ba%e7%99%bd",
+        "https://wordpress.org/support/topic/website-is-not-shown-with-the-correct-ratio-and-position-on-mobile",
+        "https://wordpress.org/support/topic/new-wordpress-isnt-working-2",
+        "https://wordpress.org/support/topic/few-pasts-revisions",
+        "https://wordpress.org/support/topic/wordpress-7-1-broke-jqueryui",
+        "https://wordpress.org/support/topic/cannot-edit-5",
+        "https://wordpress.org/support/topic/updating-php-8",
+        "https://wordpress.org/support/topic/wp-cron-events-reported-as-failed-by-site-health-but-they-run-correctly-from-wp",
+        "https://wordpress.org/support/topic/multiple-login-attempts",
+        "https://wordpress.org/support/topic/contact-form-in-hivepress-listing",
+        "https://wordpress.org/support/topic/remove-mod-rewrite-from-media-attachment-url",
+        "https://wordpress.org/support/topic/unable-to-access-website-12",
+        "https://wordpress.org/support/topic/my-websites-name-is-stuck-on-a-template-name",
+        "https://wordpress.org/support/topic/wordpress-cron-reschedule-error-action_scheduler_run_queue-could_not_set",
+        "https://wordpress.org/support/topic/uncached-static-assets-under-wordpress-org-support-return-429-too-many-requests",
+        "https://wordpress.org/support/topic/database-error-435",
+        "https://wordpress.org/support/topic/delay-when-accessing-wordpress-site",
+        "https://wordpress.org/support/topic/search-function-issue-3",
+        "https://wordpress.org/support/topic/error-in-wordpress-7",
+        "https://wordpress.org/support/topic/elementor-causes-the-response-is-not-a-valid-json-response-in-gutenberg"
+      ],
+      "next_page_url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2",
+      "previous_page_url": null,
+      "page_number": 1,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-10T19:11:45.823861+00:00"
+    },
+    "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2": {
+      "url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2",
+      "ordered_fingerprint": "51a977e28e53336a2458155444f3bdb9c013bfb8aa576f8ed2817cd9ce52016e",
+      "unordered_fingerprint": "27b0c017c19831327b217292ae174abebe96615b797744326c65c22fbf14d980",
+      "article_urls": [
+        "https://wordpress.org/support/topic/server-access-from-desktop",
+        "https://wordpress.org/support/topic/move-images-in-gallery-to-wordpress-how",
+        "https://wordpress.org/support/topic/i-cannot-create-a-website",
+        "https://wordpress.org/support/topic/lightbox-images-pinch-zoom-on-mobile",
+        "https://wordpress.org/support/topic/chatbot-in-wordpress",
+        "https://wordpress.org/support/topic/cant-upload-photos-in-media",
+        "https://wordpress.org/support/topic/fatal-error-after-making-order-on-site",
+        "https://wordpress.org/support/topic/err_too_many_redirects-on-wordpress-site-hosted-on-hostinger",
+        "https://wordpress.org/support/topic/fix-my-wordpress-issues",
+        "https://wordpress.org/support/topic/problem-with-plugins-theme-updates-after-upgrading-to-ubuntu-26-04",
+        "https://wordpress.org/support/topic/my-wordpress-site-vidyaguru-in-is-showing-a-critical-error",
+        "https://wordpress.org/support/topic/select-only-phone-orders-in-page-with-orders",
+        "https://wordpress.org/support/topic/after-migrating-from-al2-to-ubuntu-wp-seemingly-cant-write",
+        "https://wordpress.org/support/topic/webshells-uploaded-through-unknown-vulnerability",
+        "https://wordpress.org/support/topic/security-alert-on-website",
+        "https://wordpress.org/support/topic/wordpress-showing-critical-error-on-my-website",
+        "https://wordpress.org/support/topic/google-map-for-development-purposes-only-2",
+        "https://wordpress.org/support/topic/feature-request-1096",
+        "https://wordpress.org/support/topic/products-not-showing-up-in-store-catalog-but-show-up-with-direct-link",
+        "https://wordpress.org/support/topic/simple-task-not-working",
+        "https://wordpress.org/support/topic/google-for-woocommerce-to-version-3-9-4-as-the-currently-installed-version",
+        "https://wordpress.org/support/topic/my-friend-has-lost-access-to-his-account",
+        "https://wordpress.org/support/topic/after-migration-all-posts-and-everything-else-now-request-credentials",
+        "https://wordpress.org/support/topic/mensaje-al-querer-editar-una-pagina-de-mi-sitio-web",
+        "https://wordpress.org/support/topic/no-more-underlined-links",
+        "https://wordpress.org/support/topic/wordpress-sitemap-is-working-but-google-search-console-reports-indexing-issues",
+        "https://wordpress.org/support/topic/blog-post-duplication-issue",
+        "https://wordpress.org/support/topic/email-link-not-working-11",
+        "https://wordpress.org/support/topic/what-wp-affilate-program-uses-these-shortcodes",
+        "https://wordpress.org/support/topic/connexion-a-la-console-impossible"
+      ],
+      "next_page_url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/3",
+      "previous_page_url": "https://wordpress.org/support/forum/how-to-and-troubleshooting/",
+      "page_number": 2,
+      "crawl_status": "COMPLETE",
+      "observed_at": "2026-10-10T19:11:49.343709+00:00"
+    }
+  },
+  "articles": {
+    "https://wordpress.org/support/topic/read-this-first-wordpress-7-1": {
+      "canonical_url": "https://wordpress.org/support/topic/read-this-first-wordpress-7-1",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": "Read this first! WordPress 7.1",
+      "published_at": "2026-08-19T23:36:46+00:00",
+      "author": "Marius L. J.",
+      "content_hash": "835a6621206d68cdcb254212925626969c9b245379d23fe567bbfddf30e1764e",
+      "raw_hash": "835a6621206d68cdcb254212925626969c9b245379d23fe567bbfddf30e1764e",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Read this first! WordPress 7.1 | WordPress.org",
+        "heading": "Read this first! WordPress 7.1",
+        "publication_date": "2026-08-19T23:36:46+00:00",
+        "author": "Marius L. J.",
+        "canonical_url": "https://wordpress.org/support/topic/read-this-first-wordpress-7-1/",
+        "rest_api_url": "https://wordpress.org/support/wp-json/"
+      },
+      "last_captured_at": "2026-10-10T19:11:53Z"
+    },
+    "https://wordpress.org/support/topic/read-this-first-wordpress-master-list": {
+      "canonical_url": "https://wordpress.org/support/topic/read-this-first-wordpress-master-list",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": "Troubleshooting and known issues",
+      "published_at": "2021-03-09T19:57:21+00:00",
+      "author": "Marius L. J.",
+      "content_hash": "13437d00be306594a5d16d26e013c5d7b7902a8c815067fb2165fe4a7d85fbe4",
+      "raw_hash": "13437d00be306594a5d16d26e013c5d7b7902a8c815067fb2165fe4a7d85fbe4",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Troubleshooting and known issues | WordPress.org",
+        "heading": "Troubleshooting and known issues",
+        "publication_date": "2021-03-09T19:57:21+00:00",
+        "author": "Marius L. J.",
+        "canonical_url": "https://wordpress.org/support/topic/read-this-first-wordpress-master-list/",
+        "rest_api_url": "https://wordpress.org/support/wp-json/"
+      },
+      "last_captured_at": "2026-10-10T19:11:57Z"
+    },
+    "https://wordpress.org/support/topic/welcome-to-the-how-to-forum": {
+      "canonical_url": "https://wordpress.org/support/topic/welcome-to-the-how-to-forum",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": "Welcome to the Fixing WordPress forum (AKA forum rules)",
+      "published_at": "2010-04-23T19:13:11+00:00",
+      "author": "mrmist",
+      "content_hash": "eba335ca515270dcb6b44679a451c6bc59014b93190ff9d24770de7825fb68a9",
+      "raw_hash": "eba335ca515270dcb6b44679a451c6bc59014b93190ff9d24770de7825fb68a9",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Welcome to the Fixing WordPress forum (AKA forum rules) | WordPress.org",
+        "heading": "Welcome to the Fixing WordPress forum (AKA forum rules)",
+        "publication_date": "2010-04-23T19:13:11+00:00",
+        "author": "mrmist",
+        "canonical_url": "https://wordpress.org/support/topic/welcome-to-the-how-to-forum/",
+        "rest_api_url": "https://wordpress.org/support/wp-json/"
+      },
+      "last_captured_at": "2026-10-10T19:12:02Z"
+    },
+    "https://wordpress.org/support/topic/esen-haber-temasi-guncellemesi-sonrasi-reklam-yerlesimi-ve-siyah-serit-sorunu": {
+      "canonical_url": "https://wordpress.org/support/topic/esen-haber-temasi-guncellemesi-sonrasi-reklam-yerlesimi-ve-siyah-serit-sorunu",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": "Esen Haber Teması Güncellemesi Sonrası Reklam Yerleşimi ve Siyah Şerit Sorunu",
+      "published_at": "2026-10-10T18:06:29+00:00",
+      "author": "turaninsesi",
+      "content_hash": "0ca1d5e33dee5a8478d3cc44f014934dbf4bf8fff8f2e80288673406cd24b39f",
+      "raw_hash": "0ca1d5e33dee5a8478d3cc44f014934dbf4bf8fff8f2e80288673406cd24b39f",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "Esen Haber Teması Güncellemesi Sonrası Reklam Yerleşimi ve Siyah Şerit Sorunu | WordPress.org",
+        "heading": "Esen Haber Teması Güncellemesi Sonrası Reklam Yerleşimi ve Siyah Şerit Sorunu",
+        "publication_date": "2026-10-10T18:06:29+00:00",
+        "author": "turaninsesi",
+        "canonical_url": "https://wordpress.org/support/topic/esen-haber-temasi-guncellemesi-sonrasi-reklam-yerlesimi-ve-siyah-serit-sorunu/",
+        "rest_api_url": "https://wordpress.org/support/wp-json/"
+      },
+      "last_captured_at": "2026-10-10T19:12:08Z"
+    },
+    "https://wordpress.org/support/topic/there-has-been-a-critical-error-on-this-website-467": {
+      "canonical_url": "https://wordpress.org/support/topic/there-has-been-a-critical-error-on-this-website-467",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": "There has been a critical error on this website.",
+      "published_at": "2026-10-10T14:28:50+00:00",
+      "author": "harisaltafseo",
+      "content_hash": "bfebf4142ee1d145e9bded1c49cd5fa5725d990d6441d7fa071f5fbdb52f9c5f",
+      "raw_hash": "bfebf4142ee1d145e9bded1c49cd5fa5725d990d6441d7fa071f5fbdb52f9c5f",
+      "status": "NEW",
+      "content_capture_status": "CAPTURED",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {
+        "title": "There has been a critical error on this website. | WordPress.org",
+        "heading": "There has been a critical error on this website.",
+        "publication_date": "2026-10-10T14:28:50+00:00",
+        "author": "harisaltafseo",
+        "canonical_url": "https://wordpress.org/support/topic/there-has-been-a-critical-error-on-this-website-467/",
+        "rest_api_url": "https://wordpress.org/support/wp-json/"
+      },
+      "last_captured_at": "2026-10-10T19:12:12Z"
+    },
+    "https://wordpress.org/support/topic/website-not-open-show-this-msg": {
+      "canonical_url": "https://wordpress.org/support/topic/website-not-open-show-this-msg",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/extracting-site-content-to-my-local-computer": {
+      "canonical_url": "https://wordpress.org/support/topic/extracting-site-content-to-my-local-computer",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/embedd-twitterx-feed-on-a-wp-site-how-to-achieve-that": {
+      "canonical_url": "https://wordpress.org/support/topic/embedd-twitterx-feed-on-a-wp-site-how-to-achieve-that",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wp-admin-and-wp-login-php-redirect-to-homepage-not-admin": {
+      "canonical_url": "https://wordpress.org/support/topic/wp-admin-and-wp-login-php-redirect-to-homepage-not-admin",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/site-menu-not-working-on-iphone-chrome-browser": {
+      "canonical_url": "https://wordpress.org/support/topic/site-menu-not-working-on-iphone-chrome-browser",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/quick-question-about-learning-wordpress-basics": {
+      "canonical_url": "https://wordpress.org/support/topic/quick-question-about-learning-wordpress-basics",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/updating-site-5": {
+      "canonical_url": "https://wordpress.org/support/topic/updating-site-5",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/unwanted-rectangular-popup-appearing-on-blog-posts": {
+      "canonical_url": "https://wordpress.org/support/topic/unwanted-rectangular-popup-appearing-on-blog-posts",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/%e7%bc%96%e8%be%91%e7%ab%99%e7%82%b9%e9%a1%b5%e9%9d%a2%e7%a9%ba%e7%99%bd": {
+      "canonical_url": "https://wordpress.org/support/topic/%e7%bc%96%e8%be%91%e7%ab%99%e7%82%b9%e9%a1%b5%e9%9d%a2%e7%a9%ba%e7%99%bd",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/website-is-not-shown-with-the-correct-ratio-and-position-on-mobile": {
+      "canonical_url": "https://wordpress.org/support/topic/website-is-not-shown-with-the-correct-ratio-and-position-on-mobile",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/new-wordpress-isnt-working-2": {
+      "canonical_url": "https://wordpress.org/support/topic/new-wordpress-isnt-working-2",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/few-pasts-revisions": {
+      "canonical_url": "https://wordpress.org/support/topic/few-pasts-revisions",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wordpress-7-1-broke-jqueryui": {
+      "canonical_url": "https://wordpress.org/support/topic/wordpress-7-1-broke-jqueryui",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/cannot-edit-5": {
+      "canonical_url": "https://wordpress.org/support/topic/cannot-edit-5",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/updating-php-8": {
+      "canonical_url": "https://wordpress.org/support/topic/updating-php-8",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wp-cron-events-reported-as-failed-by-site-health-but-they-run-correctly-from-wp": {
+      "canonical_url": "https://wordpress.org/support/topic/wp-cron-events-reported-as-failed-by-site-health-but-they-run-correctly-from-wp",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/multiple-login-attempts": {
+      "canonical_url": "https://wordpress.org/support/topic/multiple-login-attempts",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/contact-form-in-hivepress-listing": {
+      "canonical_url": "https://wordpress.org/support/topic/contact-form-in-hivepress-listing",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/remove-mod-rewrite-from-media-attachment-url": {
+      "canonical_url": "https://wordpress.org/support/topic/remove-mod-rewrite-from-media-attachment-url",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/unable-to-access-website-12": {
+      "canonical_url": "https://wordpress.org/support/topic/unable-to-access-website-12",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/my-websites-name-is-stuck-on-a-template-name": {
+      "canonical_url": "https://wordpress.org/support/topic/my-websites-name-is-stuck-on-a-template-name",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wordpress-cron-reschedule-error-action_scheduler_run_queue-could_not_set": {
+      "canonical_url": "https://wordpress.org/support/topic/wordpress-cron-reschedule-error-action_scheduler_run_queue-could_not_set",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/uncached-static-assets-under-wordpress-org-support-return-429-too-many-requests": {
+      "canonical_url": "https://wordpress.org/support/topic/uncached-static-assets-under-wordpress-org-support-return-429-too-many-requests",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/database-error-435": {
+      "canonical_url": "https://wordpress.org/support/topic/database-error-435",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/delay-when-accessing-wordpress-site": {
+      "canonical_url": "https://wordpress.org/support/topic/delay-when-accessing-wordpress-site",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/search-function-issue-3": {
+      "canonical_url": "https://wordpress.org/support/topic/search-function-issue-3",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/error-in-wordpress-7": {
+      "canonical_url": "https://wordpress.org/support/topic/error-in-wordpress-7",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/elementor-causes-the-response-is-not-a-valid-json-response-in-gutenberg": {
+      "canonical_url": "https://wordpress.org/support/topic/elementor-causes-the-response-is-not-a-valid-json-response-in-gutenberg",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/server-access-from-desktop": {
+      "canonical_url": "https://wordpress.org/support/topic/server-access-from-desktop",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/move-images-in-gallery-to-wordpress-how": {
+      "canonical_url": "https://wordpress.org/support/topic/move-images-in-gallery-to-wordpress-how",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/i-cannot-create-a-website": {
+      "canonical_url": "https://wordpress.org/support/topic/i-cannot-create-a-website",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/lightbox-images-pinch-zoom-on-mobile": {
+      "canonical_url": "https://wordpress.org/support/topic/lightbox-images-pinch-zoom-on-mobile",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/chatbot-in-wordpress": {
+      "canonical_url": "https://wordpress.org/support/topic/chatbot-in-wordpress",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/cant-upload-photos-in-media": {
+      "canonical_url": "https://wordpress.org/support/topic/cant-upload-photos-in-media",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/fatal-error-after-making-order-on-site": {
+      "canonical_url": "https://wordpress.org/support/topic/fatal-error-after-making-order-on-site",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/err_too_many_redirects-on-wordpress-site-hosted-on-hostinger": {
+      "canonical_url": "https://wordpress.org/support/topic/err_too_many_redirects-on-wordpress-site-hosted-on-hostinger",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/fix-my-wordpress-issues": {
+      "canonical_url": "https://wordpress.org/support/topic/fix-my-wordpress-issues",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/problem-with-plugins-theme-updates-after-upgrading-to-ubuntu-26-04": {
+      "canonical_url": "https://wordpress.org/support/topic/problem-with-plugins-theme-updates-after-upgrading-to-ubuntu-26-04",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/my-wordpress-site-vidyaguru-in-is-showing-a-critical-error": {
+      "canonical_url": "https://wordpress.org/support/topic/my-wordpress-site-vidyaguru-in-is-showing-a-critical-error",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/select-only-phone-orders-in-page-with-orders": {
+      "canonical_url": "https://wordpress.org/support/topic/select-only-phone-orders-in-page-with-orders",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/after-migrating-from-al2-to-ubuntu-wp-seemingly-cant-write": {
+      "canonical_url": "https://wordpress.org/support/topic/after-migrating-from-al2-to-ubuntu-wp-seemingly-cant-write",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/webshells-uploaded-through-unknown-vulnerability": {
+      "canonical_url": "https://wordpress.org/support/topic/webshells-uploaded-through-unknown-vulnerability",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/security-alert-on-website": {
+      "canonical_url": "https://wordpress.org/support/topic/security-alert-on-website",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wordpress-showing-critical-error-on-my-website": {
+      "canonical_url": "https://wordpress.org/support/topic/wordpress-showing-critical-error-on-my-website",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/google-map-for-development-purposes-only-2": {
+      "canonical_url": "https://wordpress.org/support/topic/google-map-for-development-purposes-only-2",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/feature-request-1096": {
+      "canonical_url": "https://wordpress.org/support/topic/feature-request-1096",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/products-not-showing-up-in-store-catalog-but-show-up-with-direct-link": {
+      "canonical_url": "https://wordpress.org/support/topic/products-not-showing-up-in-store-catalog-but-show-up-with-direct-link",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/simple-task-not-working": {
+      "canonical_url": "https://wordpress.org/support/topic/simple-task-not-working",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/google-for-woocommerce-to-version-3-9-4-as-the-currently-installed-version": {
+      "canonical_url": "https://wordpress.org/support/topic/google-for-woocommerce-to-version-3-9-4-as-the-currently-installed-version",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/my-friend-has-lost-access-to-his-account": {
+      "canonical_url": "https://wordpress.org/support/topic/my-friend-has-lost-access-to-his-account",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/after-migration-all-posts-and-everything-else-now-request-credentials": {
+      "canonical_url": "https://wordpress.org/support/topic/after-migration-all-posts-and-everything-else-now-request-credentials",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/mensaje-al-querer-editar-una-pagina-de-mi-sitio-web": {
+      "canonical_url": "https://wordpress.org/support/topic/mensaje-al-querer-editar-una-pagina-de-mi-sitio-web",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/no-more-underlined-links": {
+      "canonical_url": "https://wordpress.org/support/topic/no-more-underlined-links",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/wordpress-sitemap-is-working-but-google-search-console-reports-indexing-issues": {
+      "canonical_url": "https://wordpress.org/support/topic/wordpress-sitemap-is-working-but-google-search-console-reports-indexing-issues",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    },
+    "https://wordpress.org/support/topic/blog-post-duplication-issue": {
+      "canonical_url": "https://wordpress.org/support/topic/blog-post-duplication-issue",
+      "first_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "last_seen_run_id": "run-20261010T191142Z-wpforum-base",
+      "title": null,
+      "published_at": null,
+      "author": null,
+      "content_hash": null,
+      "raw_hash": null,
+      "status": "NEW",
+      "content_capture_status": "NOT_CAPTURED_IN_PILOT",
+      "seen_on_pages": [
+        "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2"
+      ],
+      "representation_type": "HTML",
+      "metadata": {},
+      "last_captured_at": null
+    }
+  },
+  "archive_order": [
+    "https://wordpress.org/support/topic/read-this-first-wordpress-7-1",
+    "https://wordpress.org/support/topic/read-this-first-wordpress-master-list",
+    "https://wordpress.org/support/topic/welcome-to-the-how-to-forum",
+    "https://wordpress.org/support/topic/esen-haber-temasi-guncellemesi-sonrasi-reklam-yerlesimi-ve-siyah-serit-sorunu",
+    "https://wordpress.org/support/topic/there-has-been-a-critical-error-on-this-website-467",
+    "https://wordpress.org/support/topic/website-not-open-show-this-msg",
+    "https://wordpress.org/support/topic/extracting-site-content-to-my-local-computer",
+    "https://wordpress.org/support/topic/embedd-twitterx-feed-on-a-wp-site-how-to-achieve-that",
+    "https://wordpress.org/support/topic/wp-admin-and-wp-login-php-redirect-to-homepage-not-admin",
+    "https://wordpress.org/support/topic/site-menu-not-working-on-iphone-chrome-browser",
+    "https://wordpress.org/support/topic/quick-question-about-learning-wordpress-basics",
+    "https://wordpress.org/support/topic/updating-site-5",
+    "https://wordpress.org/support/topic/unwanted-rectangular-popup-appearing-on-blog-posts",
+    "https://wordpress.org/support/topic/%e7%bc%96%e8%be%91%e7%ab%99%e7%82%b9%e9%a1%b5%e9%9d%a2%e7%a9%ba%e7%99%bd",
+    "https://wordpress.org/support/topic/website-is-not-shown-with-the-correct-ratio-and-position-on-mobile",
+    "https://wordpress.org/support/topic/new-wordpress-isnt-working-2",
+    "https://wordpress.org/support/topic/few-pasts-revisions",
+    "https://wordpress.org/support/topic/wordpress-7-1-broke-jqueryui",
+    "https://wordpress.org/support/topic/cannot-edit-5",
+    "https://wordpress.org/support/topic/updating-php-8",
+    "https://wordpress.org/support/topic/wp-cron-events-reported-as-failed-by-site-health-but-they-run-correctly-from-wp",
+    "https://wordpress.org/support/topic/multiple-login-attempts",
+    "https://wordpress.org/support/topic/contact-form-in-hivepress-listing",
+    "https://wordpress.org/support/topic/remove-mod-rewrite-from-media-attachment-url",
+    "https://wordpress.org/support/topic/unable-to-access-website-12",
+    "https://wordpress.org/support/topic/my-websites-name-is-stuck-on-a-template-name",
+    "https://wordpress.org/support/topic/wordpress-cron-reschedule-error-action_scheduler_run_queue-could_not_set",
+    "https://wordpress.org/support/topic/uncached-static-assets-under-wordpress-org-support-return-429-too-many-requests",
+    "https://wordpress.org/support/topic/database-error-435",
+    "https://wordpress.org/support/topic/delay-when-accessing-wordpress-site",
+    "https://wordpress.org/support/topic/search-function-issue-3",
+    "https://wordpress.org/support/topic/error-in-wordpress-7",
+    "https://wordpress.org/support/topic/elementor-causes-the-response-is-not-a-valid-json-response-in-gutenberg",
+    "https://wordpress.org/support/topic/server-access-from-desktop",
+    "https://wordpress.org/support/topic/move-images-in-gallery-to-wordpress-how",
+    "https://wordpress.org/support/topic/i-cannot-create-a-website",
+    "https://wordpress.org/support/topic/lightbox-images-pinch-zoom-on-mobile",
+    "https://wordpress.org/support/topic/chatbot-in-wordpress",
+    "https://wordpress.org/support/topic/cant-upload-photos-in-media",
+    "https://wordpress.org/support/topic/fatal-error-after-making-order-on-site",
+    "https://wordpress.org/support/topic/err_too_many_redirects-on-wordpress-site-hosted-on-hostinger",
+    "https://wordpress.org/support/topic/fix-my-wordpress-issues",
+    "https://wordpress.org/support/topic/problem-with-plugins-theme-updates-after-upgrading-to-ubuntu-26-04",
+    "https://wordpress.org/support/topic/my-wordpress-site-vidyaguru-in-is-showing-a-critical-error",
+    "https://wordpress.org/support/topic/select-only-phone-orders-in-page-with-orders",
+    "https://wordpress.org/support/topic/after-migrating-from-al2-to-ubuntu-wp-seemingly-cant-write",
+    "https://wordpress.org/support/topic/webshells-uploaded-through-unknown-vulnerability",
+    "https://wordpress.org/support/topic/security-alert-on-website",
+    "https://wordpress.org/support/topic/wordpress-showing-critical-error-on-my-website",
+    "https://wordpress.org/support/topic/google-map-for-development-purposes-only-2",
+    "https://wordpress.org/support/topic/feature-request-1096",
+    "https://wordpress.org/support/topic/products-not-showing-up-in-store-catalog-but-show-up-with-direct-link",
+    "https://wordpress.org/support/topic/simple-task-not-working",
+    "https://wordpress.org/support/topic/google-for-woocommerce-to-version-3-9-4-as-the-currently-installed-version",
+    "https://wordpress.org/support/topic/my-friend-has-lost-access-to-his-account",
+    "https://wordpress.org/support/topic/after-migration-all-posts-and-everything-else-now-request-credentials",
+    "https://wordpress.org/support/topic/mensaje-al-querer-editar-una-pagina-de-mi-sitio-web",
+    "https://wordpress.org/support/topic/no-more-underlined-links",
+    "https://wordpress.org/support/topic/wordpress-sitemap-is-working-but-google-search-console-reports-indexing-issues",
+    "https://wordpress.org/support/topic/blog-post-duplication-issue"
+  ],
+  "head_fingerprint": "b5e4c1a28edd27a9aae53749d1844b83cd2c613c72b2f17970ca755ce4480598",
+  "boundary_fingerprints": {
+    "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2": "27b0c017c19831327b217292ae174abebe96615b797744326c65c22fbf14d980"
+  },
+  "last_complete_archive_page": "https://wordpress.org/support/forum/how-to-and-troubleshooting/page/2",
+  "last_potentially_incomplete_page": null,
+  "total_articles_count": 60,
+  "total_archive_pages_count": 2,
+  "source_manifest": null
+}

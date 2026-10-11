@@ -1,0 +1,21 @@
+{
+  "run_id": "run-20261007T193716Z-wpnews-multi",
+  "mode": "BASELINE",
+  "target_portal": "wordpress-news",
+  "seed_url": "https://wordpress.org/news/all-posts/",
+  "archive_pages_fetched": 5,
+  "articles_discovered": 50,
+  "articles_content_captured": 10,
+  "articles_not_captured_in_pilot": 40,
+  "exact_requests_made": 15,
+  "convergence_status": "MULTIPAGE_PILOT_COMPLETE",
+  "scope_completion": "MULTIPAGE_PILOT_COMPLETE",
+  "full_portal_coverage": false,
+  "boundary_status": "BOUNDARY_RECONCILED",
+  "head_changed": false,
+  "manual_review_required": false,
+  "manual_review_status": "VERIFIED",
+  "manual_multipage_review_verified": true,
+  "started_at": "2026-10-07T19:37:16Z",
+  "completed_at": "2026-10-07T19:38:15Z"
+}
