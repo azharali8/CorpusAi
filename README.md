@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-221%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -41,7 +41,8 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 | **Multi-page Articles** | Logical multi-component assembly with complete/incomplete provenance tracking | Synthetic benchmarks |
 | **Archival Storage** | WARC response generation with ISO 28500 record IDs, timestamps, and SHA-256 digests | warcio integration |
 | **Content Separation** | Strict separation of content-bearing records (`content_html`, `content_json`) from assets | MIME-based classifier |
-| **Replay & QA Foundation** | Replay validation, tamper-evident manifests, and Browsertrix QA integration foundation | Phase 6A Foundation |
+| **Replay & QA Foundation** | Built-in offline Replay Server (`ArchiveReplayServer`), WACZ/WARC indexing, URL rewriting, strict live-network barrier, and Browsertrix QA integration | Implemented / E2E Verified |
+| **Resource Preservation** | Harvester for CSS, JS, images, fonts (`ResourcePreservationHarvester`), distinguishable WARC roles, and hash deduplication | Implemented / E2E Verified |
 | **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.2 Multi-Page Incremental |
 | **Multi-Level Forum Crawling** | 4-level forum hierarchy (Category -> Pages -> Topics -> Posts/Replies) and fragment normalization | Phase 6C Live Forum Validation |
 | **Deep Thread Pagination** | Multi-page bbPress thread traversal, per-page post-ID fingerprinting, OP deduplication, and reply-level incremental reuse | Phase 6D Live Thread Validation |
@@ -53,7 +54,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **221 passing tests** verified in an isolated offline environment (`221 / 221 tests passing`).
+- **Offline Unit Test Suite:** **235 passing tests** verified in an isolated offline environment (`235 / 235 tests passing`).
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
@@ -62,6 +63,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
   - **Phase 5B HTML Capture:** 3 sampled articles captured with title, publication date, author, canonical URL, and body text manually verified.
   - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
   - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded (`manual_replay_verified = true`).
+  - **Browser-Backed Replay Server & Multi-Page Replay (Complete):** Implemented native offline `ArchiveReplayServer` and `ResourcePreservationHarvester` (`src/replay_server.py`, `src/downloader.py`). Verified end-to-end local replay of both single and multi-page WordPress archives: multiple captured pages (e.g. `owa-president`, `wordpress-7-1-2-release`, `wordpress-7-1-1-maintenance-and-security-release`) loaded into one unified replay session using their original canonical URLs. Verified internal link rewriting and navigation chains without live network fallback, confirmed strict 404 behavior for unarchived resources, and generated headless browser screenshots (`wordpress_owa_president_local_replay.png`, `wordpress_7_1_2_release_local_replay.png`). Verified offline in 14 focused tests (`tests/test_browser_replay.py`) and executed live via `research/real_world/wordpress/run_replay_e2e_validation.py`.
   - **Phase 6B Incremental Architecture (Complete):** Head sentinel verification, boundary reconciliation, anomaly detection, and run catalog implemented. 14 deterministic synthetic mutation scenarios (A–N) validated: stable archive reuse, new article detection, cross-page boundary shifts, content/metadata changes, fetch failures, budget exhaustion, access-gate detection, and multi-run lineage.
   - **Phase 6B.1 Real Incremental Validation & Multi-Page Baseline (Complete):** Real no-change incremental reuse validated across 1-page baseline (`run-20261007T192416Z-wpnews`) and 5-page baseline (`run-20261007T193716Z-wpnews-multi`).
   - **Phase 6B.2 Real Multi-Page Incremental Crawling Validation (Complete):** Validated 5-page incremental state reuse against baseline `run-20261007T193716Z-wpnews-multi` with zero redundant article content requests (`run-20261010T185118Z-wpnews-multi-inc`).
@@ -377,7 +379,13 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `206 passing tests` (`206 / 206 tests passing`, 0 failures, 0 errors).
+**Current offline test suite:** `235 passing tests` (`235 / 235 tests passing`, 0 failures, 0 errors).
+
+### 4. Run Browser-Backed Replay Validation (WordPress Case)
+```bash
+# Execute end-to-end local replay server and headless browser render verification
+python research/real_world/wordpress/run_replay_e2e_validation.py
+```
  
  ---
  

@@ -1,0 +1,35 @@
+{
+  "validation_target": "https://wordpress.org/news/2026/09/owa-president/",
+  "archive_source": "C:\\Users\\evo\\CorpusAI\\results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+  "browser_binary": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
+  "timestamp": "2026-10-14T21:02:09Z",
+  "status": "REPLAY_VERIFIED_SUCCESS",
+  "http_verification": {
+    "main_page_status": 200,
+    "banner_injected": true,
+    "title_verified": true
+  },
+  "live_network_barrier_verified": true,
+  "headless_browser_render": {
+    "browser_executable": "msedge.exe",
+    "rendered_dom_length": 174746,
+    "screenshot_path": "results\\wordpress_validation\\replay_verification\\wordpress_owa_president_local_replay.png",
+    "screenshot_size_bytes": 104155
+  },
+  "session_metrics": {
+    "total_requests": 27,
+    "resolved_resources": 23,
+    "missing_resources": 4
+  },
+  "multipage_replay": {
+    "supported": true,
+    "total_pages_in_session": 3,
+    "pages": [
+      "https://wordpress.org/news/2026/09/owa-president/",
+      "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+      "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/"
+    ],
+    "second_page_rendered": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
+    "second_page_screenshot": "results\\wordpress_validation\\replay_verification\\wordpress_7_1_2_release_local_replay.png"
+  }
+}
