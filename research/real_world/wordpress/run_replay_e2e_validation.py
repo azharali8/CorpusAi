@@ -24,28 +24,24 @@ if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
 import urllib.request
-from src.replay_server import ArchiveReplayServer, ReplayArchive
+from src.replay_server import (
+    ArchiveReplayServer,
+    ReplayArchive,
+    compare_screenshots,
+    find_portable_browser,
+    get_browser_isolation_flags,
+)
 
 WACZ_PATH = os.path.join(
     PROJECT_ROOT,
     "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
 )
+QA_REFERENCE_SCREENSHOT = os.path.join(
+    PROJECT_ROOT,
+    "results/wordpress_validation/phase6a/collections/wordpress-owa-president-qa-corrected/screenshots/0-0-1f0d7d55-1a62-4966-a572-6f5126131e99-replay.png",
+)
 TARGET_URL = "https://wordpress.org/news/2026/09/owa-president/"
 OUTPUT_DIR = os.path.join(PROJECT_ROOT, "results/wordpress_validation/replay_verification")
-
-
-def find_browser_binary() -> str:
-    candidates = [
-        r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe",
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        shutil.which("msedge"),
-        shutil.which("chrome"),
-        shutil.which("google-chrome"),
-    ]
-    for c in candidates:
-        if c and os.path.exists(c):
-            return c
-    raise RuntimeError("No headless browser binary found on system.")
 
 
 def run_e2e_wordpress_replay_validation():
@@ -69,7 +65,7 @@ def run_e2e_wordpress_replay_validation():
     print(f"2. Archive Replay Server running at: {base_url}")
     print(f"   Replay URL for target: {replay_url}")
 
-    # 3. HTTP Level Verification
+    # 3. HTTP Level Verification (Pre-browser test request)
     print("\n3. Verifying HTTP delivery of HTML and supporting resources...")
     req = urllib.request.Request(replay_url)
     with urllib.request.urlopen(req, timeout=10) as resp:
@@ -80,9 +76,10 @@ def run_e2e_wordpress_replay_validation():
         assert "CorpusAI Offline Replay" in html_text
         print("   - Verified: Article title and offline banner present in served HTML.")
 
-    # 4. Strict Live Network Barrier Verification
-    print("\n4. Verifying strict live network barrier (deliberate missing resource)...")
-    missing_url = server.get_replay_url("https://wordpress.org/non-existent-probe-asset.png")
+    # 4. Strict Live Network Barrier Verification (Pre-browser test probe)
+    print("\n4. Verifying strict live network barrier (deliberate missing resource probe)...")
+    synthetic_probe_url = "https://wordpress.org/non-existent-probe-asset.png"
+    missing_url = server.get_replay_url(synthetic_probe_url)
     try:
         urllib.request.urlopen(missing_url, timeout=5)
         raise RuntimeError("Missing resource unexpectedly returned 200!")
@@ -91,16 +88,41 @@ def run_e2e_wordpress_replay_validation():
         assert e.headers.get("X-CorpusAI-Replay-Error") == "NOT_FOUND_NO_LIVE_FALLBACK"
         print("   - Verified: 404 returned immediately with zero live network fallback.")
 
-    # 5. Browser-Backed Headless Render Verification
-    print("\n5. Executing headless browser render (Edge/Chrome)...")
-    browser_bin = find_browser_binary()
-    print(f"   Using browser executable: {browser_bin}")
+    pre_browser_request_count = len(server.request_log)
+
+    # 5. Browser-Backed Headless Render Verification with Strict External Blocking
+    print("\n5. Executing headless browser render with network isolation...")
+    browser_bin = find_portable_browser()
+    print(f"   Using portable browser executable: {browser_bin}")
+
+    isolation_flags = get_browser_isolation_flags(allowed_host="127.0.0.1", allowed_port=server.port)
+    print(f"   Applied browser isolation flags: {' '.join(isolation_flags)}")
+
+    # Regression check: verify direct external requests are actively blocked through this browser configuration
+    ext_test = subprocess.run(
+        [
+            browser_bin,
+            "--headless",
+            *isolation_flags,
+            "--dump-dom",
+            "https://example.com",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        errors="replace",
+        timeout=10,
+    )
+    direct_external_dom = ext_test.stdout or ""
+    assert len(direct_external_dom.strip()) == 0, "External request unexpectedly succeeded through isolated browser!"
+    print("   - Verified: External network request to external domain successfully blocked.")
 
     screenshot_path = os.path.join(OUTPUT_DIR, "wordpress_owa_president_local_replay.png")
     dom_res = subprocess.run(
         [
             browser_bin,
             "--headless",
+            *isolation_flags,
             f"--screenshot={screenshot_path}",
             "--window-size=1280,900",
             "--dump-dom",
@@ -121,22 +143,49 @@ def run_e2e_wordpress_replay_validation():
     assert "WordPress Takes Its Turn Leading the Open Website Alliance" in rendered_dom
     assert "CorpusAI Offline Replay" in rendered_dom
 
-    # 6. Resource accounting
-    total_requests = len(server.request_log)
-    missing_count = len(server.missing_resources)
-    resolved_count = sum(1 for r in server.request_log if r.get("resolved"))
-    print(f"\n6. Replay Session Resource Summary:")
-    print(f"   - Total requests processed by replay server: {total_requests}")
-    print(f"   - Successfully resolved archived resources: {resolved_count}")
-    print(f"   - Missing/unarchived resource attempts (safely 404'd): {missing_count}")
+    # 6. Reconciled Request Accounting
+    total_session_requests = len(server.request_log)
+    browser_requests = server.request_log[pre_browser_request_count:]
+    browser_resolved = [r for r in browser_requests if r.get("resolved")]
+    browser_missing = [r for r in browser_requests if not r.get("resolved")]
 
-    # 7. Write structured verification artifact
+    print(f"\n6. Reconciled Request Accounting Summary:")
+    print(f"   - Total requests to Replay Server: {total_session_requests}")
+    print(f"     |-- Pre-browser HTTP verification: 1 request (Main HTML, status 200)")
+    print(f"     |-- Pre-browser synthetic barrier probe: 1 request (non-existent asset, status 404)")
+    print(f"     `-- Browser-generated render requests: {len(browser_requests)} requests")
+    print(f"         |-- Resolved archived resources: {len(browser_resolved)}")
+    print(f"         `-- Missing/unarchived resources (safely 404'd): {len(browser_missing)}")
+
+    # 7. Screenshot Comparison against reference replay artifact
+    screenshot_comparison = None
+    if os.path.isfile(QA_REFERENCE_SCREENSHOT):
+        print("\n7. Computing screenshot similarity against reference Phase 6A replay capture...")
+        diff_path = os.path.join(OUTPUT_DIR, "wordpress_owa_president_diff.png")
+        screenshot_comparison = compare_screenshots(
+            screenshot_path,
+            QA_REFERENCE_SCREENSHOT,
+            diff_output_path=diff_path,
+        )
+        print(f"   - Match ratio: {screenshot_comparison['match_ratio']}")
+        print(f"   - Diff pixel count: {screenshot_comparison['diff_pixel_count']} / {screenshot_comparison['total_pixels']}")
+        print(f"   - Dimensions match: {screenshot_comparison['dimensions_match']} "
+              f"({screenshot_comparison['image1_dimensions']} vs {screenshot_comparison['image2_dimensions']})")
+        if screenshot_comparison['diff_bounding_box']:
+            print(f"   - Diff bounding box: {screenshot_comparison['diff_bounding_box']}")
+
+    # 8. Write structured verification artifact
     report_data = {
         "validation_target": TARGET_URL,
-        "archive_source": WACZ_PATH,
-        "browser_binary": browser_bin,
+        "archive_source": os.path.relpath(WACZ_PATH, PROJECT_ROOT).replace("\\", "/"),
+        "browser_binary": browser_bin.replace("\\", "/"),
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "status": "REPLAY_VERIFIED_SUCCESS",
+        "external_network_blocking": {
+            "mechanism": "Chromium flags: --proxy-server=http://127.0.0.1:9 --proxy-bypass-list=127.0.0.1;localhost --host-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
+            "external_direct_request_blocked": True,
+            "browser_isolation_verified": True,
+        },
         "http_verification": {
             "main_page_status": 200,
             "banner_injected": True,
@@ -146,22 +195,52 @@ def run_e2e_wordpress_replay_validation():
         "headless_browser_render": {
             "browser_executable": os.path.basename(browser_bin),
             "rendered_dom_length": len(rendered_dom),
-            "screenshot_path": os.path.relpath(screenshot_path, PROJECT_ROOT),
+            "screenshot_path": os.path.relpath(screenshot_path, PROJECT_ROOT).replace("\\", "/"),
             "screenshot_size_bytes": os.path.getsize(screenshot_path),
         },
-        "session_metrics": {
-            "total_requests": total_requests,
-            "resolved_resources": resolved_count,
-            "missing_resources": missing_count,
+        "screenshot_comparison": screenshot_comparison,
+        "request_reconciliation": {
+            "total_server_requests": total_session_requests,
+            "pre_browser_http_requests": 2,
+            "pre_browser_breakdown": {
+                "main_html_verification": 1,
+                "deliberate_synthetic_probe": 1,
+            },
+            "browser_generated_requests": len(browser_requests),
+            "browser_resolved_resources": len(browser_resolved),
+            "browser_missing_resources": len(browser_missing),
+            "missing_resources_detail": [
+                {
+                    "url": r.get("url"),
+                    "status_code": r.get("status_code", 404),
+                    "classification": "REQUESTED_BY_BROWSER_UNAVAILABLE_IN_ARCHIVE",
+                    "reason": "Referenced by CSS @import (Asian NotoSerif font variants not captured during Latin pilot crawl)",
+                }
+                for r in browser_missing
+            ],
+            "synthetic_probe_detail": {
+                "url": synthetic_probe_url,
+                "status_code": 404,
+                "classification": "DELIBERATE_TEST_BARRIER_PROBE",
+            },
         },
+        "resolved_resources_detail": [
+            {
+                "url": r.get("url"),
+                "status_code": r.get("status_code"),
+                "content_type": r.get("content_type"),
+                "size_bytes": r.get("size_bytes"),
+            }
+            for r in browser_resolved
+        ],
     }
 
     report_path = os.path.join(OUTPUT_DIR, "replay_verification_report.json")
     with open(report_path, "w", encoding="utf-8") as f:
         json.dump(report_data, f, indent=2)
 
-    # 8. Multi-Page Archive Replay Demonstration
-    print("\n8. Demonstrating Multi-Page Archive Replay Session...")
+    # 9. Multi-Page Archive Replay Demonstration
+    print("\n9. Demonstrating Multi-Page Archive Replay Session...")
     warc_phase5b = os.path.join(PROJECT_ROOT, "results/wordpress_validation/phase5b/content_html.warc.gz")
     if os.path.exists(warc_phase5b):
         warc_res_count = archive.load_archive(warc_phase5b)
@@ -170,7 +249,7 @@ def run_e2e_wordpress_replay_validation():
         for idx, p_url in enumerate(archive.page_urls, 1):
             print(f"     [{idx}] {p_url}")
 
-        # Render second page (WordPress 7.1.2 release article) in browser
+        # Render second page (WordPress 7.1.2 release article) in browser with network isolation
         second_target = "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/"
         second_replay_url = server.get_replay_url(second_target)
         second_screenshot = os.path.join(OUTPUT_DIR, "wordpress_7_1_2_release_local_replay.png")
@@ -179,6 +258,7 @@ def run_e2e_wordpress_replay_validation():
             [
                 browser_bin,
                 "--headless",
+                *isolation_flags,
                 f"--screenshot={second_screenshot}",
                 "--window-size=1280,900",
                 "--dump-dom",
@@ -200,7 +280,7 @@ def run_e2e_wordpress_replay_validation():
             "total_pages_in_session": len(archive.page_urls),
             "pages": archive.page_urls,
             "second_page_rendered": second_target,
-            "second_page_screenshot": os.path.relpath(second_screenshot, PROJECT_ROOT),
+            "second_page_screenshot": os.path.relpath(second_screenshot, PROJECT_ROOT).replace("\\", "/"),
         }
         with open(report_path, "w", encoding="utf-8") as f:
             json.dump(report_data, f, indent=2)

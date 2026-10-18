@@ -93,6 +93,27 @@ class ResourcePreservationHarvester:
                     "resource_type": resource_type,
                 })
                 return res
+        except urllib.error.HTTPError as e:
+            duration = round(time.time() - t0, 3)
+            res = DownloadedResource(
+                url=url,
+                status_code=e.code,
+                content_type=e.headers.get("Content-Type", "text/plain") if e.headers else "text/plain",
+                payload=e.read() if hasattr(e, "read") else b"",
+                sha256="",
+                resource_type=resource_type,
+                fetch_duration=duration,
+                error=str(e),
+            )
+            self.downloaded_resources[url] = res
+            self.request_log.append({
+                "url": url,
+                "status_code": e.code,
+                "error": str(e),
+                "duration_seconds": duration,
+                "resource_type": resource_type,
+            })
+            return res
         except Exception as e:
             duration = round(time.time() - t0, 3)
             res = DownloadedResource(

@@ -1,9 +1,14 @@
 {
   "validation_target": "https://wordpress.org/news/2026/09/owa-president/",
-  "archive_source": "C:\\Users\\evo\\CorpusAI\\results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
-  "browser_binary": "C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe",
-  "timestamp": "2026-10-14T21:02:09Z",
+  "archive_source": "results/wordpress_validation/phase6a/browsertrix/collections/wordpress-owa-president/wordpress-owa-president.wacz",
+  "browser_binary": "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "timestamp": "2026-10-18T14:21:20Z",
   "status": "REPLAY_VERIFIED_SUCCESS",
+  "external_network_blocking": {
+    "mechanism": "Chromium flags: --proxy-server=http://127.0.0.1:9 --proxy-bypass-list=127.0.0.1;localhost --host-rules=MAP * 127.0.0.1:9, EXCLUDE 127.0.0.1, EXCLUDE localhost",
+    "external_direct_request_blocked": true,
+    "browser_isolation_verified": true
+  },
   "http_verification": {
     "main_page_status": 200,
     "banner_injected": true,
@@ -11,16 +16,201 @@
   },
   "live_network_barrier_verified": true,
   "headless_browser_render": {
-    "browser_executable": "msedge.exe",
-    "rendered_dom_length": 174746,
-    "screenshot_path": "results\\wordpress_validation\\replay_verification\\wordpress_owa_president_local_replay.png",
+    "browser_executable": "chrome.exe",
+    "rendered_dom_length": 174745,
+    "screenshot_path": "results/wordpress_validation/replay_verification/wordpress_owa_president_local_replay.png",
     "screenshot_size_bytes": 104155
   },
-  "session_metrics": {
-    "total_requests": 27,
-    "resolved_resources": 23,
-    "missing_resources": 4
+  "screenshot_comparison": {
+    "match_ratio": 0.741492,
+    "total_pixels": 2073600,
+    "diff_pixel_count": 536042,
+    "dimensions_match": false,
+    "image1_dimensions": [
+      1280,
+      900
+    ],
+    "image2_dimensions": [
+      1920,
+      1080
+    ],
+    "diff_bounding_box": [
+      0,
+      0,
+      1920,
+      1080
+    ]
   },
+  "request_reconciliation": {
+    "total_server_requests": 27,
+    "pre_browser_http_requests": 2,
+    "pre_browser_breakdown": {
+      "main_html_verification": 1,
+      "deliberate_synthetic_probe": 1
+    },
+    "browser_generated_requests": 25,
+    "browser_resolved_resources": 22,
+    "browser_missing_resources": 3,
+    "missing_resources_detail": [
+      {
+        "url": "https://wordpress.org/NotoSerif/NotoSerifJP/style.css",
+        "status_code": 404,
+        "classification": "REQUESTED_BY_BROWSER_UNAVAILABLE_IN_ARCHIVE",
+        "reason": "Referenced by CSS @import (Asian NotoSerif font variants not captured during Latin pilot crawl)"
+      },
+      {
+        "url": "https://wordpress.org/NotoSerif/NotoSerifKR/style.css",
+        "status_code": 404,
+        "classification": "REQUESTED_BY_BROWSER_UNAVAILABLE_IN_ARCHIVE",
+        "reason": "Referenced by CSS @import (Asian NotoSerif font variants not captured during Latin pilot crawl)"
+      },
+      {
+        "url": "https://wordpress.org/NotoSerif/NotoSerifSC/style.css",
+        "status_code": 404,
+        "classification": "REQUESTED_BY_BROWSER_UNAVAILABLE_IN_ARCHIVE",
+        "reason": "Referenced by CSS @import (Asian NotoSerif font variants not captured during Latin pilot crawl)"
+      }
+    ],
+    "synthetic_probe_detail": {
+      "url": "https://wordpress.org/non-existent-probe-asset.png",
+      "status_code": 404,
+      "classification": "DELIBERATE_TEST_BARRIER_PROBE"
+    }
+  },
+  "resolved_resources_detail": [
+    {
+      "url": "https://wordpress.org/news/2026/09/owa-president/",
+      "status_code": 200,
+      "content_type": "text/html; charset=UTF-8",
+      "size_bytes": 167537
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-latin.woff2",
+      "status_code": 200,
+      "content_type": "application/font-woff2",
+      "size_bytes": 77524
+    },
+    {
+      "url": "https://wordpress.org/news/wp-includes/blocks/navigation/style.min.css?ver=7.2-alpha-64163",
+      "status_code": 200,
+      "content_type": "text/css",
+      "size_bytes": 20776
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/style.css?ver=c98b5143585c3e9f06b27f6a917b65c84643cefc",
+      "status_code": 200,
+      "content_type": "text/css",
+      "size_bytes": 15421
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/themes/wporg-news-2021/style.css?ver=1791211150",
+      "status_code": 200,
+      "content_type": "text/css",
+      "size_bytes": 125859
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/style.css?ver=1781190415",
+      "status_code": 200,
+      "content_type": "text/css",
+      "size_bytes": 34703
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/build/style.css?ver=1791211855",
+      "status_code": 200,
+      "content_type": "text/css",
+      "size_bytes": 47445
+    },
+    {
+      "url": "https://i0.wp.com/wordpress.org/news/files/2026/09/image-3.png?resize=1024%2C576&ssl=1",
+      "status_code": 200,
+      "content_type": "image/webp",
+      "size_bytes": 47204
+    },
+    {
+      "url": "https://wordpress.org/news/wp-includes/js/dist/dom-ready.min.js?ver=3fe927cab37bf38d6a23",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 881
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/js/view.js?ver=1781190414",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 8505
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/local-navigation-bar/build/view.js?ver=2ae6cba4cf35f434c642",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 1857
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?ver=3ec7d5d164d8432df1f2",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 1082
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-buttons/view.js?ver=5d0782a76cacc2500a39",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 1975
+    },
+    {
+      "url": "https://wordpress.org/news/wp-includes/js/dist/script-modules/interactivity/index.min.js?ver=b0929e0bd08daccaa778",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 40102
+    },
+    {
+      "url": "https://wordpress.org/news/wp-includes/js/dist/script-modules/block-library/navigation/view.min.js?ver=1bf28ded04f9f188bdcb-20240308",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 3033
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/plugins/jetpack/_inc/blocks/sharing-button/view.js?minify=false&ver=16.2",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 1082
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/time/build/view.js?ver=385bfe9134bf98c52dda",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 1098
+    },
+    {
+      "url": "https://stats.wp.com/e-202641.js",
+      "status_code": 200,
+      "content_type": "application/javascript",
+      "size_bytes": 3812
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/blocks/global-header-footer/images/search.svg?ver=96c7098",
+      "status_code": 200,
+      "content_type": "image/svg+xml",
+      "size_bytes": 392
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/Inter/Inter-arrows.woff2",
+      "status_code": 200,
+      "content_type": "application/font-woff2",
+      "size_bytes": 2356
+    },
+    {
+      "url": "https://wordpress.org/news/wp-content/mu-plugins/pub-sync/global-fonts/EB-Garamond/EBGaramond-latin.woff2",
+      "status_code": 200,
+      "content_type": "application/font-woff2",
+      "size_bytes": 110724
+    },
+    {
+      "url": "https://s.w.org/favicon.ico?2",
+      "status_code": 200,
+      "content_type": "image/x-icon",
+      "size_bytes": 4286
+    }
+  ],
   "multipage_replay": {
     "supported": true,
     "total_pages_in_session": 3,
@@ -30,6 +220,6 @@
       "https://wordpress.org/news/2026/09/wordpress-7-1-1-maintenance-and-security-release/"
     ],
     "second_page_rendered": "https://wordpress.org/news/2026/09/wordpress-7-1-2-release/",
-    "second_page_screenshot": "results\\wordpress_validation\\replay_verification\\wordpress_7_1_2_release_local_replay.png"
+    "second_page_screenshot": "results/wordpress_validation/replay_verification/wordpress_7_1_2_release_local_replay.png"
   }
 }

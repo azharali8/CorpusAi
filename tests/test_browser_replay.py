@@ -616,3 +616,146 @@ def test_replay_preserves_crawler_isolation(synthetic_warc_bundle):
         # Verify no missing resource errors
         assert len(server.missing_resources) == 0
 
+
+# ---------------------------------------------------------------------------
+# Test 15: Portable Browser Resolution
+# ---------------------------------------------------------------------------
+
+def test_find_portable_browser_custom_path(tmp_path):
+    """Verify that find_portable_browser respects custom_path argument."""
+    from src.replay_server import find_portable_browser
+
+    fake_browser = tmp_path / "mock_chrome.exe"
+    fake_browser.write_text("dummy binary content")
+
+    resolved = find_portable_browser(custom_path=str(fake_browser))
+    assert resolved == os.path.abspath(str(fake_browser))
+
+
+def test_find_portable_browser_env_var(tmp_path, monkeypatch):
+    """Verify that find_portable_browser respects CORPUSAI_BROWSER_PATH env var."""
+    from src.replay_server import find_portable_browser
+
+    fake_browser = tmp_path / "env_msedge.exe"
+    fake_browser.write_text("dummy binary content")
+
+    monkeypatch.setenv("CORPUSAI_BROWSER_PATH", str(fake_browser))
+    resolved = find_portable_browser()
+    assert resolved == os.path.abspath(str(fake_browser))
+
+
+def test_find_portable_browser_system_discovery():
+    """Verify that find_portable_browser successfully discovers an installed browser on this machine."""
+    from src.replay_server import find_portable_browser
+
+    try:
+        browser_path = find_portable_browser()
+        assert os.path.isfile(browser_path)
+        base = os.path.basename(browser_path).lower()
+        assert any(b in base for b in ["chrome", "msedge", "chromium"])
+    except RuntimeError:
+        pytest.skip("No supported browser installed in system test environment.")
+
+
+# ---------------------------------------------------------------------------
+# Test 16: Screenshot Similarity Comparison
+# ---------------------------------------------------------------------------
+
+def test_compare_screenshots_identical(tmp_path):
+    """Verify that compare_screenshots returns 1.0 match ratio for identical images."""
+    from PIL import Image
+    from src.replay_server import compare_screenshots
+
+    img1_path = str(tmp_path / "img1.png")
+    img2_path = str(tmp_path / "img2.png")
+
+    # Generate identical 100x100 white squares with a blue circle
+    img = Image.new("RGB", (100, 100), color=(255, 255, 255))
+    for x in range(40, 60):
+        for y in range(40, 60):
+            img.putpixel((x, y), (0, 0, 255))
+
+    img.save(img1_path)
+    img.save(img2_path)
+
+    result = compare_screenshots(img1_path, img2_path)
+    assert result["match_ratio"] == 1.0
+    assert result["diff_pixel_count"] == 0
+    assert result["dimensions_match"] is True
+    assert result["diff_bounding_box"] is None
+
+
+def test_compare_screenshots_different(tmp_path):
+    """Verify that compare_screenshots quantifies differences and writes diff output."""
+    from PIL import Image
+    from src.replay_server import compare_screenshots
+
+    img1_path = str(tmp_path / "img1.png")
+    img2_path = str(tmp_path / "img2.png")
+    diff_path = str(tmp_path / "diff.png")
+
+    img1 = Image.new("RGB", (100, 100), color=(255, 255, 255))
+    img2 = Image.new("RGB", (100, 100), color=(255, 255, 255))
+
+    # Add a 10x10 red patch to img2 (100 pixels difference)
+    for x in range(10, 20):
+        for y in range(10, 20):
+            img2.putpixel((x, y), (255, 0, 0))
+
+    img1.save(img1_path)
+    img2.save(img2_path)
+
+    result = compare_screenshots(img1_path, img2_path, diff_output_path=diff_path)
+    assert result["dimensions_match"] is True
+    assert result["total_pixels"] == 10000
+    assert result["diff_pixel_count"] == 100
+    assert result["match_ratio"] == 0.99
+    assert result["diff_bounding_box"] == (10, 10, 20, 20)
+    assert os.path.isfile(diff_path)
+
+
+# ---------------------------------------------------------------------------
+# Test 17: Browser Network Isolation & External Request Blocking
+# ---------------------------------------------------------------------------
+
+def test_browser_network_isolation_flags():
+    """Verify that get_browser_isolation_flags returns correct proxy and host-rule parameters."""
+    from src.replay_server import get_browser_isolation_flags
+
+    flags = get_browser_isolation_flags(allowed_host="127.0.0.1", allowed_port=8080)
+    assert any("--proxy-server=http://127.0.0.1:9" in f for f in flags)
+    assert any("--proxy-bypass-list=127.0.0.1;localhost" in f for f in flags)
+    assert any("--host-rules=" in f for f in flags)
+
+
+def test_browser_external_request_blocking():
+    """
+    Verify that an isolated headless browser session cannot reach external hosts,
+    while permitting local loopback communication.
+    """
+    from src.replay_server import find_portable_browser, get_browser_isolation_flags
+
+    try:
+        browser_bin = find_portable_browser()
+    except RuntimeError:
+        pytest.skip("No supported browser installed in system test environment.")
+
+    isolation_flags = get_browser_isolation_flags(allowed_host="127.0.0.1")
+
+    # 1. Attempt to load an external domain: must fail or return empty DOM
+    ext_res = subprocess.run(
+        [
+            browser_bin,
+            "--headless",
+            *isolation_flags,
+            "--dump-dom",
+            "https://example.com",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        encoding="utf-8",
+        errors="replace",
+        timeout=10,
+    )
+    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "ERR_" in ext_res.stderr
+

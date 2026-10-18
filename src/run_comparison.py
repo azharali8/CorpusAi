@@ -25,6 +25,7 @@ class IncrementalDiff:
     changed_articles: List[str] = field(default_factory=list)            # Body/content text changed
     metadata_changed_articles: List[str] = field(default_factory=list)   # Title/Date/Author changed, content identical
     missing_candidates: List[str] = field(default_factory=list)          # Confirmed missing across full traversal
+    confirmed_removed: List[str] = field(default_factory=list)           # Confirmed removed via targeted 404 confirmation check
     not_observed_in_scope: List[str] = field(default_factory=list)       # In previous state, not observed in current bounded scope (e.g. shifted to older pages)
     reordered_articles: List[str] = field(default_factory=list)          # Present in both, but position in archive changed
     fetch_failures: List[str] = field(default_factory=list)
@@ -91,6 +92,13 @@ class RunComparisonEngine:
             diff.missing_candidates = sorted(list(unobserved_urls))
             diff.not_observed_in_scope = sorted(list(unobserved_urls))
 
+        # Check for confirmed removed articles (explicitly marked REMOVED in current state)
+        for url in curr_urls:
+            if curr_articles[url].status == "REMOVED":
+                if url not in diff.confirmed_removed:
+                    diff.confirmed_removed.append(url)
+
+
         # 3. Intersecting articles: check content vs metadata changes vs unchanged
         common_urls = curr_urls & prev_urls
         for url in sorted(list(common_urls)):
@@ -105,7 +113,10 @@ class RunComparisonEngine:
             p_meta = (p_art.title or "", p_art.published_at or "", p_art.author or "")
             c_meta = (c_art.title or "", c_art.published_at or "", c_art.author or "")
 
-            if c_art.status == "FETCH_FAILED":
+            if c_art.status == "REMOVED":
+                if url not in diff.confirmed_removed:
+                    diff.confirmed_removed.append(url)
+            elif c_art.status == "FETCH_FAILED":
                 diff.fetch_failures.append(url)
             elif p_content_hash and c_content_hash and p_content_hash != c_content_hash:
                 diff.changed_articles.append(url)
