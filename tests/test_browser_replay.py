@@ -766,14 +766,20 @@ def test_browser_external_request_blocking():
         errors="replace",
         timeout=10,
     )
-    # Must not fail due to container sandbox crash
+    # 1. Chromium process must start cleanly without early container/zygote crash
     assert "zygote_host_impl_linux" not in ext_res.stderr
     assert "No usable sandbox!" not in ext_res.stderr
-    # Must specifically fail due to proxy connection blocking
-    assert "ERR_PROXY_CONNECTION_FAILED" in ext_res.stderr
-    # Must not retrieve or render external domain content
+    assert ext_res.returncode == 0
+
+    # 2. Must not retrieve or render external domain content
     assert "Example Domain" not in ext_res.stdout
-    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout
+    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "net::ERR_" in ext_res.stdout
+
+    # 3. Must fail specifically due to proxy isolation blocking
+    assert "ERR_PROXY_CONNECTION_FAILED" in ext_res.stderr, (
+        f"Expected proxy-blocking error 'ERR_PROXY_CONNECTION_FAILED' in stderr, but got:\n"
+        f"stdout: {ext_res.stdout}\nstderr: {ext_res.stderr}"
+    )
 
 
 def test_browser_ci_safe_flags(monkeypatch):
