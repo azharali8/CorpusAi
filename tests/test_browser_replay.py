@@ -324,7 +324,13 @@ def test_phase6a_real_wacz_loading():
 def get_browser_ci_safe_flags() -> List[str]:
     """Return Chromium flags needed to run inside Linux container CI environments (e.g. GitHub Actions)."""
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        return ["--no-sandbox", "--disable-dev-shm-usage"]
+        return [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--no-first-run",
+        ]
     return []
 
 
@@ -751,29 +757,46 @@ def test_browser_external_request_blocking():
     isolation_flags = get_browser_isolation_flags(allowed_host="127.0.0.1")
     ci_flags = get_browser_ci_safe_flags()
 
-    # 1. Attempt to load an external domain: must fail or return empty DOM
-    ext_res = subprocess.run(
-        [
-            browser_bin,
-            "--headless",
-            *ci_flags,
-            *isolation_flags,
-            "--dump-dom",
-            "https://example.com",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8",
-        errors="replace",
-        timeout=10,
-    )
+    cmd = [
+        browser_bin,
+        "--headless",
+        *ci_flags,
+        *isolation_flags,
+        "--enable-logging=stderr",
+        "--v=1",
+        "--dump-dom",
+        "https://example.com",
+    ]
 
-    # Must not fail due to container sandbox crash
+    # 1. Attempt to load an external domain: must fail or return empty DOM
+    try:
+        ext_res = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as e:
+        stdout = e.stdout.decode("utf-8", errors="replace") if isinstance(e.stdout, (bytes, bytearray)) else (e.stdout or "")
+        stderr = e.stderr.decode("utf-8", errors="replace") if isinstance(e.stderr, (bytes, bytearray)) else (e.stderr or "")
+        pytest.fail(
+            f"Chromium timed out after 30s when checking external request blocking.\n"
+            f"cmd: {' '.join(cmd)}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+
+    # 1. Chromium process must start cleanly without early container/zygote crash
     assert "zygote_host_impl_linux" not in ext_res.stderr
     assert "No usable sandbox!" not in ext_res.stderr
+    assert ext_res.returncode == 0
 
-    # Chromium can surface proxy/network failures with slightly different strings
-    # across versions and Linux/CI environments, so accept the stable patterns.
+    # 2. Must not retrieve or render external domain content
+    assert "Example Domain" not in ext_res.stdout
+    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "net::ERR_" in ext_res.stdout
+
+    # 3. Must fail specifically due to proxy isolation blocking. Some Chromium builds
+    # include slightly different network error wording; accept stable proxy errors.
     proxy_error_patterns = [
         r"ERR_PROXY_CONNECTION_FAILED",
         r"net::ERR_PROXY_CONNECTION_FAILED",
@@ -783,15 +806,10 @@ def test_browser_external_request_blocking():
         r"net::ERR_",
     ]
     proxy_match = any(re.search(pattern, ext_res.stderr, re.IGNORECASE) for pattern in proxy_error_patterns)
-    assert proxy_match, (
-        "Expected a blocked external-network error in stderr, but got:\n"
-        f"stdout: {ext_res.stdout}\n"
-        f"stderr: {ext_res.stderr}"
+    assert proxy_match or "ERR_PROXY_CONNECTION_FAILED" in ext_res.stderr, (
+        f"Expected proxy-blocking error in stderr, but got:\n"
+        f"stdout: {ext_res.stdout}\nstderr: {ext_res.stderr}"
     )
-
-    # Must not retrieve or render external domain content
-    assert "Example Domain" not in ext_res.stdout
-    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "net::ERR_" in ext_res.stdout
 
 
 def test_browser_ci_safe_flags(monkeypatch):
@@ -804,6 +822,9 @@ def test_browser_ci_safe_flags(monkeypatch):
     flags = get_browser_ci_safe_flags()
     assert "--no-sandbox" in flags
     assert "--disable-dev-shm-usage" in flags
+    assert "--disable-gpu" in flags
+    assert "--disable-software-rasterizer" in flags
+    assert "--no-first-run" in flags
 
     # 2. When GITHUB_ACTIONS is not 'true' or unset
     monkeypatch.setenv("GITHUB_ACTIONS", "false")
@@ -811,4 +832,3 @@ def test_browser_ci_safe_flags(monkeypatch):
 
     monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     assert get_browser_ci_safe_flags() == []
-
