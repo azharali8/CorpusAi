@@ -30,6 +30,9 @@ class ArticleState:
     representation_type: str = "HTML"   # HTML, CONTENT_JSON, BROWSER_WACZ, EXTRACTED_TEXT
     metadata: Dict[str, Any] = field(default_factory=dict)
     last_captured_at: Optional[str] = None
+    warc_file: Optional[str] = None      # relative or absolute path to WARC record containing content
+    warc_record_id: Optional[str] = None # ISO 28500 WARC-Record-ID of the preserved payload
+
 
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)

@@ -73,12 +73,14 @@ class IncrementalArchivePolicy:
         self,
         page_fetcher: Callable[[str], Dict[str, Any]],  # returns {"article_urls": List[str], "next_page_url": Optional[str], "status_code": int, "html": str}
         article_fetcher: Optional[Callable[[str], Dict[str, Any]]] = None, # optional: returns {"title": str, "content_hash": str, "raw_hash": str, "status": str}
+        confirmation_probe: Optional[Callable[[str], Dict[str, Any]]] = None, # optional: probe for missing candidate verification
     ) -> Tuple[PortalState, IncrementalRun, IncrementalDiff]:
         """
         Execute the incremental crawl algorithm with head sentinel verification and bounded boundary reconciliation.
         """
         start_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        run_id = f"run-{datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')}-{self.portal_id[:6]}"
+        _ts = datetime.datetime.now(datetime.timezone.utc)
+        run_id = f"run-{_ts.strftime('%Y%m%dT%H%M%S')}{_ts.microsecond:06d}Z-{self.portal_id[:6]}"
 
         current_url = self.head_page_url
 
@@ -181,9 +183,13 @@ class IncrementalArchivePolicy:
                             content_hash=prev_art.content_hash,
                             raw_hash=prev_art.raw_hash,
                             status="UNCHANGED",
+                            content_capture_status="REUSED" if prev_art.content_capture_status in ("CAPTURED", "REUSED") else prev_art.content_capture_status,
                             seen_on_pages=[target_page_url],
                             representation_type=prev_art.representation_type,
                             metadata=prev_art.metadata,
+                            last_captured_at=prev_art.last_captured_at,
+                            warc_file=prev_art.warc_file,
+                            warc_record_id=prev_art.warc_record_id,
                         )
                     else:
                         art_state = ArticleState(
@@ -203,11 +209,23 @@ class IncrementalArchivePolicy:
                                 art_state.title = art_data.get("title", art_state.title)
                                 art_state.published_at = art_data.get("published_at", art_state.published_at)
                                 art_state.author = art_data.get("author", art_state.author)
-                                art_state.content_hash = art_data.get("content_hash", art_state.content_hash)
+                                new_content_hash = art_data.get("content_hash", art_state.content_hash)
+                                if prev_art and prev_art.content_hash and new_content_hash and prev_art.content_hash != new_content_hash:
+                                    art_state.status = "CONTENT_CHANGED"
+                                elif prev_art:
+                                    art_state.status = "UNCHANGED"
+                                art_state.content_hash = new_content_hash
                                 art_state.raw_hash = art_data.get("raw_hash", art_state.raw_hash)
                                 art_state.last_captured_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
+                                art_state.warc_file = art_data.get("warc_file", art_state.warc_file)
+                                art_state.warc_record_id = art_data.get("warc_record_id", art_state.warc_record_id)
+                                if "content_capture_status" in art_data:
+                                    art_state.content_capture_status = art_data["content_capture_status"]
+                                elif art_state.content_hash:
+                                    art_state.content_capture_status = "CAPTURED"
                             except Exception as e:
                                 art_state.status = "FETCH_FAILED"
+                                art_state.content_capture_status = "FAILED"
                                 self.warnings.append(f"Article fetch failed for {u}: {str(e)}")
 
                     self.current_articles[u] = art_state
@@ -241,6 +259,32 @@ class IncrementalArchivePolicy:
         if pages_to_visit and self.requests_made >= self.budget.max_requests:
             self.budget_exhausted = True
             self.last_incomplete_page = pages_to_visit[0]
+
+        # Optional confirmation probe: if an article was present in previous complete crawl
+        # but missing in current complete crawl, probe it to confirm removal vs transient error
+        if confirmation_probe and self.previous_state and not self.budget_exhausted:
+            for unobserved_u in set(self.previous_state.articles.keys()) - set(self.current_articles.keys()):
+                if self.requests_made < self.budget.max_requests:
+                    self.requests_made += 1
+                    try:
+                        probe_res = confirmation_probe(unobserved_u)
+                        p_status = probe_res.get("status_code", 404)
+                        if p_status in (404, 410):
+                            # Confirmed removed: register as REMOVED state transition
+                            prev_a = self.previous_state.articles[unobserved_u]
+                            self.current_articles[unobserved_u] = ArticleState(
+                                canonical_url=unobserved_u,
+                                first_seen_run_id=prev_a.first_seen_run_id,
+                                last_seen_run_id=run_id,
+                                title=prev_a.title,
+                                content_hash=prev_a.content_hash,
+                                status="REMOVED",
+                                content_capture_status="REMOVED",
+                                warc_file=prev_a.warc_file,
+                                warc_record_id=prev_a.warc_record_id,
+                            )
+                    except Exception as e:
+                        self.warnings.append(f"Confirmation probe error for {unobserved_u}: {str(e)}")
 
         # Build PortalState snapshot
         head_page_state = self.current_pages.get(self.head_page_url)
