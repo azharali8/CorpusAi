@@ -26,6 +26,30 @@ def pytest_configure(config):
     _ensure_warc_fixtures()
 
 
+def pytest_unconfigure(config):
+    """
+    Clean up third-party logging handlers before Python interpreter shutdown.
+    webarticlecurator.strategies initializes module-level DummyLogger instances
+    from mplogger. In pytest, when stderr/stdout stream handlers are finalized,
+    mplogger's __del__ tries to flush an already-closed stream, printing
+    'Exception ignored in Logger.__del__: ValueError: I/O operation on closed file.'
+    Explicitly detaching and closing these handlers here prevents shutdown exceptions.
+    """
+    try:
+        import mplogger.logger
+        import gc
+        for obj in gc.get_objects():
+            if isinstance(obj, mplogger.logger.Logger):
+                for h in list(obj._logger.handlers):
+                    obj._logger.removeHandler(h)
+                    try:
+                        h.close()
+                    except Exception:
+                        pass
+    except ImportError:
+        pass
+
+
 def _ensure_warc_fixtures():
     warc_dir = os.path.join(_ROOT, "data", "warc")
     synthetic = os.path.join(warc_dir, "synthetic_portal.warc")
