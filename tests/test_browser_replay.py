@@ -320,6 +320,13 @@ def test_phase6a_real_wacz_loading():
     assert "image" in img_res.content_type
 
 
+def get_browser_ci_safe_flags() -> List[str]:
+    """Return Chromium flags needed to run inside Linux container CI environments (e.g. GitHub Actions)."""
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        return ["--no-sandbox", "--disable-dev-shm-usage"]
+    return []
+
+
 # ---------------------------------------------------------------------------
 # Test 8: Browser-Level End-to-End Rendering (Edge or Chrome Headless)
 # ---------------------------------------------------------------------------
@@ -346,7 +353,7 @@ def test_browser_backed_headless_render(synthetic_warc_bundle):
 
         # Launch real headless browser to render the replayed page
         res = subprocess.run(
-            [browser_bin, "--headless", "--dump-dom", rep_url],
+            [browser_bin, "--headless", *get_browser_ci_safe_flags(), "--dump-dom", rep_url],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -741,12 +748,14 @@ def test_browser_external_request_blocking():
         pytest.skip("No supported browser installed in system test environment.")
 
     isolation_flags = get_browser_isolation_flags(allowed_host="127.0.0.1")
+    ci_flags = get_browser_ci_safe_flags()
 
     # 1. Attempt to load an external domain: must fail or return empty DOM
     ext_res = subprocess.run(
         [
             browser_bin,
             "--headless",
+            *ci_flags,
             *isolation_flags,
             "--dump-dom",
             "https://example.com",
@@ -757,5 +766,31 @@ def test_browser_external_request_blocking():
         errors="replace",
         timeout=10,
     )
-    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "ERR_" in ext_res.stderr
+    # Must not fail due to container sandbox crash
+    assert "zygote_host_impl_linux" not in ext_res.stderr
+    assert "No usable sandbox!" not in ext_res.stderr
+    # Must specifically fail due to proxy connection blocking
+    assert "ERR_PROXY_CONNECTION_FAILED" in ext_res.stderr
+    # Must not retrieve or render external domain content
+    assert "Example Domain" not in ext_res.stdout
+    assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout
+
+
+def test_browser_ci_safe_flags(monkeypatch):
+    """
+    Verify get_browser_ci_safe_flags returns expected flags when GITHUB_ACTIONS is set,
+    and returns empty list when GITHUB_ACTIONS is absent or false.
+    """
+    # 1. When GITHUB_ACTIONS == 'true'
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    flags = get_browser_ci_safe_flags()
+    assert "--no-sandbox" in flags
+    assert "--disable-dev-shm-usage" in flags
+
+    # 2. When GITHUB_ACTIONS is not 'true' or unset
+    monkeypatch.setenv("GITHUB_ACTIONS", "false")
+    assert get_browser_ci_safe_flags() == []
+
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
+    assert get_browser_ci_safe_flags() == []
 
