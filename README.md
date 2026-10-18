@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-235%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-242%20passing-brightgreen.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -54,7 +54,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **235 passing tests** verified in an isolated offline environment (`235 / 235 tests passing`).
+- **Offline Unit Test Suite:** **242 passing tests** verified in an isolated offline environment (`242 / 242 tests passing`).
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
@@ -379,13 +379,28 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `235 passing tests` (`235 / 235 tests passing`, 0 failures, 0 errors).
+**Current offline test suite:** `242 passing tests` (`242 / 242 tests passing`, 0 failures, 0 errors).
 
 ### 4. Run Browser-Backed Replay Validation (WordPress Case)
 ```bash
-# Execute end-to-end local replay server and headless browser render verification
+# Optional: Set a specific Chromium or Edge executable path (defaults to auto-detection in PATH / standard directories)
+# export CORPUSAI_BROWSER_PATH="/usr/bin/google-chrome"
+# $env:CORPUSAI_BROWSER_PATH="C:\Program Files\Google\Chrome\Application\chrome.exe"
+
+# Execute end-to-end local replay server, resource-completeness verification, and headless browser render
 python research/real_world/wordpress/run_replay_e2e_validation.py
 ```
+
+The validation script runs offline with enforced browser network isolation and zero live-network fallback:
+- Loads the Phase 6A WACZ collection and Phase 5B WARC into an in-memory unified index.
+- Starts the local `ArchiveReplayServer` with strict live network barriers (external fallback prohibited, returning HTTP 404 with header `X-CorpusAI-Replay-Error: NOT_FOUND_NO_LIVE_FALLBACK`).
+- Portably resolves Google Chrome, Chromium, or Microsoft Edge, launching the browser with isolation flags (`--proxy-server=http://127.0.0.1:9`, `--proxy-bypass-list=127.0.0.1;localhost`, `--host-rules=...`) ensuring direct external requests fail.
+- Reconciles 27 total requests to the replay server:
+  - **2 pre-browser HTTP verification requests:** 1 main HTML test fetch (status 200) and 1 deliberate synthetic barrier probe (status 404).
+  - **25 browser-generated render requests:** 22 successfully resolved archived resources (HTML, CSS, JS, fonts, images) and 3 missing unarchived Asian NotoSerif font variants (`NotoSerifJP`, `NotoSerifKR`, `NotoSerifSC`) requested via CSS `@import`.
+- Computes screenshot similarity metrics (`match_ratio = 0.741492`, diff bounding box) against the reference capture, explicitly documenting the $1280 \times 900$ vs $1920 \times 1080$ viewport dimension difference and top banner injection.
+- Verifies multi-page navigation across captured articles and generates `results/wordpress_validation/replay_verification/replay_verification_report.json`.
+
  
  ---
  
