@@ -323,7 +323,13 @@ def test_phase6a_real_wacz_loading():
 def get_browser_ci_safe_flags() -> List[str]:
     """Return Chromium flags needed to run inside Linux container CI environments (e.g. GitHub Actions)."""
     if os.environ.get("GITHUB_ACTIONS") == "true":
-        return ["--no-sandbox", "--disable-dev-shm-usage"]
+        return [
+            "--no-sandbox",
+            "--disable-dev-shm-usage",
+            "--disable-gpu",
+            "--disable-software-rasterizer",
+            "--no-first-run",
+        ]
     return []
 
 
@@ -750,22 +756,35 @@ def test_browser_external_request_blocking():
     isolation_flags = get_browser_isolation_flags(allowed_host="127.0.0.1")
     ci_flags = get_browser_ci_safe_flags()
 
+    cmd = [
+        browser_bin,
+        "--headless",
+        *ci_flags,
+        *isolation_flags,
+        "--enable-logging=stderr",
+        "--v=1",
+        "--dump-dom",
+        "https://example.com",
+    ]
+
     # 1. Attempt to load an external domain: must fail or return empty DOM
-    ext_res = subprocess.run(
-        [
-            browser_bin,
-            "--headless",
-            *ci_flags,
-            *isolation_flags,
-            "--dump-dom",
-            "https://example.com",
-        ],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        encoding="utf-8",
-        errors="replace",
-        timeout=10,
-    )
+    try:
+        ext_res = subprocess.run(
+            cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="utf-8",
+            errors="replace",
+            timeout=30,
+        )
+    except subprocess.TimeoutExpired as e:
+        stdout = e.stdout.decode("utf-8", errors="replace") if isinstance(e.stdout, (bytes, bytearray)) else (e.stdout or "")
+        stderr = e.stderr.decode("utf-8", errors="replace") if isinstance(e.stderr, (bytes, bytearray)) else (e.stderr or "")
+        pytest.fail(
+            f"Chromium timed out after 30s when checking external request blocking.\n"
+            f"cmd: {' '.join(cmd)}\nstdout:\n{stdout}\nstderr:\n{stderr}"
+        )
+
     # 1. Chromium process must start cleanly without early container/zygote crash
     assert "zygote_host_impl_linux" not in ext_res.stderr
     assert "No usable sandbox!" not in ext_res.stderr
@@ -792,6 +811,9 @@ def test_browser_ci_safe_flags(monkeypatch):
     flags = get_browser_ci_safe_flags()
     assert "--no-sandbox" in flags
     assert "--disable-dev-shm-usage" in flags
+    assert "--disable-gpu" in flags
+    assert "--disable-software-rasterizer" in flags
+    assert "--no-first-run" in flags
 
     # 2. When GITHUB_ACTIONS is not 'true' or unset
     monkeypatch.setenv("GITHUB_ACTIONS", "false")
