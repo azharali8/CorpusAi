@@ -612,17 +612,25 @@ def test_controlled_transient_failure_and_recovery(tmp_path):
             portal_id="portal",
             head_page_url=f"{base_url}/news/page/1",
             previous_state=state1,
+            sleep_fn=lambda _: None,
         )
         state2, run2, diff2 = policy2.execute_incremental_crawl(
             page_fetcher=pf2,
             article_fetcher=incremental_art_fetcher_run2,
         )
 
-        # Requests made during Run 2: exactly 1 archive page + 1 article attempt (Post 3 returning 500)
+        # Requests made during Run 2 under the Phase 8 bounded retry policy:
+        # 1 archive page + 3 article attempts (1 initial attempt + 2 retries for Post 3 returning HTTP 500).
         # Post 1 and Post 2 were reused without network download!
-        assert len(portal.request_log) == 2
+        page_requests = [r for r in portal.request_log if r["path"] == "/news/page/1"]
+        article_requests = [r for r in portal.request_log if r["path"] == "/news/post-3"]
+        assert len(page_requests) == 1
+        assert len(article_requests) == 3
+        assert len(portal.request_log) == 4
+        assert policy2.requests_made == 4
+        assert len(run2.retry_log) == 3
         req_paths_run2 = [r["path"] for r in portal.request_log]
-        assert req_paths_run2 == ["/news/page/1", "/news/post-3"]
+        assert req_paths_run2 == ["/news/page/1", "/news/post-3", "/news/post-3", "/news/post-3"]
 
         # Post 3 is registered with failure state
         post3_url = f"{base_url}/news/post-3"

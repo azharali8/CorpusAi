@@ -50,6 +50,7 @@ class IncrementalRun:
     anomalies_detected: List[str] = field(default_factory=list)  # PORTAL_STRUCTURE_CHANGED, ROBOTS_POLICY_CHANGED, etc.
     errors: List[str] = field(default_factory=list)
     warnings: List[str] = field(default_factory=list)
+    retry_log: List[Dict[str, Any]] = field(default_factory=list)
     manual_review_status: str = "PENDING"    # PENDING, VERIFIED, MANUAL_REVIEW_REQUIRED, NOT_APPLICABLE
 
     # Artifacts & Checksums (relative paths)

@@ -12,6 +12,7 @@ Orchestrates incremental crawl traversal using the head-first principle:
 from dataclasses import dataclass, field
 import datetime
 import hashlib
+import time
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 from src.archive_visit_policy import (
@@ -48,11 +49,15 @@ class IncrementalArchivePolicy:
         budget: Optional[IncrementalCrawlBudget] = None,
         previous_state: Optional[PortalState] = None,
         head_page_url: str = "https://wordpress.org/news/all-posts/",
+        run_id: Optional[str] = None,
+        sleep_fn: Optional[Callable[[float], None]] = None,
     ):
         self.portal_id = portal_id
         self.budget = budget or IncrementalCrawlBudget()
         self.previous_state = previous_state
         self.head_page_url = head_page_url
+        self.explicit_run_id = run_id
+        self.sleep_fn = sleep_fn if sleep_fn is not None else time.sleep
 
         self.requests_made: int = 0
         self.pages_visited: Dict[str, int] = {}
@@ -62,12 +67,143 @@ class IncrementalArchivePolicy:
         self.anomalies: List[str] = []
         self.errors: List[str] = []
         self.warnings: List[str] = []
+        self.retry_log: List[Dict[str, Any]] = []
 
         self.head_changed: bool = False
         self.boundary_status: str = "NOT_EVALUATED"
         self.last_complete_page: Optional[str] = None
         self.last_incomplete_page: Optional[str] = previous_state.last_potentially_incomplete_page if previous_state else None
         self.budget_exhausted: bool = False
+
+    def _fetch_with_retry(
+        self,
+        fetcher_callable: Callable[[str], Any],
+        url: str,
+        budget_key: str = "request",
+    ) -> Tuple[Optional[Dict[str, Any]], Optional[str], Optional[int]]:
+        """
+        Execute fetcher_callable with bounded intra-run retry policy on transient errors.
+
+        Rules:
+        - max_retries: number of additional attempts after the first.
+        - Retry on network/connection exceptions and HTTP 5xx status codes.
+        - Do NOT retry: HTTP 404/410, 401/403, 200.
+        - HTTP 429: retry once with delay min(Retry-After, 60s) or 30s. Count against max_retries.
+        - Delay between retries: 2 ** attempt_number seconds (exponential: 2s, 4s, ...).
+        - Request budget: each retry attempt counts as one request toward self.budget.max_requests.
+        - Records retry events in self.retry_log as {"url": ..., "attempt": ..., "reason": ..., "delay_seconds": ...}.
+        """
+        max_attempts = 1 + max(0, self.budget.max_retries)
+        retried_429 = False
+
+        for attempt in range(1, max_attempts + 1):
+            if self.requests_made >= self.budget.max_requests:
+                self.budget_exhausted = True
+                self.warnings.append(f"Request budget exhausted ({self.budget.max_requests}) on {url}.")
+                return None, "Request budget exhausted", None
+
+            self.requests_made += 1
+            res: Optional[Dict[str, Any]] = None
+            err_msg: Optional[str] = None
+            status_code: Optional[int] = None
+            is_retriable = False
+            delay = 0.0
+
+            try:
+                res = fetcher_callable(url)
+                if isinstance(res, dict):
+                    # Check if this fetch was resolved purely via local state reuse without network request
+                    if res.get("content_capture_status") == "REUSED":
+                        self.requests_made -= 1
+
+                    status_code = res.get("status_code", 200)
+                    if status_code in (401, 403):
+                        return res, f"HTTP {status_code}", status_code
+                    elif status_code in (404, 410):
+                        return res, f"HTTP {status_code}", status_code
+                    elif 200 <= status_code < 300:
+                        return res, None, status_code
+                    elif status_code == 429:
+                        if not retried_429:
+                            is_retriable = True
+                            err_msg = "HTTP 429"
+                            headers = res.get("headers", {})
+                            retry_after = (
+                                headers.get("Retry-After")
+                                or headers.get("retry-after")
+                                or res.get("retry_after")
+                            )
+                            delay = 30.0
+                            if retry_after is not None:
+                                try:
+                                    delay = min(float(retry_after), 60.0)
+                                except (ValueError, TypeError):
+                                    delay = 30.0
+                            retried_429 = True
+                        else:
+                            return res, "HTTP 429 (already retried)", 429
+                    elif 500 <= status_code < 600:
+                        is_retriable = True
+                        err_msg = f"HTTP {status_code}"
+                        delay = float(2 ** attempt)
+                    else:
+                        return res, f"HTTP {status_code}", status_code
+                else:
+                    return res, None, 200
+
+            except Exception as e:
+                code = getattr(e, "code", None)
+                if code in (401, 403):
+                    return None, f"HTTP {code}: {str(e)}", code
+                elif code in (404, 410):
+                    return None, f"HTTP {code}: {str(e)}", code
+                elif code == 429:
+                    if not retried_429:
+                        is_retriable = True
+                        err_msg = f"HTTP 429: {str(e)}"
+                        headers = getattr(e, "headers", {})
+                        retry_after = headers.get("Retry-After") if hasattr(headers, "get") else None
+                        delay = 30.0
+                        if retry_after is not None:
+                            try:
+                                delay = min(float(retry_after), 60.0)
+                            except (ValueError, TypeError):
+                                delay = 30.0
+                        retried_429 = True
+                    else:
+                        return None, f"HTTP 429: {str(e)} (already retried)", 429
+                elif code is not None and 500 <= code < 600:
+                    is_retriable = True
+                    err_msg = f"HTTP {code}: {str(e)}"
+                    delay = float(2 ** attempt)
+                elif code is not None:
+                    return None, f"HTTP {code}: {str(e)}", code
+                else:
+                    is_retriable = True
+                    err_msg = str(e)
+                    delay = float(2 ** attempt)
+
+            if is_retriable:
+                can_retry_more = (attempt < max_attempts) and (self.requests_made < self.budget.max_requests)
+                if can_retry_more:
+                    self.retry_log.append({
+                        "url": url,
+                        "attempt": attempt,
+                        "reason": err_msg or "Retriable failure",
+                        "delay_seconds": delay,
+                    })
+                    self.sleep_fn(delay)
+                    continue
+                else:
+                    self.retry_log.append({
+                        "url": url,
+                        "attempt": attempt,
+                        "reason": err_msg or "Retries exhausted",
+                        "delay_seconds": 0.0,
+                    })
+                    return res, err_msg, status_code
+
+        return res, err_msg, status_code
 
     def execute_incremental_crawl(
         self,
@@ -80,7 +216,7 @@ class IncrementalArchivePolicy:
         """
         start_time = datetime.datetime.now(datetime.timezone.utc).isoformat()
         _ts = datetime.datetime.now(datetime.timezone.utc)
-        run_id = f"run-{_ts.strftime('%Y%m%dT%H%M%S')}{_ts.microsecond:06d}Z-{self.portal_id[:6]}"
+        run_id = self.explicit_run_id or f"run-{_ts.strftime('%Y%m%dT%H%M%S')}{_ts.microsecond:06d}Z-{self.portal_id[:6]}"
 
         current_url = self.head_page_url
 
@@ -99,13 +235,16 @@ class IncrementalArchivePolicy:
                 break
 
             target_page_url = pages_to_visit.pop(0)
-            self.requests_made += 1
             self.pages_visited[target_page_url] = self.pages_visited.get(target_page_url, 0) + 1
 
-            try:
-                fetch_res = page_fetcher(target_page_url)
-            except Exception as e:
-                self.errors.append(f"Fetch failed for page {target_page_url}: {str(e)}")
+            fetch_res, err, status_code = self._fetch_with_retry(page_fetcher, target_page_url, budget_key="page")
+
+            if status_code in (401, 403):
+                self.anomalies.append("ACCESS_GATE_DETECTED")
+                break
+
+            if fetch_res is None or (status_code is not None and status_code != 200):
+                self.errors.append(err or f"Fetch failed for page {target_page_url}")
                 self.current_pages[target_page_url] = ArchivePageState(
                     url=target_page_url,
                     ordered_fingerprint="",
@@ -113,14 +252,6 @@ class IncrementalArchivePolicy:
                     article_urls=[],
                     crawl_status="FETCH_FAILED",
                 )
-                continue
-
-            status_code = fetch_res.get("status_code", 200)
-            if status_code == 403 or status_code == 401:
-                self.anomalies.append("ACCESS_GATE_DETECTED")
-                break
-            elif status_code != 200:
-                self.errors.append(f"HTTP {status_code} on {target_page_url}")
                 continue
 
             raw_article_urls = fetch_res.get("article_urls", [])
@@ -203,9 +334,13 @@ class IncrementalArchivePolicy:
                     # If article fetcher is provided, fetch article details
                     if article_fetcher:
                         if self.requests_made < self.budget.max_requests and len(self.current_articles) < self.budget.max_articles:
-                            self.requests_made += 1
-                            try:
-                                art_data = article_fetcher(u)
+                            art_data, art_err, art_status = self._fetch_with_retry(article_fetcher, u, budget_key="article")
+                            if art_status in (401, 403):
+                                self.anomalies.append("ACCESS_GATE_DETECTED")
+                            elif art_status in (404, 410):
+                                art_state.status = "REMOVED"
+                                art_state.content_capture_status = "REMOVED"
+                            elif art_data is not None and (art_status == 200 or art_status is None):
                                 art_state.title = art_data.get("title", art_state.title)
                                 art_state.published_at = art_data.get("published_at", art_state.published_at)
                                 art_state.author = art_data.get("author", art_state.author)
@@ -223,10 +358,10 @@ class IncrementalArchivePolicy:
                                     art_state.content_capture_status = art_data["content_capture_status"]
                                 elif art_state.content_hash:
                                     art_state.content_capture_status = "CAPTURED"
-                            except Exception as e:
+                            else:
                                 art_state.status = "FETCH_FAILED"
                                 art_state.content_capture_status = "FAILED"
-                                self.warnings.append(f"Article fetch failed for {u}: {str(e)}")
+                                self.warnings.append(f"Article fetch failed for {u}: {art_err or 'unknown'}")
 
                     self.current_articles[u] = art_state
                 else:
@@ -340,6 +475,7 @@ class IncrementalArchivePolicy:
             anomalies_detected=self.anomalies + diff.anomalies,
             errors=self.errors,
             warnings=self.warnings,
+            retry_log=list(self.retry_log),
             manual_review_status="MANUAL_REVIEW_REQUIRED" if (self.anomalies or diff.anomalies) else "PENDING",
         )
 
