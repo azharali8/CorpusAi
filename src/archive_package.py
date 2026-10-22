@@ -265,7 +265,7 @@ class ArchivePackager:
                     f.write(f"{checksum_map[rel]}  {rel}\n")
 
             # 7. Verification inside staging before promotion
-            verification = PackageVerifier.verify_package(staging_dir)
+            verification = (PackageVerifier.verify if hasattr(PackageVerifier, "verify") else PackageVerifier.verify_package)(staging_dir)
             if not verification.is_valid:
                 raise ValueError(
                     f"Package integrity verification failed during staging: "
@@ -303,7 +303,7 @@ class ArchivePackager:
                 catalog.save_to_json(catalog_file)
 
             # Re-verify at promoted destination
-            final_verification = PackageVerifier.verify_package(final_run_dir)
+            final_verification = (PackageVerifier.verify if hasattr(PackageVerifier, "verify") else PackageVerifier.verify_package)(final_run_dir)
             return final_run_dir, final_verification
 
         except Exception:
@@ -447,3 +447,6 @@ class PackageVerifier:
             unexpected_files=unexpected_files,
             metadata_errors=metadata_errors,
         )
+
+    # Convenient alias for verify_package
+    verify = verify_package
