@@ -762,8 +762,6 @@ def test_browser_external_request_blocking():
         "--headless",
         *ci_flags,
         *isolation_flags,
-        "--enable-logging=stderr",
-        "--v=1",
         "--dump-dom",
         "https://example.com",
     ]
@@ -776,13 +774,13 @@ def test_browser_external_request_blocking():
             stderr=subprocess.PIPE,
             encoding="utf-8",
             errors="replace",
-            timeout=30,
+            timeout=15,
         )
     except subprocess.TimeoutExpired as e:
         stdout = e.stdout.decode("utf-8", errors="replace") if isinstance(e.stdout, (bytes, bytearray)) else (e.stdout or "")
         stderr = e.stderr.decode("utf-8", errors="replace") if isinstance(e.stderr, (bytes, bytearray)) else (e.stderr or "")
         pytest.fail(
-            f"Chromium timed out after 30s when checking external request blocking.\n"
+            f"Chromium timed out after 15s when checking external request blocking.\n"
             f"cmd: {' '.join(cmd)}\nstdout:\n{stdout}\nstderr:\n{stderr}"
         )
 
@@ -795,18 +793,16 @@ def test_browser_external_request_blocking():
     assert "Example Domain" not in ext_res.stdout
     assert len(ext_res.stdout.strip()) == 0 or "Error" in ext_res.stdout or "net::ERR_" in ext_res.stdout
 
-    # 3. Must fail specifically due to proxy isolation blocking. Some Chromium builds
-    # include slightly different network error wording; accept stable proxy errors.
+    # 3. Must fail specifically due to proxy isolation blocking.
+    # Accept specific proxy failure indicators; do not accept generic DNS failure (ERR_NAME_NOT_RESOLVED).
     proxy_error_patterns = [
         r"ERR_PROXY_CONNECTION_FAILED",
         r"net::ERR_PROXY_CONNECTION_FAILED",
         r"ERR_CONNECTION_REFUSED",
-        r"ERR_NAME_NOT_RESOLVED",
         r"net::ERR_.*proxy",
-        r"net::ERR_",
     ]
     proxy_match = any(re.search(pattern, ext_res.stderr, re.IGNORECASE) for pattern in proxy_error_patterns)
-    assert proxy_match or "ERR_PROXY_CONNECTION_FAILED" in ext_res.stderr, (
+    assert proxy_match, (
         f"Expected proxy-blocking error in stderr, but got:\n"
         f"stdout: {ext_res.stdout}\nstderr: {ext_res.stderr}"
     )
