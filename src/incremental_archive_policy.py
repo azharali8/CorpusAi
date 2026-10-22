@@ -112,6 +112,10 @@ class IncrementalArchivePolicy:
             try:
                 res = fetcher_callable(url)
                 if isinstance(res, dict):
+                    # Check if this fetch was resolved purely via local state reuse without network request
+                    if res.get("content_capture_status") == "REUSED":
+                        self.requests_made -= 1
+
                     status_code = res.get("status_code", 200)
                     if status_code in (401, 403):
                         return res, f"HTTP {status_code}", status_code

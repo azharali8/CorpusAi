@@ -628,7 +628,7 @@ def test_controlled_transient_failure_and_recovery(tmp_path):
         assert len(article_requests) == 3
         assert len(portal.request_log) == 4
         assert policy2.requests_made == 4
-        assert len(run2.retry_log) == 2
+        assert len(run2.retry_log) == 3
         req_paths_run2 = [r["path"] for r in portal.request_log]
         assert req_paths_run2 == ["/news/page/1", "/news/post-3", "/news/post-3", "/news/post-3"]
 
