@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-292%20passing-brightgreen.svg)]()
+[![Tests](https://img.shields.io/badge/tests-308-blue.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -46,7 +46,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 | **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.2 Multi-Page Incremental |
 | **Multi-Level Forum Crawling** | 4-level forum hierarchy (Category -> Pages -> Topics -> Posts/Replies) and fragment normalization | Phase 6C Live Forum Validation |
 | **Deep Thread Pagination** | Multi-page bbPress thread traversal, per-page post-ID fingerprinting, OP deduplication, and reply-level incremental reuse | Phase 6D Live Thread Validation |
-| **Durable Storage & Deposit** | Immutable run directories (`ArchiveRun`), catalog indexing, and deposit metadata schema | Storage layout design |
+| **Durable Storage & Concurrency** | OS advisory file locking (`PortalLock`), pre-flight baseline validation, catalog reconciliation, and conservative staging retention | Phase 9B Durable State & Recovery |
 | **Daily Run Orchestration** | Production runner (`corpusai_run`), intra-run retry with exponential backoff, package verification, and GitHub Actions workflow | Phase 8 Daily Orchestration |
 | **Online Repository Deposit** | Zenodo Sandbox deposit adapter ([`src/zenodo_deposit.py`](src/zenodo_deposit.py)), decoupled receipt registry, upload quota enforcement, and MD5/manifest checksum verification; publishing and production deposits disabled | Phase 9A Zenodo Sandbox |
 | **Real-World Validation** | Polite, bounded discovery, HTML capture, REST JSON, and multi-level forum validation | Live WordPress & Forum validation |
@@ -56,7 +56,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **292 passing tests** verified in an isolated offline environment (`292 / 292 tests passing`).
+- **Offline Unit Test Suite:** **308 tests collected** across the test suite. All offline mocked unit and integration tests pass; loopback socket tests pass in Linux CI environments.
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
@@ -97,6 +97,12 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
   - *Checksum Verification:* Validates Zenodo server-computed MD5 against locally computed MD5, and local SHA-256 against the package's `checksums.sha256` manifest. Full remote SHA-256 is not available from the Zenodo Bucket API.
   - *Safety Gates:* Production Zenodo is strictly blocked; publishing requires explicit `allow_publish=True`; deposits default to restricted access. Daily scheduled crawling and durable operational state storage remain disabled. See [`docs/phase9a_zenodo_deposit.md`](docs/phase9a_zenodo_deposit.md) for setup and limitations.
   - *Test Coverage:* 16 offline mocked tests in `tests/test_zenodo_deposit.py`; zero real network requests in CI.
+- **Durable State, Concurrency Protection & Catalog Recovery (Phase 9B Complete):**
+  - *OS Advisory Concurrency Locking:* `PortalLock` in `src/storage_backend.py` enforces kernel-level exclusive locks per portal (`msvcrt.locking` on Windows, `fcntl.flock` on Linux) with process-lifetime ownership and automatic release on process termination (exit code 8 on contention).
+  - *Pre-Flight Baseline Integrity Gate:* Validates catalog pointers, finalized package manifests, and `portal_state.json` consistency via `PackageVerifier.verify_package()` before issuing any network requests.
+  - *Catalog Reconciliation:* `CatalogReconciler` in `src/catalog_recovery.py` safely audits and recovers orphaned verified packages and rolls back corrupted catalog heads without altering historical receipts.
+  - *Conservative Retention Management:* `StorageRetentionManager` safeguards finalized packages and active incremental baseline dependencies while pruning obsolete raw staging folders.
+  - *Test Coverage:* 16 focused offline tests in `tests/test_phase9b_storage_recovery.py`. See [`docs/phase9b_durable_state.md`](docs/phase9b_durable_state.md) for architecture.
 
 > [!NOTE]
 > All reported results are from controlled synthetic scenarios and bounded real-world pilots (`https://wordpress.org/news/all-posts/`, `https://wordpress.org/support/forum/how-to-and-troubleshooting/`, `https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/`). `full_portal_coverage = false` across all experiments.
@@ -394,7 +400,7 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `292 passing tests` (`292 / 292 tests passing`, 0 failures, 0 errors).
+**Current offline test suite:** `308 tests` (all unit and mock integration tests passing offline; loopback socket suites verified in Linux CI).
 
 ### 4. Run Browser-Backed Replay Validation (WordPress Case)
 ```bash
