@@ -15,8 +15,10 @@ import hashlib
 import json
 import logging
 import os
+import socket
 import sys
 import time
+import uuid
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
 import urllib.request
@@ -141,6 +143,8 @@ def main(argv: Optional[List[str]] = None) -> int:
       6 = BUDGET_EXHAUSTED (partial run, checkpoint saved)
       7 = MANUAL_REVIEW_REQUIRED (anomaly detected)
       8 = LOCK_ACQUISITION_FAILED (concurrent process holds portal lock)
+      9 = REMOTE_STORAGE_FAILED (remote verification, quarantine, or baseline commit failed)
+      10 = REMOTE_LEASE_LOST (heartbeat failure or lease takeover during crawl)
     """
     parser = argparse.ArgumentParser(description="CorpusAI Archival Run Orchestrator")
     parser.add_argument("--portal", required=True, help="Target portal identifier (e.g. wordpress-news)")
@@ -150,6 +154,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"], help="Console logging level (default: INFO)")
     parser.add_argument("--reconcile-catalog", action="store_true", help="Audit and reconcile catalog with verified packages before run")
     parser.add_argument("--cleanup-staging", action="store_true", help="Execute conservative retention cleanup on raw staging runs")
+    parser.add_argument(
+        "--storage-backend",
+        default="local",
+        choices=["local", "s3"],
+        help="Remote storage backend (default: local). Use 's3' for AWS S3 durable state.",
+    )
+    parser.add_argument(
+        "--s3-bucket",
+        default=None,
+        help="S3 bucket name. Required when --storage-backend=s3.",
+    )
+    parser.add_argument(
+        "--s3-prefix",
+        default="",
+        help="S3 key prefix for all objects (default: empty string).",
+    )
+    parser.add_argument(
+        "--runner-id",
+        default=None,
+        help="Unique runner identifier for lease tracking. Auto-generated if not provided.",
+    )
 
     try:
         args = parser.parse_args(argv)
@@ -159,6 +184,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     if args.portal not in PORTAL_CONFIGS:
         sys.stderr.write(f"Error: Unknown portal '{args.portal}'. Known portals: {list(PORTAL_CONFIGS.keys())}\n")
         sys.exit(2)
+
+    if args.storage_backend == "s3" and not args.s3_bucket:
+        sys.stderr.write("Error: --s3-bucket is required when --storage-backend=s3.\n")
+        sys.exit(2)
+
+    runner_id = args.runner_id or f"{socket.gethostname()}-{uuid.uuid4().hex[:8]}"
 
     config = dict(PORTAL_CONFIGS[args.portal])
     results_base_dir = args.results_dir or config["results_base_dir"]
@@ -186,7 +217,41 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         sys.exit(8)
 
+    remote_backend = None
+    remote_control_etag = None
+    remote_catalog_etag = None
+    remote_control_record = None
+    heartbeat = None
+
+    if args.storage_backend == "s3":
+        from src.s3_storage_backend import S3RemoteStorageBackend, S3LeaseHeartbeat
+        remote_backend = S3RemoteStorageBackend(
+            bucket=args.s3_bucket,
+            prefix=args.s3_prefix,
+        )
+
     try:
+        # Pre-run remote storage hydration and lease acquisition
+        if remote_backend is not None:
+            try:
+                remote_control_record, remote_control_etag, remote_catalog, remote_catalog_etag, _ = (
+                    remote_backend.hydrate_state(portal_id=args.portal, target_dir=results_base_dir)
+                )
+                acq_ok, remote_control_record, remote_control_etag = remote_backend.acquire_portal_lease(
+                    portal_id=args.portal,
+                    runner_id=runner_id,
+                    ttl_seconds=2700,
+                )
+                if not acq_ok:
+                    sys.stderr.write(
+                        f"Error: Could not acquire remote portal lease for '{args.portal}'. "
+                        f"Another runner holds the lease or CAS conflict occurred.\n"
+                    )
+                    sys.exit(8)
+            except Exception as e:
+                sys.stderr.write(f"Error: Remote storage pre-run failed: {e}\n")
+                sys.exit(1)
+
         # Optional Catalog Reconciliation
         if args.reconcile_catalog:
             reconciler = CatalogReconciler(results_base_dir, args.portal)
@@ -231,6 +296,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         logger.info(f"Target head URL: {config['head_page_url']}")
         logger.info(f"Run directory: {run_dir}")
         logger.info(f"Configuration: max_pages={config['max_archive_pages']}, max_articles={config['max_articles']}, max_requests={config['max_requests']}, max_retries={config['max_retries']}")
+        if remote_backend is not None and remote_control_record is not None:
+            logger.info(
+                f"Remote storage (S3): hydrated state and acquired portal lease "
+                f"(fencing_gen={remote_control_record.fencing_generation}, runner_id={runner_id})"
+            )
+            # Start background lease heartbeat
+            heartbeat = S3LeaseHeartbeat(
+                backend=remote_backend,
+                portal_id=args.portal,
+                runner_id=runner_id,
+                fencing_generation=remote_control_record.fencing_generation,
+                initial_etag=remote_control_etag,
+                ttl_seconds=remote_control_record.lease.ttl_seconds,
+            )
+            heartbeat.start()
 
         # 6. Load catalog
         catalog = ArchiveCatalog.load_or_create(catalog_path, args.portal)
@@ -281,6 +361,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         # 10. Fetcher closures
         def page_fetcher(page_url: str) -> Dict[str, Any]:
+            if heartbeat is not None and not heartbeat.is_healthy():
+                raise RuntimeError(f"Heartbeat failure during crawl: {heartbeat.failure_reason}")
             logger.debug(f"Fetching archive page: {page_url}")
             res = harvester.fetch_url(page_url, resource_type="archive_page")
             if res.status_code != 200:
@@ -330,6 +412,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             }
 
         def article_fetcher(article_url: str) -> Dict[str, Any]:
+            if heartbeat is not None and not heartbeat.is_healthy():
+                raise RuntimeError(f"Heartbeat failure during crawl: {heartbeat.failure_reason}")
             logger.debug(f"Article fetch requested: {article_url}")
             # In incremental mode, reuse prior provenance without live request if already archived
             if previous_state and article_url in previous_state.articles:
@@ -397,12 +481,20 @@ def main(argv: Optional[List[str]] = None) -> int:
                 confirmation_probe=confirmation_probe,
             )
         except Exception as e:
+            if heartbeat is not None and not heartbeat.is_healthy():
+                logger.error(f"Crawl aborted due to remote lease heartbeat failure: {heartbeat.failure_reason}")
+                flush_logger(logger)
+                sys.exit(10)
             logger.error(f"Unrecoverable error during crawl execution: {e}", exc_info=True)
             flush_logger(logger)
             sys.exit(1)
 
         # 14. Log result summary
         logger.info(f"Crawl traversal finished. Convergence status: {inc_run.convergence_status}")
+        if heartbeat is not None and not heartbeat.is_healthy():
+            logger.error(f"Crawl finished with remote lease heartbeat failure: {heartbeat.failure_reason}. Exiting 10.")
+            flush_logger(logger)
+            sys.exit(10)
         logger.info(f"Article metrics: total={inc_run.article_count}, new={inc_run.new_article_count}, unchanged={inc_run.unchanged_article_count}, changed={inc_run.changed_article_count}, missing={inc_run.missing_article_count}, failures={inc_run.fetch_failure_count}")
         logger.info(f"Requests made: {inc_run.requests_made} (budget: {config['max_requests']})")
         if inc_run.errors:
@@ -544,6 +636,103 @@ def main(argv: Optional[List[str]] = None) -> int:
                     sys.exit(5)
 
                 logger.info(f"Package created and verified at {pkg_dir}")
+
+                # Remote storage post-run: stage, verify, commit baseline
+                if remote_backend is not None and remote_control_etag is not None:
+                    # Check lease heartbeat before staging/publishing
+                    if heartbeat is not None:
+                        if not heartbeat.is_healthy():
+                            logger.error(
+                                "Cannot publish remote baseline: remote lease heartbeat failed (%s). Aborting publication.",
+                                heartbeat.failure_reason,
+                            )
+                            heartbeat.stop()
+                            catalog.register_run(cat_entry, is_successful=False)
+                            catalog.save_to_json(catalog_path)
+                            flush_logger(logger)
+                            sys.exit(10)
+                        # Stop heartbeat before CAS commit to avoid overlapping renewal writes
+                        heartbeat.stop()
+                        remote_control_etag = heartbeat.get_latest_etag()
+
+                    try:
+                        local_files: Dict[str, str] = {}
+                        for fname in os.listdir(pkg_dir):
+                            fpath = os.path.join(pkg_dir, fname)
+                            if os.path.isfile(fpath):
+                                local_files[fname] = fpath
+
+                        staged_meta = remote_backend.stage_package_artifacts(
+                            portal_id=args.portal,
+                            run_id=run_id,
+                            local_files=local_files,
+                        )
+                        logger.info(f"Remote storage: staged {len(staged_meta)} package artifacts to S3.")
+
+                        pkg_checksums: Dict[str, str] = {}
+                        checksums_file = os.path.join(pkg_dir, "checksums.sha256")
+                        if os.path.exists(checksums_file):
+                            with open(checksums_file, "r", encoding="utf-8") as cs_f:
+                                for line in cs_f:
+                                    line = line.strip()
+                                    if line and not line.startswith("#"):
+                                        parts = line.split(None, 1)
+                                        if len(parts) == 2:
+                                            digest, rel_p = parts[0], parts[1].strip()
+                                            clean_rel = rel_p.replace("\\", "/").lstrip("./")
+                                            pkg_checksums[clean_rel] = digest.lower()
+
+                        is_valid, mismatches = remote_backend.verify_remote_artifacts(
+                            portal_id=args.portal,
+                            run_id=run_id,
+                            expected_checksums=pkg_checksums,
+                        )
+                        if not is_valid:
+                            logger.error(f"Remote artifact verification failed: {mismatches}")
+                            qid = remote_backend.quarantine_failed_upload(
+                                portal_id=args.portal,
+                                run_id=run_id,
+                                runner_id=runner_id,
+                                reason="Remote checksum mismatch",
+                                details={"mismatches": mismatches},
+                            )
+                            logger.error(f"Quarantined failed upload as {qid}. Prior remote baseline preserved.")
+                            catalog.register_run(cat_entry, is_successful=False)
+                            catalog.save_to_json(catalog_path)
+                            flush_logger(logger)
+                            sys.exit(9)
+
+                        # Commit baseline to remote control record
+                        commit_ok, new_ctrl_etag, new_cat_etag = remote_backend.commit_baseline_and_catalog(
+                            portal_id=args.portal,
+                            run_id=run_id,
+                            catalog=catalog,
+                            expected_catalog_etag=remote_catalog_etag,
+                            expected_control_etag=remote_control_etag,
+                            fencing_generation=remote_control_record.fencing_generation,
+                            runner_id=runner_id,
+                        )
+                        if commit_ok:
+                            remote_control_etag = new_ctrl_etag
+                            remote_catalog_etag = new_cat_etag
+                            logger.info(f"Remote baseline committed: run_id={run_id}, new_control_etag={new_ctrl_etag}")
+                        else:
+                            logger.error(
+                                "Remote baseline commit failed (CAS conflict or stale lease). "
+                                "Prior remote baseline preserved."
+                            )
+                            catalog.register_run(cat_entry, is_successful=False)
+                            catalog.save_to_json(catalog_path)
+                            flush_logger(logger)
+                            sys.exit(9)
+
+                    except Exception as e:
+                        logger.error(f"Remote storage post-run exception: {e}", exc_info=True)
+                        catalog.register_run(cat_entry, is_successful=False)
+                        catalog.save_to_json(catalog_path)
+                        flush_logger(logger)
+                        sys.exit(9)
+
                 catalog.register_run(cat_entry, is_successful=True)
                 catalog.save_to_json(catalog_path)
                 logger.info(f"Updated catalog at {catalog_path} (latest_successful_run_id={catalog.latest_successful_run_id})")
@@ -580,5 +769,24 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     finally:
         portal_lock.release()
+        if heartbeat is not None:
+            heartbeat.stop()
+            remote_control_etag = heartbeat.get_latest_etag()
+        if remote_backend is not None and remote_control_record is not None and remote_control_etag is not None:
+            try:
+                released = remote_backend.release_portal_lease(
+                    portal_id=args.portal,
+                    runner_id=runner_id,
+                    fencing_generation=remote_control_record.fencing_generation,
+                    expected_control_etag=remote_control_etag,
+                )
+                if not released:
+                    logging.getLogger(f"corpusai.{args.portal}").warning(
+                        "Remote portal lease release failed or was already superseded (stale ETag). This is safe to ignore."
+                    )
+            except Exception as e:
+                logging.getLogger(f"corpusai.{args.portal}").warning(
+                    f"Remote portal lease release raised exception: {e}. Lease will expire by TTL."
+                )
 if __name__ == "__main__":
     main()

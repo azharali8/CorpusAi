@@ -471,6 +471,105 @@ When executing live real-world experiments, CorpusAI:
 
 ---
 
+## Phase 9C-B: AWS S3 Durable Storage
+
+Phase 9C-B introduces an AWS S3 transport adapter (`S3RemoteStorageBackend`) conforming to the Phase 9C-A authoritative remote storage protocol contract (`RemoteStorageContract`). This enables ephemeral CI runners to persist archival state, coordinate exclusive leases across distributed runners, and publish verified baselines durably.
+
+### Architecture & Key Semantics
+
+- **Sole Authoritative Control Record**: `state/<portal_id>/portal_control.json` coordinates lease locking, monotonic fencing/baseline generations, and the active baseline pointer.
+- **Conditional Writes (CAS)**: Lease acquisition, renewal, release, and baseline commits use S3 conditional headers (`If-None-Match: *` for initial record creation; `If-Match: <etag>` for state-changing mutations). HTTP 412 (`PreconditionFailed`) triggers atomic conflict handling.
+- **ETag Quote Stripping**: AWS S3 returns quoted ETags (`"hex"`). The adapter normalizes ETags by stripping surrounding quotes on read and supplies raw hex strings to `IfMatch`.
+- **Byte-Level SHA-256 Verification**: Package artifacts uploaded to S3 are verified by streaming full payload bytes and calculating local SHA-256 digests prior to baseline publication. S3 user-metadata and provider ETags (MD5) are never accepted as sole proof of content integrity.
+- **Non-Destructive Quarantine**: Checksum mismatches or interrupted uploads write diagnostic records to `state/<portal_id>/quarantine/` without altering or deleting existing package artifacts or active baselines.
+- **Preserved Local Defaults**: The local filesystem backend remains the default (`--storage-backend local`). All prior local runner workflows and test suites continue to execute unchanged.
+
+### CLI Invocation
+
+To execute a crawl backed by AWS S3 remote storage:
+
+```bash
+# Baseline crawl with S3 durable state
+python -m src.corpusai_run --portal wordpress-news --mode baseline \
+  --storage-backend s3 \
+  --s3-bucket my-corpusai-archive \
+  --s3-prefix corpusai/production
+
+# Incremental crawl hydrating baseline from S3
+python -m src.corpusai_run --portal wordpress-news --mode incremental \
+  --storage-backend s3 \
+  --s3-bucket my-corpusai-archive \
+  --s3-prefix corpusai/production
+```
+
+#### CLI Flags
+- `--storage-backend {local,s3}`: Choice of storage backend (default: `local`).
+- `--s3-bucket BUCKET`: Target S3 bucket name (required when `--storage-backend s3`).
+- `--s3-prefix PREFIX`: Key prefix prepended to all S3 objects (default: empty string).
+- `--runner-id ID`: Runner identifier used for lease ownership tracking (auto-generated if omitted).
+
+### IAM Permissions
+
+An IAM policy granting the following actions on the target bucket and prefix is required:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "s3:GetObject",
+        "s3:PutObject",
+        "s3:ListBucket"
+      ],
+      "Resource": [
+        "arn:aws:s3:::my-corpusai-archive",
+        "arn:aws:s3:::my-corpusai-archive/*"
+      ]
+    }
+  ]
+}
+```
+
+Credentials are automatically discovered via the standard `boto3` / AWS SDK credential resolution chain (environment variables `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, IAM instance profiles, or `~/.aws/credentials`).
+
+### S3 Object Layout
+
+```text
+s3://<bucket>/<prefix>/
+├── state/
+│   └── <portal_id>/
+│       ├── portal_control.json     # Single authoritative control record (fencing/lease/baseline)
+│       ├── catalog.json            # Projected history ledger
+│       ├── deposit_registry.json   # Repository deposit tracking
+│       └── quarantine/             # Non-destructive failed upload descriptors
+│           └── quarantine-<run_id>-<timestamp>.json
+└── packages/
+    └── <portal_id>/
+        └── runs/
+            └── <run_id>/
+                ├── manifest.json
+                ├── checksums.sha256
+                ├── portal_state.json
+                ├── run_summary.json
+                ├── run.log
+                └── content_html.warc.gz
+```
+
+### Live S3 Integration Tests
+
+Live S3 integration tests (`tests/integration/test_live_s3_storage.py`) are strictly opt-in and will never run in standard CI. They require explicit environment configuration:
+
+```bash
+export CORPUSAI_STORAGE_LIVE_TEST=1
+export CORPUSAI_S3_BUCKET=my-corpusai-test-bucket
+export CORPUSAI_S3_PREFIX=corpusai-live-test
+python -m pytest tests/integration/test_live_s3_storage.py -v
+```
+
+---
+
 ## Roadmap
 
 1. **Browser-Backed Replay / QA:** Containerized Browsertrix capture and automated replay QA auditing.
