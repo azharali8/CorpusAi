@@ -247,17 +247,7 @@ def compute_package_fingerprint(package_dir: str) -> str:
     return hasher.hexdigest()
 
 
-def compute_file_md5_and_sha256(file_path: str) -> Tuple[str, str, int]:
-    """Compute MD5, SHA-256, and size in a single pass without loading entire file in RAM."""
-    md5_hash = hashlib.md5()
-    sha_hash = hashlib.sha256()
-    size = 0
-    with open(file_path, "rb") as f:
-        while chunk := f.read(65536):
-            md5_hash.update(chunk)
-            sha_hash.update(chunk)
-            size += len(chunk)
-    return md5_hash.hexdigest(), sha_hash.update().hexdigest() if False else sha_hash.hexdigest(), size
+from src.utils.crypto import compute_file_md5_and_sha256
 
 
 class ZenodoSandboxAdapter(RepositoryDepositClient):
