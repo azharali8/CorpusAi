@@ -2,9 +2,9 @@
 
 # CorpusAI
 
-**Robust, reproducible web-corpus crawling and archival workflows**
+**Reproducible Web-Corpus Archival, Provenance, and Deterministic Crawling**
 
-An experimental research prototype for deterministic discovery, revisit policies, multi-level archive traversal, and WARC provenance in digital preservation and corpus construction.
+An open-source research engineering framework for deterministic web discovery, boundary-reconciled incremental crawling, ISO 28500 WARC/WACZ provenance preservation, and offline browser-backed replay.
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
@@ -18,577 +18,362 @@ An experimental research prototype for deterministic discovery, revisit policies
 
 ## Overview
 
-**CorpusAI** investigates how to reliably discover, revisit, classify, and preserve web content for corpus-building workflows. Modern web portals present significant preservation challenges:
-- **Unstable pagination** and mid-crawl archive content shifts
-- **Nested category, topic, and forum taxonomies** with cycles and deep links
-- **Access gates**, interstitial consent barriers, and redirect chains
-- **Multi-page articles** split across sequential component URLs
-- **Structured content-bearing JSON** alongside rendered HTML
-- **Heterogeneous WARC files** mixing primary text with secondary page assets (CSS, JS, images, fonts)
+Modern web portals present critical challenges for empirical research, NLP corpus creation, and digital preservation:
+- **Unstable Pagination**: Live content publishing shifts paginated indices during crawls, leading to missed head-page articles or duplicate ingest.
+- **Taxonomy Cycles & Graph Traversal**: Deeply nested topic, forum, and category structures create unbounded loops without strict visitation budgets.
+- **Interleaved Presentation & Content**: Mixed WARC files bundle multi-megabyte presentation assets (CSS, JS, fonts) with primary textual records, complicating downstream linguistic pipelines.
+- **Replay Degradation**: Static captures fail when dynamic JavaScript, deferred fonts, and navigation gates cannot be executed or replayed offline under strict network barriers.
+- **Distributed State Corruption**: Multi-runner crawls on ephemeral cloud runners risk split-brain updates, lost commits, and corrupt catalog pointers without authoritative concurrency fencing.
 
-CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival storage layouts, and architectural boundaries to make corpus acquisition inspectable, reproducible, and verifiable.
-
----
-
-## Feature Overview
-
-| Area | Current Capability | Scope |
-| :--- | :--- | :--- |
-| **Archive Discovery** | DOM-based article URL discovery using semantic selectors and path filtering | Deterministic / Live validated |
-| **Pagination Stability** | Bounded revisit policies, ordered/unordered fingerprints, and head-page sentinels | Synthetic benchmarks |
-| **Nested Archives** | Bounded BFS/DFS graph traversal with domain scoping, budgets, and cycle detection | Synthetic benchmarks |
-| **Navigation Gates** | Finite state-machine handling for age gates, consent pages, and redirect chains | Synthetic benchmarks |
-| **Multi-page Articles** | Logical multi-component assembly with complete/incomplete provenance tracking | Synthetic benchmarks |
-| **Archival Storage** | WARC response generation with ISO 28500 record IDs, timestamps, and SHA-256 digests | warcio integration |
-| **Content Separation** | Strict separation of content-bearing records (`content_html`, `content_json`) from assets | MIME-based classifier |
-| **Replay & QA Foundation** | Built-in offline Replay Server (`ArchiveReplayServer`), WACZ/WARC indexing, URL rewriting, strict live-network barrier, and Browsertrix QA integration | Implemented / E2E Verified |
-| **Resource Preservation** | Harvester for CSS, JS, images, fonts (`ResourcePreservationHarvester`), distinguishable WARC roles, and hash deduplication | Implemented / E2E Verified |
-| **Incremental Crawling** | Head sentinel verification, boundary reconciliation, change classification, and run catalog | Phase 6B.2 Multi-Page Incremental |
-| **Multi-Level Forum Crawling** | 4-level forum hierarchy (Category -> Pages -> Topics -> Posts/Replies) and fragment normalization | Phase 6C Live Forum Validation |
-| **Deep Thread Pagination** | Multi-page bbPress thread traversal, per-page post-ID fingerprinting, OP deduplication, and reply-level incremental reuse | Phase 6D Live Thread Validation |
-| **Durable Storage & Concurrency** | OS advisory file locking (`PortalLock`), pre-flight baseline validation, catalog reconciliation, and conservative staging retention | Phase 9B Durable State & Recovery |
-| **Daily Run Orchestration** | Production runner (`corpusai_run`), intra-run retry with exponential backoff, package verification, and GitHub Actions workflow | Phase 8 Daily Orchestration |
-| **Online Repository Deposit** | Zenodo Sandbox deposit adapter ([`src/zenodo_deposit.py`](src/zenodo_deposit.py)), decoupled receipt registry, upload quota enforcement, and MD5/manifest checksum verification; publishing and production deposits disabled | Phase 9A Zenodo Sandbox |
-| **Real-World Validation** | Polite, bounded discovery, HTML capture, REST JSON, and multi-level forum validation | Live WordPress & Forum validation |
-| **AI Selector Proposal** | *Optional secondary module:* Local LLM selector generation with deterministic validation | Experimental (`Ollama`) |
+**CorpusAI** provides an auditable, deterministic crawling and preservation architecture that tracks explicit provenance, isolates content-bearing records from supporting assets, enforces monotonic fencing generations across local and remote backends, and enables offline browser replay verification with zero live-network fallback.
 
 ---
 
-## Current Status
-
-- **Offline Unit Test Suite:** **355 tests passing on Linux CI** (355 collected and passing offline across unit, storage protocol, and runner suites; 3 opt-in live S3 integration tests skipped pending live AWS credentials; loopback socket suites verified in Linux CI).
-- **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
-- **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
-- **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
-- **Real-World WordPress News Validation:**
-  - **Phase 5A Discovery:** 10/10 article URLs matched the manually collected ground-truth sample with matching ordering.
-  - **Phase 5B HTML Capture:** 3 sampled articles captured with title, publication date, author, canonical URL, and body text manually verified.
-  - **Phase 5C Structured Content:** Confirmed authoritative article text in structured WordPress REST JSON matching HTML text with 1.0 normalized Jaccard word similarity.
-  - **Phase 6A Browser-Backed Archive & Replay (Complete):** Single-page bounded capture (`webrecorder/browsertrix-crawler:1.2.0`) executed against `https://wordpress.org/news/2026/09/owa-president/`. Generated replayable WACZ (1.08 MB) and bounded QA WACZ (141 KB). Browsertrix QA confirmed `screenshotMatch = 1.0` (exact visual match). Manual offline replay verification in ReplayWeb.page succeeded (`manual_replay_verified = true`).
-  - **Browser-Backed Replay Server & Multi-Page Replay (Complete):** Implemented native offline `ArchiveReplayServer` and `ResourcePreservationHarvester` (`src/replay_server.py`, `src/downloader.py`). Verified end-to-end local replay of both single and multi-page WordPress archives: multiple captured pages (e.g. `owa-president`, `wordpress-7-1-2-release`, `wordpress-7-1-1-maintenance-and-security-release`) loaded into one unified replay session using their original canonical URLs. Verified internal link rewriting and navigation chains without live network fallback, confirmed strict 404 behavior for unarchived resources, and generated headless browser screenshots (`wordpress_owa_president_local_replay.png`, `wordpress_7_1_2_release_local_replay.png`). Verified offline in 14 focused tests (`tests/test_browser_replay.py`) and executed live via `research/real_world/wordpress/run_replay_e2e_validation.py`.
-  - **Phase 6B Incremental Architecture (Complete):** Head sentinel verification, boundary reconciliation, anomaly detection, and run catalog implemented. 14 deterministic synthetic mutation scenarios (A–N) validated: stable archive reuse, new article detection, cross-page boundary shifts, content/metadata changes, fetch failures, budget exhaustion, access-gate detection, and multi-run lineage.
-  - **Phase 6B.1 Real Incremental Validation & Multi-Page Baseline (Complete):** Real no-change incremental reuse validated across 1-page baseline (`run-20261007T192416Z-wpnews`) and 5-page baseline (`run-20261007T193716Z-wpnews-multi`).
-  - **Phase 6B.2 Real Multi-Page Incremental Crawling Validation (Complete):** Validated 5-page incremental state reuse against baseline `run-20261007T193716Z-wpnews-multi` with zero redundant article content requests (`run-20261010T185118Z-wpnews-multi-inc`).
-  - **Phase 6B.3 Natural Live Change Detection Check (Complete):** Controlled single-request live check confirmed archive head fingerprint match; honestly recorded `PENDING` without forcing artificial mutations.
-- **Real-World Multi-Level Forum Crawling Validation (Phase 6C Complete):**
-  - *Target Hierarchy:* WordPress Support Forum (`https://wordpress.org/support/forum/how-to-and-troubleshooting/`).
-  - *4-Level Hierarchy Traversal:* Category root -> Pagination boundary (Pages 1 & 2) -> 60 canonical topic URLs discovered -> 5 topic thread bodies captured.
-  - *Fragment URL Normalization:* bbPress reply and post fragment identifiers (`#post-...`) successfully normalized to root topic canonical URLs.
-  - *Incremental Reuse:* Incremental run (`run-20261010T191213Z-wpforum-inc`) referenced baseline (`run-20261010T191142Z-wpforum-base`), reusing all 5 previously captured topic bodies with 0 redundant content requests and making exactly 2 index page requests.
-  - *Strict Request Budgeting:* Entire baseline and incremental validation executed within 9 live HTTP requests (far below the 25 request safety limit).
-- **Real-World Deep Thread Pagination Validation (Phase 6D Complete):**
-  - *Target Thread:* `https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/` (18 replies across 2 genuine pages, confirmed real-world multi-page bbPress thread).
-  - *Thread Traversal:* Both thread pages fetched; page-level `next` link traversal terminated correctly after page 2 (no spurious empty-page fetch).
-  - *Per-Page Post-ID Fingerprinting:* Ordered and unordered fingerprints computed from bbPress post IDs; stable and deterministic across runs.
-  - *OP Deduplication:* Original post (`#post-19031471`) appears on all thread pages — correctly excluded from per-page unique-reply counts.
-  - *Page 1:* 16 post IDs (1 OP + 15 replies). *Page 2:* 4 post IDs (OP repeated + 3 unique new replies). *Global unique post count:* 19.
-  - *Incremental Reuse:* Second run (`run-20261011T112803Z-wpthread-inc`) compared fingerprints against baseline (`run-20261011T112754Z-wpthread-base`): both pages `UNCHANGED`, 0 new posts, factual result `REAL_THREAD_INCREMENTAL_NO_CHANGE`.
-  - *Strict Request Budgeting:* Baseline and incremental each used exactly 2 live HTTP requests (well within 25-request limit).
-- **Daily Run Orchestration, Recovery & Operational Logging (Phase 8 Complete):**
-  - *CLI Entrypoint:* Production runner `python -m src.corpusai_run` supporting `--portal`, `--mode (baseline|incremental)`, `--results-dir`, `--dry-run`, and `--log-level`.
-  - *Intra-Run Retry Policy:* Exponential backoff (`2 ** attempt`) for transient 5xx/connection failures, HTTP 429 backoff with `Retry-After` header capping (max 60s), non-retriable handling for 404/403/200, request budget accounting per attempt, and machine-readable `retry_log` tracking.
-  - *Packaging & Catalog Safety:* Promotes validated runs to `<results-dir>/packages/<portal_id>/runs/<run_id>/` and advances `catalog.json` only after independent verification via `PackageVerifier`.
-  - *Operational Exit Codes:* Deterministic exit codes (0 to 7) for automated monitoring, cron jobs, and alerting.
-  - *Workflow Automation:* GitHub Actions workflow (`.github/workflows/daily_run.yml`) with manual dispatch and persistence gate documentation.
-- **Zenodo Sandbox Deposit Adapter (Phase 9A Complete):**
-  - *Adapter:* `ZenodoSandboxAdapter` in `src/zenodo_deposit.py` implements draft creation, Bucket API file streaming, MD5 checksum verification, and receipt persistence.
-  - *Decoupled Receipt Tracking:* Deposit outcomes recorded in `deposit_registry.json` independently from `ArchiveCatalog`; a deposit failure does not invalidate a successful crawl.
-  - *Upload Quota Enforcement:* Rejects packages exceeding Zenodo's 100-file or 50 GB limits before any transmission.
-  - *Checksum Verification:* Validates Zenodo server-computed MD5 against locally computed MD5, and local SHA-256 against the package's `checksums.sha256` manifest. Full remote SHA-256 is not available from the Zenodo Bucket API.
-  - *Safety Gates:* Production Zenodo is strictly blocked; publishing requires explicit `allow_publish=True`; deposits default to restricted access. Daily scheduled crawling and durable operational state storage remain disabled. See [`docs/phase9a_zenodo_deposit.md`](docs/phase9a_zenodo_deposit.md) for setup and limitations.
-  - *Test Coverage:* 16 offline mocked tests in `tests/test_zenodo_deposit.py`; zero real network requests in CI.
-- **Durable State, Concurrency Protection & Catalog Recovery (Phase 9B Complete):**
-  - *OS Advisory Concurrency Locking:* `PortalLock` in `src/storage_backend.py` enforces kernel-level exclusive locks per portal (`msvcrt.locking` on Windows, `fcntl.flock` on Linux) with process-lifetime ownership and automatic release on process termination (exit code 8 on contention).
-  - *Pre-Flight Baseline Integrity Gate:* Validates catalog pointers, finalized package manifests, and `portal_state.json` consistency via `PackageVerifier.verify_package()` before issuing any network requests.
-  - *Catalog Reconciliation:* `CatalogReconciler` in `src/catalog_recovery.py` safely audits and recovers orphaned verified packages and rolls back corrupted catalog heads without altering historical receipts.
-  - *Conservative Retention Management:* `StorageRetentionManager` safeguards finalized packages and active incremental baseline dependencies while pruning obsolete raw staging folders.
-  - *Test Coverage:* 16 focused offline tests in `tests/test_phase9b_storage_recovery.py`. See [`docs/phase9b_durable_state.md`](docs/phase9b_durable_state.md) for architecture.
-
-> [!NOTE]
-> All reported results are from controlled synthetic scenarios and bounded real-world pilots (`https://wordpress.org/news/all-posts/`, `https://wordpress.org/support/forum/how-to-and-troubleshooting/`, `https://wordpress.org/support/topic/here-has-been-a-critical-error-on-this-website-4/`). `full_portal_coverage = false` across all experiments.
-
----
-
-## Architecture
+## System Architecture
 
 ```mermaid
 flowchart TD
-    A["Target Web Portal"] --> B["Archive Discovery"]
-    B --> C["Archive Graph Traversal"]
-    C --> D["Pagination & Stability Policy"]
-    D --> E["Content URL Registry"]
-    E --> F["Content / Asset Classification"]
-    F --> G["WARC / WACZ Provenance"]
-    G --> H["Downstream Corpus Processing"]
+    subgraph Discovery ["1. Deterministic Discovery & Traversal"]
+        WP["Target Web Portal"] --> APD["Archive Discovery<br/>(DOM & Canonical Paths)"]
+        APD --> AGP["Graph Traversal Policy<br/>(BFS/DFS Budgets & Cycles)"]
+        AGP --> AVP["Visit Policy & Fingerprints<br/>(Ordered/Unordered Hashes)"]
+        AVP --> HVP["Head Sentinel Verification<br/>(Mid-Crawl Insertion Check)"]
+    end
 
-    I["Optional AI Selector Proposal"] -.-> J["Deterministic Validator"]
-    J -.-> E
+    subgraph Acquisition ["2. Content Acquisition & Gating"]
+        HVP --> NGP["Navigation Gate FSM<br/>(Consent / Redirect Chains)"]
+        NGP --> RPH["Harvester & Downloader<br/>(Polite Delays & Retries)"]
+        RPH --> MPA["Multi-Page Assembly<br/>(Logical Document Collation)"]
+        RPH --> AI["Content Classifier<br/>(HTML vs. JSON vs. Assets)"]
+    end
+
+    subgraph OptionalAI ["Optional AI Proposal"]
+        AI -.-> RG["Ollama Selector Generator<br/>(qwen2.5-coder:3b)"]
+        RG -.-> DV["Deterministic Validator<br/>(>= 90% Statistical Match)"]
+        DV -.->|Requires Human Review| AI
+    end
+
+    subgraph Archival ["3. Archival Packaging & Provenance"]
+        MPA --> WARC["WARC/WACZ Engine<br/>(ISO 28500 Records & Digests)"]
+        AI --> WARC
+        WARC --> PKG["Archive Packager<br/>(PackageManifest & Checksums)"]
+        PKG --> VER["Package Verifier<br/>(Local SHA-256 Manifest Check)"]
+    end
+
+    subgraph StorageEngine ["4. Durable Storage & Recovery"]
+        VER --> BACKEND{"Storage Backend<br/>(--storage-backend)"}
+        BACKEND -->|local| LOCAL["Local FS Backend<br/>(OS Advisory PortalLock)"]
+        BACKEND -->|s3| S3["AWS S3 Transport Adapter<br/>(CAS If-Match / Lease Heartbeat)"]
+        LOCAL --> CAT["Authoritative Catalog Ledger<br/>(catalog.json & Run Lineage)"]
+        S3 --> CTRL["S3 Authoritative Control Record<br/>(portal_control.json)"]
+        CTRL --> CAT
+    end
+
+    subgraph VerificationReplay ["5. Verification & Replay"]
+        CAT --> ARS["Archive Replay Server<br/>(Offline Live-Network Barrier)"]
+        ARS --> REPLAY["Headless Browser Replay<br/>(DOM & Visual Screenshot QA)"]
+        CAT --> ZEN["Zenodo Sandbox Adapter<br/>(Guarded Research Deposit)"]
+    end
 ```
 
-*(AI selector proposal operates strictly as an optional side component outside the primary crawling pipeline).*
-
 ---
 
-## Why CorpusAI?
+## Key Capabilities
 
-Standard web scrapers often assume static pagination and flat URL hierarchies. In real preservation workflows, portals fail in subtle ways:
-1. **Mid-Crawl Mutations:** Articles published during a crawl shift paginated pages, causing crawlers to miss articles at the head of the archive.
-2. **Infinite Traversal Loops:** Deeply nested forum categories or calendar views trap crawlers in unbounded traversals.
-3. **Multi-Component Fragmentation:** Multi-page articles are stored as disconnected records rather than coherent textual documents.
-4. **Mixed Archive Bloat:** Archiving entire page asset trees complicates downstream text-mining pipelines that only require clean HTML or structured JSON.
-
-CorpusAI implements explicit state tracking, visit budgets, and provenance registries to address these failure modes systematically.
-
----
-
-## Core Design Principles
-
-- **Deterministic Execution:** Core crawl traversal, state transitions, and extraction operate deterministically.
-- **Explicit Provenance:** Every URL and record preserves its discovery path, archive origin, HTTP headers, and SHA-256 payload digest.
-- **Bounded Revisit Policies:** Head verification and boundary reconciliation operate within strict request budgets.
-- **No Silent Failures:** Incomplete multi-page articles, gate blocks, and budget exhaustion are explicitly classified.
-- **Content vs. Asset Separation:** Content-bearing text is isolated from presentation assets in archival outputs.
-- **Offline Reproducibility:** Core algorithms are tested against local fixtures without requiring network access.
-- **AI Safety Boundary:** Where AI modules are explored:
-  > *AI proposes. Deterministic systems validate. Human approval remains explicit.*
-- **Human Review Boundary:**
-  > *Real-world results are manually verified before being treated as validated.*
-
----
-
-## Implemented Components
-
-### 1. Crawling & Discovery
-- **Archive Discovery (`src/archive_page_discovery.py`):** Structural DOM analysis for candidate article links with canonical path filtering.
-- **Content URL Registry (`src/content_url_registry.py`):** Dedicated registry tracking article URLs, HTTP metadata, capture status, and WARC record IDs.
-- **Multi-Level Graph Traversal (`src/archive_graph_policy.py`):** BFS/DFS graph traversals with cycle detection, domain scoping, and explicit node budgets.
-
-### 2. Stability & Updating
-- **Archive Visit Policies (`src/archive_visit_policy.py`):** Ordered/unordered page fingerprinting and mutation-resilient revisit policies.
-- **Head-Page Verification (`src/head_verification.py`):** Sentinel polling and boundary reconciliation to detect mid-crawl archive insertions.
-
-### 3. Content Handling & Gates
-- **Navigation Gate Policy (`src/navigation_gate_policy.py`):** State-machine modeling for age gates, consent screens, redirect chains, and session cookie reuse.
-- **Multi-Page Article Policy (`src/multipage_article_policy.py`):** Logical document collation tracking sequential component URLs.
-- **Article Inspector (`src/article_inspector.py`):** Metadata extraction, referenced asset discovery, lazy-load detection, and content JSON classification.
-
-### 4. Archival, Replay & Provenance
-- **WARC Utilities (`src/warc_utils.py`):** Parsing, creating, and validating ISO 28500 WARC/WARC.GZ records with custom provenance headers.
-- **Archive Run Model (`src/archive_run.py`):** Deterministic run IDs (`run-<timestamp>-<config-hash>`), metadata logging, and immutable execution tracking.
-- **Replay Validation (`src/replay_validation.py`):** Manifest validation, SHA-256 tamper-evident integrity checking, and manual replay barrier enforcement.
-- **Deposit Metadata (`src/deposit_metadata.py`):** Schemas for Zenodo/Dataverse research corpus deposits with rights declarations and collection provenance.
-- **Content Separation:** Dedicated separate outputs for HTML content (`content_html.warc.gz`), structured JSON (`content_json.warc.gz`), and supporting assets (`assets.warc.gz`).
-
-### 5. Experimental AI Module
-- **Rule Generator & Repair (`src/rule_generator.py`, `src/rule_repair.py`):** Prompt-driven selector generation via local Ollama models (`qwen2.5-coder:3b`) with schema constraints and statistical validation ($\ge 90\%$).
-
----
-
-## Real-World Validation
-
-Evaluated against **WordPress News** (`https://wordpress.org/news/all-posts/`):
-
-- **Phase 5A — Article Discovery:**
-  - Automated discovery independently extracted the first 10 articles without prior knowledge of the manual ground truth.
-  - Achieved **10/10 exact set matches** with identical chronological ordering in the captured snapshot.
-- **Phase 5B — HTML Content Capture:**
-  - Polite sequential capture of the first 3 discovered articles with a 1.5s delay.
-  - Extracted metadata (titles, publication dates, authors, canonical URLs) was manually verified against live pages.
-  - Created isolated `content_html.warc.gz` (3 records, SHA-256 verified).
-- **Phase 5C — Structured Content Investigation:**
-  - Controlled query to the WordPress REST API (`/wp-json/wp/v2/posts?slug=owa-president`).
-  - Confirmed structured `content.rendered` availability matching HTML body text with 1.0 normalized Jaccard word similarity.
-  - Cataloged 23 referenced assets (images, CSS, JS, fonts) and lazy-load indicators.
-- **Phase 6A — Browser-Backed Archive & Replay (Complete):**
-  - Executed controlled single-page capture using `webrecorder/browsertrix-crawler:1.2.0` with autoscroll/autofetch behaviors and text extraction.
-  - Generated intact standard WACZ (`wordpress-owa-president.wacz`, 1,088,595 bytes, SHA-256 verified) and QA WACZ (`wordpress-owa-president-qa-corrected.wacz`, 141,793 bytes, SHA-256 verified).
-  - Browsertrix QA confirmed `screenshotMatch = 1.0` (0 pixel difference between capture and replay). Text comparison was unavailable as the crawl did not create an isolated `urn:text` WARC record.
-  - Resource counts identified 30 replayed assets, 5 upstream theme SVG 404s, and 3 deferred tracking endpoints (all non-critical for article reading).
-  - Human manual inspection in ReplayWeb.page succeeded, confirming full article text, headline, date, author, and main image render faithfully offline (`manual_replay_verified = true`).
-  - Maintained strict separation between primary corpus content (`content_html.warc.gz`, `content_json.warc.gz`) and supporting replay assets.
-  - Calculated SHA-256 tamper-evident checksums across all artifacts in `checksums.sha256`.
-
----
-
-## Experimental Results Summary
-
-| Experiment | Observed Result | Evaluation Scope |
+| Capability | Technical Scope & Implementation | Verification Status |
 | :--- | :--- | :--- |
-| **WARC MIME Classification** | HTML records separated from mixed page assets with 100% precision | Synthetic fixture |
-| **Pagination Mutation** | Bounded revisit policy improved empirical archive coverage in tested scenarios | Synthetic simulation |
-| **Head Verification** | Sentinel checking detected tested mid-crawl head-page insertions | Synthetic simulation |
-| **Multi-Level Traversal** | Bounded BFS/DFS traversed nested taxonomy graphs without infinite loops | Synthetic simulation |
-| **Gate / Multi-Page Handling** | Resolved valid gates; flagged broken/missing components as incomplete | Synthetic simulation |
-| **WordPress Discovery** | 10/10 candidate article URLs matched manual human ground truth | Real-world validation |
-| **Article HTML Capture** | 3/3 sampled articles captured and manually verified against live metadata | Real-world validation |
-| **WordPress REST JSON** | Authoritative article body text confirmed in ~7 KB JSON vs. ~154 KB HTML | Real-world validation |
-| **Archive Run & Integrity** | Deterministic run IDs, SHA-256 manifests, and deposit schema validated | Phase 6A Foundation |
+| **Deterministic Discovery** | Structural DOM analysis with semantic selectors, path canonicalization, and deduplication | Verified (Live WordPress) |
+| **Pagination Stability** | Bounded revisit policies, ordered/unordered SHA-256 fingerprints, and head sentinels | Verified (Synthetic A–N) |
+| **Graph Traversal** | Bounded BFS/DFS traversal with domain scoping, cycle detection, and explicit budgets | Verified (Synthetic & Forums) |
+| **Gated Navigation** | Finite state-machine handling for consent interstitials, age gates, and redirect chains | Verified (Synthetic) |
+| **Multi-Level Forums** | 4-level bbPress traversal (Category -> Pages -> Topics -> Posts) with fragment normalization | Verified (Live bbPress) |
+| **Content Separation** | Isolated artifact streams for `content_html`, `content_json`, and supporting `assets` | Verified (Synthetic & Live) |
+| **Archival Provenance** | ISO 28500 WARC/WARC.GZ records with custom provenance headers and SHA-256 digests | Verified (Standard WARC/WACZ) |
+| **Offline Replay Server** | `ArchiveReplayServer` with index rewriting and strict live-network barriers (HTTP 404) | Verified (14 Tests & Headless) |
+| **Daily Orchestration** | CLI runner (`src.corpusai_run`), exponential backoff retries, and bounded HTTP 429 delays | Verified (29 Offline Tests) |
+| **Local State Durability** | OS advisory file locking (`msvcrt`/`fcntl`), pre-flight checks, and catalog recovery | Verified (16 Offline Tests) |
+| **Repository Deposit** | Zenodo Sandbox adapter with quota checks, draft receipts, and publishing guards | Verified (16 Mocked Tests) |
+| **Remote S3 Protocol** | Distributed leases, monotonic fencing generations, CAS (`If-Match`), and byte-level SHA-256 | Verified (35 Mocked Tests) |
+| **AI Selector Proposals** | Optional offline selector generation (`qwen2.5-coder:3b`) with deterministic validation | Experimental / Opt-in |
+
+---
+
+## Research & Design Principles
+
+CorpusAI adheres to foundational research principles for reproducible data collection:
+
+1. **Deterministic Core Execution**: Crawl traversal, state transitions, and extraction logic execute deterministically without hidden heuristics or unrecorded branching.
+2. **Explicit Cryptographic Provenance**: Every captured URL and record preserves its discovery route, HTTP headers, extraction timestamp, and byte-level SHA-256 digest.
+3. **Strict Content vs. Asset Separation**: Primary content-bearing text (`content_html.warc.gz`, `content_json.warc.gz`) is strictly partitioned from presentation assets (`assets.warc.gz`), preventing corpus bloat.
+4. **Authoritative Concurrency & Fencing**: Distributed execution coordinates via monotonic fencing generations. Stale runners or expired leases cannot commit baselines or mutate historical catalogs.
+5. **Tamper-Evident Package Finalization**: Runs are promoted to baselines only after passing end-to-end checksum verification (`PackageVerifier`). Corrupt uploads are non-destructively quarantined.
+6. **Air-Gapped Replay Validation**: Replay fidelity is evaluated under strict network isolation (`--proxy-server=http://127.0.0.1:9`, `--host-rules`), prohibiting live-network fallbacks.
+7. **The AI Safety Boundary**:
+   > *AI proposes. Deterministic systems validate. Human approval remains explicit.*
+   Local LLM proposals never deploy autonomously to production selector configs.
 
 ---
 
 ## Project Structure
 
-```
+```text
 CorpusAI/
 ├── .github/
 │   └── workflows/
-│       └── tests.yml                              # GitHub Actions offline CI workflow
-├── config/                                        # Extraction schema and selector configurations
-├── data/                                          # Local HTML sample fixtures
-├── docs/                                          # Architecture specifications and design docs
-│   └── archive_storage_design.md                  # Durable run directory layout and deposit design
-├── experiments/                                   # LLM and WARC selector experiments
-│   ├── run_real_llm_experiment.py
-│   ├── run_repair_demo.py
-│   └── run_warc_selector_experiment.py
-├── research/                                      # Specialized research tracks and benchmarks
-│   ├── archiving/                                 # WARC storage and mixed-content analysis
-│   │   ├── current_tools.md
-│   │   ├── mixed_content_findings.md
-│   │   └── experiments/
-│   │       ├── create_mixed_warc.py
-│   │       ├── inspect_warc_records.py
-│   │       └── run_mixed_content_analysis.py
-│   ├── crawling/                                  # Crawl stability and graph traversal benchmarks
-│   │   ├── gated_navigation_findings.md
-│   │   ├── multilevel_findings.md
-│   │   ├── pagination_instability.md
-│   │   └── experiments/
-│   │       ├── run_gated_navigation_experiment.py
-│   │       ├── run_head_verification_experiment.py
-│   │       ├── run_multilevel_experiment.py
-│   │       └── run_stability_experiment.py
-│   └── real_world/                                # Real-world portal capture and validation
-│       └── wordpress/
-│           ├── article_capture_checklist.md
-│           ├── manual_ground_truth.txt
-│           ├── phase6a_replay_checklist.md
-│           ├── replay_checklist.md
-│           ├── run_article_capture_validation.py
-│           ├── run_asset_capture_validation.py
-│           ├── run_discovery_validation.py
-│           └── run_phase6a_validation.py
-├── results/                                       # Structured JSON manifests and metrics
-├── src/                                           # Core library implementation
-│   ├── archive_catalog.py
-│   ├── archive_graph_policy.py
-│   ├── archive_page_discovery.py
-│   ├── archive_run.py
-│   ├── archive_visit_policy.py
-│   ├── article_inspector.py
-│   ├── content_url_registry.py
-│   ├── deposit_metadata.py
-│   ├── downloader.py
-│   ├── evaluator.py
-│   ├── extractor.py
-│   ├── head_verification.py
-│   ├── html_preprocessor.py
-│   ├── incremental_archive_policy.py
-│   ├── incremental_run.py
-│   ├── multipage_article_policy.py
-│   ├── navigation_gate_policy.py
-│   ├── portal_state.py
-│   ├── replay_validation.py
-│   ├── rule_generator.py
-│   ├── rule_repair.py
-│   ├── run_comparison.py
-│   ├── selector_validator.py
-│   ├── warc_utils.py
-│   └── webarticlecurator_adapter.py
-├── tests/                                         # Comprehensive offline unit test suite (206 tests)
-│   ├── fixtures/
-│   │   └── generate_warc_fixtures.py
-│   ├── test_archive_graph_policy.py
-│   ├── test_archive_page_discovery.py
-│   ├── test_archive_visit_policy.py
-│   ├── test_article_capture.py
-│   ├── test_asset_capture_replay.py
-│   ├── test_extractor.py
-│   ├── test_fixture_generator.py
-│   ├── test_forum_crawling.py
-│   ├── test_head_verification.py
-│   ├── test_html_preprocessor.py
-│   ├── test_incremental_crawling.py
-│   ├── test_navigation_gate_policy.py
-│   ├── test_ollama_generator.py
-│   ├── test_replay_validation.py
-│   ├── test_rule_repair.py
-│   ├── test_validator.py
-│   ├── test_warc_adapter.py
-│   ├── test_warc_classification.py
-│   └── test_warc_utils.py
-├── pyproject.toml
-├── requirements.txt
-└── README.md
+│       ├── tests.yml                  # Offline CI test suite (Python 3.11)
+│       └── daily_run.yml              # Daily archival orchestration workflow (manual dispatch)
+├── config/                            # Extraction schemas and selector rules
+├── data/                              # Synthetic HTML benchmarks and ground-truth fixtures
+├── docs/                              # Architecture specifications and technical designs
+│   ├── archive_storage_design.md      # Storage layouts and packaging specification
+│   ├── phase8_daily_run.md            # Daily runner lifecycle, exit codes, and retries
+│   ├── phase9a_zenodo_deposit.md      # Zenodo Sandbox adapter and receipt state machine
+│   └── phase9b_durable_state.md       # Advisory locking, catalog reconciliation, and retention
+├── research/                          # Empirical benchmarks and real-world validation
+│   ├── archiving/                     # Mixed-content WARC analysis experiments
+│   ├── crawling/                      # Pagination mutation and graph traversal benchmarks
+│   └── real_world/                    # Real-world validation (WordPress News & Support Forums)
+├── results/                           # Evaluation reports, WACZ archives, and replay diffs
+├── src/                               # Core CorpusAI framework
+│   ├── archive_catalog.py             # Run catalog ledger and baseline pointers
+│   ├── archive_graph_policy.py        # Graph exploration and cycle detection
+│   ├── archive_package.py             # Packaging, verification, and manifest generation
+│   ├── archive_page_discovery.py      # DOM article link extraction
+│   ├── archive_run.py                 # Immutable run metadata model
+│   ├── archive_visit_policy.py        # Fingerprinting and revisit policies
+│   ├── catalog_recovery.py            # Orphaned package reconciliation and audit
+│   ├── corpusai_run.py                # Operational CLI entrypoint and lifecycle coordinator
+│   ├── deposit_metadata.py            # Research corpus deposit schema
+│   ├── downloader.py                  # Polite fetcher and asset harvester
+│   ├── head_verification.py           # Sentinel polling and boundary reconciliation
+│   ├── incremental_archive_policy.py  # Incremental crawl coordinator and retry policy
+│   ├── multipage_article_policy.py    # Multi-component logical document assembly
+│   ├── navigation_gate_policy.py      # Navigation gate finite state machine
+│   ├── portal_state.py                # Serialized portal crawl state
+│   ├── remote_storage_contract.py     # Authoritative remote storage protocol specification
+│   ├── replay_server.py               # Air-gapped offline HTTP archive replay server
+│   ├── s3_storage_backend.py          # AWS S3 transport adapter with CAS and lease heartbeats
+│   ├── storage_backend.py             # Local filesystem backend and OS advisory locking
+│   ├── warc_utils.py                  # ISO 28500 WARC creation and MIME classification
+│   └── zenodo_deposit.py              # Zenodo Sandbox repository deposit client
+├── tests/                             # Comprehensive offline test suite (355 tests)
+│   ├── fixtures/                      # Synthetic WARC and fixture generators
+│   ├── integration/                   # Opt-in live integration tests (S3 / remote)
+│   ├── test_phase8_runner.py          # Daily runner lifecycle and retry tests
+│   ├── test_phase9cb_s3_adapter.py    # S3 transport adapter and CAS unit tests
+│   └── ...                            # Component unit and benchmark suites
+├── pyproject.toml                     # Project build and tool configuration
+└── requirements.txt                   # Production and testing dependencies
 ```
 
 ---
 
-## Installation
+## Installation & Setup
 
 ### Prerequisites
-- Python 3.11+
-- Virtual environment tool (`venv` or `uv`)
+- **Python**: Version `3.11` or higher
+- **Browser (Optional for Replay QA)**: Google Chrome, Chromium, or Microsoft Edge
+- **Local LLM (Optional for AI Selector Proposals)**: [Ollama](https://ollama.com/) with `qwen2.5-coder:3b`
+
+### 1. Clone & Environment Setup
 
 ```bash
 git clone https://github.com/azharali8/CorpusAi.git
 cd CorpusAi
 
+# Create virtual environment
 python -m venv .venv
 
-# On Windows:
-.venv\Scripts\activate
-
+# Activate environment
 # On Linux / macOS:
 source .venv/bin/activate
+# On Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# On Windows (cmd):
+.venv\Scripts\activate.bat
 
+# Install dependencies
+pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
 ---
 
-## Quick Start
+## Usage Guide
 
-### 1. Run the Offline Test Suite
+### 1. Daily Archival Runner (`src.corpusai_run`)
+
+The CLI runner coordinates the end-to-end lifecycle: lock acquisition, state hydration, polite crawling, package verification, catalog registration, and lease release.
+
 ```bash
-pytest -v
+# Baseline crawl on local storage (default)
+python -m src.corpusai_run --portal wordpress-news --mode baseline
+
+# Incremental crawl reusing prior baseline
+python -m src.corpusai_run --portal wordpress-news --mode incremental
+
+# Dry-run validation (resolves configuration and robots.txt without writing)
+python -m src.corpusai_run --portal wordpress-news --mode incremental --dry-run
 ```
 
-### 2. Run Real-World Validation Scripts
+#### Deterministic Exit Codes
+| Exit Code | Semantic Meaning | Description |
+| :---: | :--- | :--- |
+| `0` | `SUCCESS` | Crawl converged, package created, and verification succeeded |
+| `1` | `FETCH_FAILED` | Unrecoverable fetch error or exhausted request retries |
+| `2` | `INVALID_ARGS` | Invalid CLI arguments or unrecognized portal identifier |
+| `3` | `ROBOTS_DISALLOWED` | Prohibited by portal `robots.txt` policy |
+| `4` | `NO_BASELINE` | Incremental crawl attempted without an established baseline |
+| `5` | `VERIFICATION_FAILED` | Package manifest or SHA-256 byte check failed locally |
+| `6` | `BUDGET_EXHAUSTED` | Configured request or page budget reached before convergence |
+| `7` | `ANOMALY_DETECTED` | Structural anomaly detected (empty head, pagination shift) |
+| `8` | `LOCK_CONTENTION` | Another runner actively holds the local OS portal advisory lock |
+| `9` | `REMOTE_STORAGE_FAILED`| S3 remote artifact upload, byte verification, or CAS commit failed |
+| `10` | `REMOTE_LEASE_LOST` | S3 portal lease expired or was preempted by a newer generation |
+
+---
+
+### 2. AWS S3 Remote Storage Adapter
+
+To persist state across ephemeral CI runners or distributed instances, configure the S3 backend:
+
 ```bash
-# Validate article discovery against WordPress News
-python research/real_world/wordpress/run_discovery_validation.py
+# Run baseline crawl backed by S3 durable storage
+python -m src.corpusai_run --portal wordpress-news --mode baseline \
+  --storage-backend s3 \
+  --s3-bucket my-corpusai-archive \
+  --s3-prefix corpusai/prod
 
-# Execute polite capture of sampled articles into Content WARC
-python research/real_world/wordpress/run_article_capture_validation.py
-
-# Perform asset inventory and REST API JSON investigation
-python research/real_world/wordpress/run_asset_capture_validation.py
-
-# Execute Phase 6A archive manifest, environment inspection, and checksum generation
-python research/real_world/wordpress/run_phase6a_validation.py
+# Run incremental crawl hydrating state from S3
+python -m src.corpusai_run --portal wordpress-news --mode incremental \
+  --storage-backend s3 \
+  --s3-bucket my-corpusai-archive \
+  --s3-prefix corpusai/prod
 ```
 
-### 3. Run Synthetic Crawl Stability Benchmarks
+#### Protocol Guarantees
+- **Conditional CAS Writes**: Lease updates and baseline commits use `If-None-Match: *` (creation) and `If-Match: "<etag>"` (mutation). `HTTP 412` triggers atomic conflict rejection.
+- **Heartbeat Coordination**: Background thread [`S3LeaseHeartbeat`](src/s3_storage_backend.py) periodically renews lease TTLs and synchronizes ETags.
+- **Byte-Level Verification**: Uploaded artifacts are verified by streaming raw bytes back and validating against `checksums.sha256`. S3-provided MD5 ETags are never trusted as proof of integrity.
+- **Non-Destructive Quarantine**: Corrupted or incomplete uploads write diagnostic records to `quarantine/` without deleting package data.
+
+```text
+s3://<bucket>/<prefix>/
+├── state/<portal_id>/
+│   ├── portal_control.json        # Sole authoritative record (fencing / lease / baseline)
+│   ├── catalog.json               # Projected history ledger
+│   ├── deposit_registry.json      # Repository deposit receipts
+│   └── quarantine/                # Failed upload descriptors
+└── packages/<portal_id>/runs/<run_id>/
+    ├── manifest.json              # Run manifest
+    ├── checksums.sha256           # Authoritative artifact digests
+    ├── portal_state.json          # Serialized portal state
+    ├── run_summary.json           # Outcome summary and metrics
+    ├── run.log                    # Full execution diagnostics
+    └── content_html.warc.gz       # Preserved WARC records
+```
+
+---
+
+### 3. Air-Gapped Offline Browser Replay
+
+CorpusAI includes a native replay engine for browser rendering without external network access:
+
 ```bash
-# Run unstable pagination simulation
+# Execute local replay server and headless browser validation
+python research/real_world/wordpress/run_replay_e2e_validation.py
+```
+
+- Serves content from index-mapped WARC/WACZ files via local loopback.
+- Binds Chrome/Chromium with strict proxy isolation (`--proxy-server=http://127.0.0.1:9`, `--host-rules`).
+- External calls return `HTTP 404` with header `X-CorpusAI-Replay-Error: NOT_FOUND_NO_LIVE_FALLBACK`.
+- Generates screenshot diffs (`results/wordpress_validation/replay_verification/`).
+
+---
+
+### 4. Synthetic Stability Benchmarks
+
+```bash
+# Unstable pagination mutation benchmark
 python research/crawling/experiments/run_stability_experiment.py
 
-# Run head-page verification benchmark
+# Head-page verification and insertion detection
 python research/crawling/experiments/run_head_verification_experiment.py
 
-# Run multi-level archive traversal benchmark
+# Multi-level taxonomy graph traversal benchmark
 python research/crawling/experiments/run_multilevel_experiment.py
 
-# Run gated navigation and multi-page assembly simulation
+# Navigation gate and multi-page assembly simulation
 python research/crawling/experiments/run_gated_navigation_experiment.py
 ```
 
 ---
 
-## Testing
+## Testing & Verification
 
-All standard unit tests run completely **offline** using local fixtures and deterministic mock responders.
-
-In CI and fresh repository checkouts, synthetic WARC fixtures (`synthetic_portal.warc`, `mixed_content_test.warc`) are deterministically generated via `tests/fixtures/generate_warc_fixtures.py` (or automatically via `conftest.py`).
-
-Continuous Integration (`.github/workflows/tests.yml`) executes:
-1. Deterministic synthetic WARC fixture generation (`python tests/fixtures/generate_warc_fixtures.py`)
-2. Full offline pytest suite (`pytest -v`)
+All standard unit and protocol tests execute completely **offline** using deterministic synthetic fixtures.
 
 ```bash
+# Run the full offline test suite
 pytest -v
 ```
 
-**Current offline test suite:** `355 tests passing on Linux CI` (all unit, protocol, and mock integration tests passing offline; 3 opt-in live S3 integration tests safely skipped without credentials; loopback socket suites verified in Linux CI).
-
-### 4. Run Browser-Backed Replay Validation (WordPress Case)
-```bash
-# Optional: Set a specific Chromium or Edge executable path (defaults to auto-detection in PATH / standard directories)
-# export CORPUSAI_BROWSER_PATH="/usr/bin/google-chrome"
-# $env:CORPUSAI_BROWSER_PATH="C:\Program Files\Google\Chrome\Application\chrome.exe"
-
-# Execute end-to-end local replay server, resource-completeness verification, and headless browser render
-python research/real_world/wordpress/run_replay_e2e_validation.py
-```
-
-The validation script runs offline with enforced browser network isolation and zero live-network fallback:
-- Loads the Phase 6A WACZ collection and Phase 5B WARC into an in-memory unified index.
-- Starts the local `ArchiveReplayServer` with strict live network barriers (external fallback prohibited, returning HTTP 404 with header `X-CorpusAI-Replay-Error: NOT_FOUND_NO_LIVE_FALLBACK`).
-- Portably resolves Google Chrome, Chromium, or Microsoft Edge, launching the browser with isolation flags (`--proxy-server=http://127.0.0.1:9`, `--proxy-bypass-list=127.0.0.1;localhost`, `--host-rules=...`) ensuring direct external requests fail.
-- Reconciles 27 total requests to the replay server:
-  - **2 pre-browser HTTP verification requests:** 1 main HTML test fetch (status 200) and 1 deliberate synthetic barrier probe (status 404).
-  - **25 browser-generated render requests:** 22 successfully resolved archived resources (HTML, CSS, JS, fonts, images) and 3 missing unarchived Asian NotoSerif font variants (`NotoSerifJP`, `NotoSerifKR`, `NotoSerifSC`) requested via CSS `@import`.
-- Computes screenshot similarity metrics (`match_ratio = 0.741492`, diff bounding box) against the reference capture, explicitly documenting the $1280 \times 900$ vs $1920 \times 1080$ viewport dimension difference and top banner injection.
-- Verifies multi-page navigation across captured articles and generates `results/wordpress_validation/replay_verification/replay_verification_report.json`.
-
- 
- ---
- 
- ## WARC & Content Architecture
- 
- CorpusAI enforces a strict distinction between primary content records and secondary presentation resources:
- 
- - **`content_html.warc.gz`:** Contains HTTP response records for known article URLs.
- - **`content_json.warc.gz`:** Contains verified structured content JSON (e.g. WordPress REST API posts).
- - **`assets.warc.gz`:** Reserved exclusively for fetched supporting assets (CSS, JS, images, fonts).
- - **Replay Packages (`.wacz`):** Preserves full browser-level fidelity intact for historical replaying in ReplayWeb.page.
- 
- Every record stores immutable metadata in its WARC record headers (`WARC-Record-ID`, `WARC-Target-URI`, `WARC-Date`, `WARC-Source-Archive`, and SHA-256 payload digest).
- 
- ---
- 
- ## Experimental AI Assistance
- 
- An experimental secondary module explores AI-assisted selector proposal using local LLMs:
- 
- - **Constrained Inference:** Uses local Ollama models (`qwen2.5-coder:3b`) with zero cloud data transmission.
- - **Strict Verification:** Proposed CSS/XPath selectors must pass statistical validation ($\ge 90\%$ match rate, non-empty values) against representative HTML samples.
- - **Human Approval:** Repaired selector rules are never automatically deployed into production configurations without explicit review.
- - **Separation from Crawler:** AI inference has no role in URL discovery, traversal, or HTTP execution.
- 
- ---
- 
- ## Limitations
- 
- - **Prototype Scope:** CorpusAI is an experimental research framework, not a distributed production web crawler.
- - **Limited Portal Coverage:** Real-world validation has currently been conducted on a single WordPress News article and its archive index.
- - **Replay Scope:** Browser-backed visual replay has been validated on a single WordPress article in Phase 6A; multi-page full portal replay remains future work.
- - **No Access Bypasses:** CorpusAI does not attempt to bypass CAPTCHAs, paywalls, or authentication barriers.
-- **Synthetic Generalization:** Benchmark results on simulated portal mutations reflect controlled conditions and may not directly generalize to all CMS architectures.
-- **Politeness:** Crawling relies on polite rate-limiting (1–2s delays) and explicit `robots.txt` compliance.
+### Verification Status
+- **Linux CI (`.github/workflows/tests.yml`)**: **355 tests passing** (verified on commit `c401c5a` and `077b8f3`, Python 3.11).
+- **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
+- **Opt-in Live S3 Integration**: Three opt-in live S3 integration tests in `tests/integration/test_live_s3_storage.py` test real S3 bucket APIs. These are **strictly opt-in**, unverified against production, and safely skipped in standard CI:
+  ```bash
+  export CORPUSAI_STORAGE_LIVE_TEST=1
+  export CORPUSAI_S3_BUCKET=my-test-bucket
+  export CORPUSAI_S3_PREFIX=corpusai-live-test
+  python -m pytest tests/integration/test_live_s3_storage.py -v
+  ```
 
 ---
 
-## Responsible Crawling
-
-When executing live real-world experiments, CorpusAI:
-- Checks and complies with `robots.txt` directives.
-- Uses an identifiable, academic research User-Agent.
-- Enforces strict request timeouts (15s) and bounded retry counts.
-- Restricts requests to sequential, low-frequency execution.
-- Terminates immediately upon receiving access restriction or error responses.
-
----
-
-## Phase 9C-B: AWS S3 Durable Storage
-
-Phase 9C-B introduces an AWS S3 transport adapter (`S3RemoteStorageBackend`) conforming to the Phase 9C-A authoritative remote storage protocol contract (`RemoteStorageContract`). This enables ephemeral CI runners to persist archival state, coordinate exclusive leases across distributed runners, and publish verified baselines durably.
-
-### Architecture & Key Semantics
-
-- **Sole Authoritative Control Record**: `state/<portal_id>/portal_control.json` coordinates lease locking, monotonic fencing/baseline generations, and the active baseline pointer.
-- **Conditional Writes (CAS)**: Lease acquisition, renewal, release, and baseline commits use S3 conditional headers (`If-None-Match: *` for initial record creation; `If-Match: "<etag>"` for state-changing mutations). HTTP 412 (`PreconditionFailed`) triggers atomic conflict handling.
-- **ETag Normalization & Quoting**: AWS S3 returns quoted ETags (`"hex"`). The adapter normalizes ETags internally by stripping quotes, and formats valid quoted entity-tags for `IfMatch` request headers per the HTTP specification.
-- **Byte-Level SHA-256 Verification**: Package artifacts uploaded to S3 are verified by streaming full payload bytes and calculating local SHA-256 digests prior to baseline publication. S3 user-metadata and provider ETags (MD5) are never accepted as sole proof of content integrity.
-- **Non-Destructive Quarantine**: Checksum mismatches or interrupted uploads write diagnostic records to `state/<portal_id>/quarantine/` without altering or deleting existing package artifacts or active baselines.
-- **Preserved Local Defaults**: The local filesystem backend remains the default (`--storage-backend local`). All prior local runner workflows and test suites continue to execute unchanged.
-
-### CLI Invocation
-
-To execute a crawl backed by AWS S3 remote storage:
-
-```bash
-# Baseline crawl with S3 durable state
-python -m src.corpusai_run --portal wordpress-news --mode baseline \
-  --storage-backend s3 \
-  --s3-bucket my-corpusai-archive \
-  --s3-prefix corpusai/production
-
-# Incremental crawl hydrating baseline from S3
-python -m src.corpusai_run --portal wordpress-news --mode incremental \
-  --storage-backend s3 \
-  --s3-bucket my-corpusai-archive \
-  --s3-prefix corpusai/production
-```
-
-#### CLI Flags
-- `--storage-backend {local,s3}`: Choice of storage backend (default: `local`).
-- `--s3-bucket BUCKET`: Target S3 bucket name (required when `--storage-backend s3`).
-- `--s3-prefix PREFIX`: Key prefix prepended to all S3 objects (default: empty string).
-- `--runner-id ID`: Runner identifier used for lease ownership tracking (auto-generated if omitted).
-
-### IAM Permissions
-
-An IAM policy granting the following actions on the target bucket and prefix is required:
-
-```json
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "s3:GetObject",
-        "s3:PutObject",
-        "s3:ListBucket"
-      ],
-      "Resource": [
-        "arn:aws:s3:::my-corpusai-archive",
-        "arn:aws:s3:::my-corpusai-archive/*"
-      ]
-    }
-  ]
-}
-```
-
-Credentials are automatically discovered via the standard `boto3` / AWS SDK credential resolution chain (environment variables `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`, IAM instance profiles, or `~/.aws/credentials`).
-
-### S3 Object Layout
+## Current Development Status
 
 ```text
-s3://<bucket>/<prefix>/
-├── state/
-│   └── <portal_id>/
-│       ├── portal_control.json     # Single authoritative control record (fencing/lease/baseline)
-│       ├── catalog.json            # Projected history ledger
-│       ├── deposit_registry.json   # Repository deposit tracking
-│       └── quarantine/             # Non-destructive failed upload descriptors
-│           └── quarantine-<run_id>-<timestamp>.json
-└── packages/
-    └── <portal_id>/
-        └── runs/
-            └── <run_id>/
-                ├── manifest.json
-                ├── checksums.sha256
-                ├── portal_state.json
-                ├── run_summary.json
-                ├── run.log
-                └── content_html.warc.gz
+[✓] Implemented & Verified in CI     [~] Implemented & Tested with Mocks     [ ] Gated / Future Milestone
 ```
 
-### Live S3 Integration Tests
+- **`[✓]` Core Deterministic Crawler**: DOM article discovery, pagination policies, and graph traversal.
+- **`[✓]` Provenance Engine**: ISO 28500 WARC/WACZ generator and MIME content separator.
+- **`[✓]` Offline Replay Server**: Native loopback replay with browser network barrier and visual QA.
+- **`[✓]` Multi-Level Forum Crawling**: 4-level bbPress traversal with reply fragment normalization.
+- **`[✓]` Daily Run Orchestration**: Production CLI runner with exponential retries and deterministic exit codes.
+- **`[✓]` Durable Local Storage**: OS advisory file locking, catalog recovery, and package verification.
+- **`[~]` S3 Remote Storage Adapter**: Fully implemented with CAS, lease heartbeats, and recovery (35/35 offline mock tests passing; live S3 integration pending real AWS environment).
+- **`[~]` Zenodo Sandbox Deposit**: Adapter implemented with quota enforcement and receipt registry (16/16 offline mock tests passing; production deposit disabled).
+- **`[ ]` Unattended Scheduled Crawling**: Cron triggers remain gated until persistent storage credentials are configured.
+- **`[ ]` Public Repository Deposits**: Public publishing strictly disabled by default (`allow_publish=False`).
 
-Live S3 integration tests (`tests/integration/test_live_s3_storage.py`) are strictly opt-in and will never run in standard CI. They require explicit environment configuration:
+---
 
-```bash
-export CORPUSAI_STORAGE_LIVE_TEST=1
-export CORPUSAI_S3_BUCKET=my-corpusai-test-bucket
-export CORPUSAI_S3_PREFIX=corpusai-live-test
-python -m pytest tests/integration/test_live_s3_storage.py -v
-```
+## Limitations & Safety Boundaries
+
+- **Experimental Research Framework**: CorpusAI is an experimental research prototype evaluating algorithmic crawler policies, not an enterprise distributed crawler.
+- **Bounded Real-World Evaluations**: Real-world validation has targeted bounded subsets of WordPress News (`/news/all-posts/`) and WordPress Support Forums. Full portal coverage was intentionally not attempted (`full_portal_coverage = false`).
+- **Access Restrictions**: CorpusAI does not bypass CAPTCHAs, paywalls, or authentication barriers. Interstitial handling is strictly limited to simulated transparent consent gates.
+- **Polite Execution**: Complies with `robots.txt`, identifies via an academic research User-Agent, and enforces polite request delays (1.5–2.0s).
+- **Storage Gate**: Automated scheduled crawls on GitHub Actions are intentionally commented out; ephemeral CI runner disks discard uncommitted crawls upon workflow completion.
 
 ---
 
 ## Roadmap
 
-1. **Browser-Backed Replay / QA:** Containerized Browsertrix capture and automated replay QA auditing.
-2. **Incremental Full-Portal Crawling:** Head-page sentinel monitoring and state reconciliation across complete portal runs.
-3. **Durable Storage & Repository Deposit:** Automated catalog indexing and Zenodo/Dataverse deposit manifest creation.
-4. **Difficult & Non-Regular Portals:** Real-world validation on forums, bulletin boards, and deep-link structures.
-5. **Downstream Corpus Services:** Full TEI/XML transformation pipelines and linguistic text-mining ingestion.
+1. **Phase 9C-C: Live Storage & Recovery Validation**: End-to-end verification against real S3/R2 endpoints and automated fresh-runner recovery drills.
+2. **Scheduled Cloud Workflows**: Enabling automated cron execution once durable remote storage secrets are established.
+3. **Automated Replay Regression Testing**: Automated perceptual visual diffing against gold standard renders across portal redesigns.
+4. **TEI/XML Downstream Transformations**: Export pipelines transforming preserved WARC payloads into standardized TEI/XML formats for NLP research.
 
 ---
 
-## License
+## License & Attribution
 
-CorpusAI source code and project documentation are licensed under the [Apache License 2.0](LICENSE).
+CorpusAI source code and documentation are licensed under the **[Apache License 2.0](LICENSE)**.
 
-### Third-Party Content
-
-The Apache License 2.0 applies to original CorpusAI source code and project documentation unless otherwise noted.
-
-Archived web pages, WARC/WACZ captures, images, CSS, JavaScript, fonts, datasets, and other third-party materials retain the rights and licensing conditions of their original owners.
-
-CorpusAI's license does not grant redistribution or sublicensing rights for third-party web content captured during research experiments. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details on external software components and attributions.
-
+### Third-Party Materials
+- Archived web content, HTML, images, CSS, JavaScript, and fonts captured during experiments remain the intellectual property of their respective copyright holders.
+- Research captures are conducted under academic fair use for corpus construction and digital preservation evaluation.
+- External software components and attributions are documented in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
