@@ -6,21 +6,11 @@ inventories, evaluates Browsertrix QA summaries, and tracks manual replay status
 """
 
 from dataclasses import asdict, dataclass, field
-import hashlib
 import json
 import os
 from typing import Any, Dict, List, Optional
 
-
-def compute_file_sha256(file_path: str) -> str:
-    """Compute SHA-256 digest of a local file."""
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File not found: {file_path}")
-    h = hashlib.sha256()
-    with open(file_path, "rb") as f:
-        while chunk := f.read(65536):
-            h.update(chunk)
-    return h.hexdigest()
+from src.utils.crypto import sha256_file as compute_file_sha256
 
 
 @dataclass
