@@ -1,7 +1,7 @@
 # CorpusAI Phase 9A: Zenodo Sandbox Deposit Adapter and Receipt Tracking
 
 ## 1. Overview
-CorpusAI Phase 9A implements verified online repository deposits to **Zenodo Sandbox** (`sandbox.zenodo.org`), decoupled deposit receipt tracking, and safe retry/reconciliation semantics in accordance with Professor Balázs Indig's preservation principles:
+CorpusAI Phase 9A implements verified online repository deposits to **Zenodo Sandbox** (`sandbox.zenodo.org`), decoupled deposit receipt tracking, and safe retry/reconciliation semantics in accordance with research guidance on preservation principles:
 
 - **Local Verification Gate**: Packages must strictly pass `PackageVerifier.verify_package()` before any remote draft or file upload operation. Corrupted or incomplete packages are rejected locally.
 - **Decoupled Deposit State**: Deposit outcomes are stored in a companion `deposit_registry.json`. A remote repository failure does **not** invalidate a successful crawl or alter `ArchiveCatalog.latest_successful_run_id`.

@@ -9,7 +9,7 @@ An experimental research prototype for deterministic discovery, revisit policies
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-308-blue.svg)]()
+[![Tests](https://img.shields.io/badge/tests-355%20passed-blue.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -56,7 +56,7 @@ CorpusAI evaluates deterministic crawler algorithms, tamper-evident archival sto
 
 ## Current Status
 
-- **Offline Unit Test Suite:** **308 tests collected** across the test suite. All offline mocked unit and integration tests pass; loopback socket tests pass in Linux CI environments.
+- **Offline Unit Test Suite:** **355 tests passing on Linux CI** (355 collected and passing offline across unit, storage protocol, and runner suites; 3 opt-in live S3 integration tests skipped pending live AWS credentials; loopback socket suites verified in Linux CI).
 - **Deterministic Synthetic WARC Fixtures:** Generated automatically via `tests/fixtures/generate_warc_fixtures.py` and pytest session hooks (`conftest.py`). Clean CI checkouts reliably reproduce the required test WARCs without storing binary blobs in Git.
 - **Continuous Integration:** Automated GitHub Actions workflow (`.github/workflows/tests.yml`) executing fixture generation and offline tests on Python 3.11.
 - **Controlled Synthetic Experiments:** 100% test scenario completion across simulated unstable pagination, multi-level graph topologies, navigation gates, and incremental mutation benchmarks (Scenarios A through N).
@@ -400,7 +400,7 @@ Continuous Integration (`.github/workflows/tests.yml`) executes:
 pytest -v
 ```
 
-**Current offline test suite:** `308 tests` (all unit and mock integration tests passing offline; loopback socket suites verified in Linux CI).
+**Current offline test suite:** `355 tests passing on Linux CI` (all unit, protocol, and mock integration tests passing offline; 3 opt-in live S3 integration tests safely skipped without credentials; loopback socket suites verified in Linux CI).
 
 ### 4. Run Browser-Backed Replay Validation (WordPress Case)
 ```bash
@@ -478,8 +478,8 @@ Phase 9C-B introduces an AWS S3 transport adapter (`S3RemoteStorageBackend`) con
 ### Architecture & Key Semantics
 
 - **Sole Authoritative Control Record**: `state/<portal_id>/portal_control.json` coordinates lease locking, monotonic fencing/baseline generations, and the active baseline pointer.
-- **Conditional Writes (CAS)**: Lease acquisition, renewal, release, and baseline commits use S3 conditional headers (`If-None-Match: *` for initial record creation; `If-Match: <etag>` for state-changing mutations). HTTP 412 (`PreconditionFailed`) triggers atomic conflict handling.
-- **ETag Quote Stripping**: AWS S3 returns quoted ETags (`"hex"`). The adapter normalizes ETags by stripping surrounding quotes on read and supplies raw hex strings to `IfMatch`.
+- **Conditional Writes (CAS)**: Lease acquisition, renewal, release, and baseline commits use S3 conditional headers (`If-None-Match: *` for initial record creation; `If-Match: "<etag>"` for state-changing mutations). HTTP 412 (`PreconditionFailed`) triggers atomic conflict handling.
+- **ETag Normalization & Quoting**: AWS S3 returns quoted ETags (`"hex"`). The adapter normalizes ETags internally by stripping quotes, and formats valid quoted entity-tags for `IfMatch` request headers per the HTTP specification.
 - **Byte-Level SHA-256 Verification**: Package artifacts uploaded to S3 are verified by streaming full payload bytes and calculating local SHA-256 digests prior to baseline publication. S3 user-metadata and provider ETags (MD5) are never accepted as sole proof of content integrity.
 - **Non-Destructive Quarantine**: Checksum mismatches or interrupted uploads write diagnostic records to `state/<portal_id>/quarantine/` without altering or deleting existing package artifacts or active baselines.
 - **Preserved Local Defaults**: The local filesystem backend remains the default (`--storage-backend local`). All prior local runner workflows and test suites continue to execute unchanged.

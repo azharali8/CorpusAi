@@ -76,7 +76,7 @@ class MockHttpResponse:
 def _create_sample_metadata(tmp_path) -> DepositMetadata:
     return DepositMetadata(
         title="CorpusAI Research Corpus: WordPress News Archive",
-        creators=[Creator(name="Balázs Indig", affiliation="Research Group")],
+        creators=[Creator(name="CorpusAI Research Group", affiliation="Research Group")],
         description="Preserved longitudinal web corpus of WordPress news articles for linguistic evaluation.",
         capture_period_start="2026-10-01T00:00:00Z",
         capture_period_end="2026-10-23T00:00:00Z",
@@ -151,7 +151,7 @@ def test_metadata_mapping_to_zenodo_payload(tmp_path):
     metadata = payload["metadata"]
     assert metadata["title"] == meta.title
     assert metadata["upload_type"] == "dataset"
-    assert metadata["creators"] == [{"name": "Balázs Indig", "affiliation": "Research Group"}]
+    assert metadata["creators"] == [{"name": "CorpusAI Research Group", "affiliation": "Research Group"}]
     assert metadata["access_right"] == "restricted"
     assert "access_conditions" in metadata
     assert "wordpress.org" in metadata["keywords"]

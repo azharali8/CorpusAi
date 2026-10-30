@@ -7,7 +7,7 @@
 [32m+[m[32m# CorpusAI Phase 9A: Zenodo Sandbox Deposit Adapter and Receipt Tracking[m
 [32m+[m
 [32m+[m[32m## 1. Overview[m
-[32m+[m[32mCorpusAI Phase 9A implements verified online repository deposits to **Zenodo Sandbox** (`sandbox.zenodo.org`), decoupled deposit receipt tracking, and safe retry/reconciliation semantics in accordance with Professor Balázs Indig's preservation principles:[m
+[32m+[m[32mCorpusAI Phase 9A implements verified online repository deposits to **Zenodo Sandbox** (`sandbox.zenodo.org`), decoupled deposit receipt tracking, and safe retry/reconciliation semantics in accordance with research guidance on preservation principles:[m
 [32m+[m
 [32m+[m[32m- **Local Verification Gate**: Packages must strictly pass `PackageVerifier.verify_package()` before any remote draft or file upload operation. Corrupted or incomplete packages are rejected locally.[m
 [32m+[m[32m- **Decoupled Deposit State**: Deposit outcomes are stored in a companion `deposit_registry.json`. A remote repository failure does **not** invalidate a successful crawl or alter `ArchiveCatalog.latest_successful_run_id`.[m
@@ -148,7 +148,7 @@
 [32m+[m[32mRepository Deposit Client and Zenodo Sandbox Adapter module for CorpusAI Phase 9A.[m
 [32m+[m
 [32m+[m[32mImplements online repository deposit preparation, artifact streaming, and[m
-[32m+[m[32mreceipt tracking following Professor Balázs Indig's preservation principles:[m
+[32m+[m[32mreceipt tracking following research guidance on preservation principles:[m
 [32m+[m[32m- Verification before upload: package must pass PackageVerifier.verify_package()[m
 [32m+[m[32m- Decoupled lifecycle: deposit outcomes are tracked independently of crawl success[m
 [32m+[m[32m- Safe retries and duplicate protection via stable package fingerprint[m
@@ -1075,7 +1075,7 @@
 [32m+[m[32mdef _create_sample_metadata(tmp_path) -> DepositMetadata:[m
 [32m+[m[32m    return DepositMetadata([m
 [32m+[m[32m        title="CorpusAI Research Corpus: WordPress News Archive",[m
-[32m+[m[32m        creators=[Creator(name="Balázs Indig", affiliation="Research Group")],[m
+[32m+[m[32m        creators=[Creator(name="CorpusAI Research Group", affiliation="Research Group")],[m
 [32m+[m[32m        description="Preserved longitudinal web corpus of WordPress news articles for linguistic evaluation.",[m
 [32m+[m[32m        capture_period_start="2026-10-01T00:00:00Z",[m
 [32m+[m[32m        capture_period_end="2026-10-23T00:00:00Z",[m
@@ -1150,7 +1150,7 @@
 [32m+[m[32m    metadata = payload["metadata"][m
 [32m+[m[32m    assert metadata["title"] == meta.title[m
 [32m+[m[32m    assert metadata["upload_type"] == "dataset"[m
-[32m+[m[32m    assert metadata["creators"] == [{"name": "Balázs Indig", "affiliation": "Research Group"}][m
+[32m+[m[32m    assert metadata["creators"] == [{"name": "CorpusAI Research Group", "affiliation": "Research Group"}][m
 [32m+[m[32m    assert metadata["access_right"] == "restricted"[m
 [32m+[m[32m    assert "access_conditions" in metadata[m
 [32m+[m[32m    assert "wordpress.org" in metadata["keywords"][m

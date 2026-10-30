@@ -2,7 +2,7 @@
 Repository Deposit Client and Zenodo Sandbox Adapter module for CorpusAI Phase 9A.
 
 Implements online repository deposit preparation, artifact streaming, and
-receipt tracking following Professor Balázs Indig's preservation principles:
+receipt tracking following research guidance on preservation principles:
 - Verification before upload: package must pass PackageVerifier.verify_package()
 - Decoupled lifecycle: deposit outcomes are tracked independently of crawl success
 - Safe retries and duplicate protection via stable package fingerprint
