@@ -1,7 +1,7 @@
 # CorpusAI Phase 9B: Durable State, Concurrency Protection, and Catalog Recovery
 
 ## 1. Overview
-CorpusAI Phase 9B establishes operational state durability, cross-platform concurrency protection, pre-flight baseline integrity verification, catalog reconciliation, and conservative retention management in accordance with Professor Balázs Indig's preservation principles:
+CorpusAI Phase 9B establishes operational state durability, cross-platform concurrency protection, pre-flight baseline integrity verification, catalog reconciliation, and conservative retention management in accordance with research guidance on preservation principles:
 
 - **OS Advisory Locking**: Exclusive per-portal locking via `PortalLock` (`src/storage_backend.py`), using kernel-level locks (`msvcrt.locking` on Windows, `fcntl.flock` on Linux/POSIX). Locks have process-lifetime ownership and are automatically reclaimed by the OS kernel upon normal exit or process crashes.
 - **Baseline Integrity Gate**: Incremental crawling runs `validate_baseline_integrity()` before issuing any network requests, independently verifying catalog pointers, package manifests, and `portal_state.json` consistency via `PackageVerifier.verify_package()`.

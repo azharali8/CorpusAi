@@ -342,7 +342,7 @@ def test_deposit_metadata_inclusion_and_validation(tmp_path, sample_run_files):
 
     dep_meta = DepositMetadata(
         title="CorpusAI Research Web Archive",
-        creators=[Creator(name="Balázs Indig", affiliation="Research Team")],
+        creators=[Creator(name="CorpusAI Research Team", affiliation="Research Team")],
         description="Preserved research web corpus archive with verifiable WARC and replay containers.",
         capture_period_start="2026-10-23T00:00:00Z",
         capture_period_end="2026-10-23T01:00:00Z",
@@ -369,7 +369,7 @@ def test_deposit_metadata_inclusion_and_validation(tmp_path, sample_run_files):
     assert os.path.exists(dep_json)
     loaded = DepositMetadata.load_from_json(dep_json)
     assert loaded.title == "CorpusAI Research Web Archive"
-    assert loaded.creators[0].name == "Balázs Indig"
+    assert loaded.creators[0].name == "CorpusAI Research Team"
 
 
 # ---------------------------------------------------------------------------
