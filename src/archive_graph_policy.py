@@ -7,11 +7,10 @@ dynamic child verification, and integrates leaf archives directly with ArchiveVi
 """
 
 import hashlib
-import re
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 
-from src.archive_visit_policy import ArchiveVisitPolicy, ArticleLedger, normalize_article_url
+from src.archive_visit_policy import ArticleLedger, normalize_article_url
 
 
 def compute_node_child_fingerprints(child_urls: List[str]) -> Tuple[str, str]:

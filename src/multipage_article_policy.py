@@ -7,7 +7,6 @@ and preserves logical article completeness and provenance.
 """
 
 from typing import Any, Callable, Dict, List, Optional, Set
-from urllib.parse import urlparse
 
 from src.archive_visit_policy import normalize_article_url
 from src.navigation_gate_policy import NavigationGatePolicy

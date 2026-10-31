@@ -12,7 +12,6 @@ Implements verified archival run packaging according to docs/archive_storage_des
 
 from dataclasses import asdict, dataclass, field
 import datetime
-import hashlib
 import json
 import os
 import platform
@@ -21,9 +20,9 @@ import tempfile
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
-from src.archive_run import ArchiveRun, compute_config_hash, generate_run_id
+from src.archive_run import compute_config_hash
 from src.deposit_metadata import DepositMetadata
-from src.replay_validation import compute_file_sha256
+from src.utils.crypto import sha256_file as compute_file_sha256
 
 
 # Package Layout Constants

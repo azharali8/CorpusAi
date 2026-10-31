@@ -1,0 +1,23 @@
+{
+  "portal_id": "wordpress-news",
+  "control_version": 2,
+  "fencing_generation": 1,
+  "baseline_generation": 0,
+  "lease": {
+    "lease_owner_id": "runner-1",
+    "acquired_at": "2026-10-31T19:42:57.121044+00:00",
+    "renewed_at": "2026-10-31T19:42:57.121044+00:00",
+    "expires_at": "2026-10-31T20:27:57.121044+00:00",
+    "ttl_seconds": 2700
+  },
+  "baseline": {
+    "latest_successful_run_id": "run-100",
+    "committed_at": "2026-10-30T01:00:00Z",
+    "committed_by_generation": 1,
+    "baseline_generation": 1,
+    "manifest_path": null,
+    "checksums_path": null
+  },
+  "catalog_head_etag": null,
+  "updated_at": "2026-10-31T19:42:57.121044+00:00"
+}

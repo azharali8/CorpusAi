@@ -9,15 +9,12 @@ Orchestrates incremental crawl traversal using the head-first principle:
 5. Employs budget controls, anomaly detection, and provenance tracking.
 """
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 import datetime
-import hashlib
 import time
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from src.archive_visit_policy import (
-    ArchiveVisitPolicy,
-    ArticleLedger,
     compute_page_fingerprints,
     normalize_article_url,
 )

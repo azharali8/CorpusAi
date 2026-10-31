@@ -1,0 +1,25 @@
+{
+  "portal_id": "wordpress-news",
+  "latest_successful_run_id": "run-100",
+  "first_capture": null,
+  "latest_capture": null,
+  "all_run_ids": [],
+  "runs": {
+    "old-run-001": {
+      "run_id": "old-run-001",
+      "previous_run_id": null,
+      "mode": "BASELINE",
+      "started_at": "2026-10-26T00:00:00Z",
+      "completed_at": "2026-10-26T00:05:00Z",
+      "status": "CONVERGED",
+      "article_count": 2,
+      "new_article_count": 2,
+      "changed_article_count": 0,
+      "run_dir": "runs/old-run-001/",
+      "manual_review_status": "PENDING",
+      "anomalies": []
+    }
+  },
+  "schema_version": "1",
+  "updated_at": "2026-10-31T19:42:57.155710+00:00"
+}

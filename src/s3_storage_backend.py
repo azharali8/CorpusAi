@@ -27,19 +27,16 @@ should treat this as a CAS conflict and not retry blindly.
 
 import datetime
 import hashlib
-import io
 import json
 import logging
 import time
-import uuid
 import threading
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import boto3
 from botocore.exceptions import ClientError
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
-from src.portal_state import PortalState
 from src.remote_storage_contract import (
     BaselinePointer,
     LeaseInfo,
@@ -47,7 +44,6 @@ from src.remote_storage_contract import (
     RemoteArtifactMetadata,
     RemoteQuarantineRecord,
     RemoteCasConflictError,
-    RemoteChecksumMismatchError,
     RemoteLockError,
     RemoteStorageContract,
     RemoteStorageError,

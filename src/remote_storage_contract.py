@@ -38,12 +38,9 @@ import datetime
 import hashlib
 import json
 import os
-import shutil
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
-from src.deposit_metadata import DepositMetadata
-from src.portal_state import PortalState
 
 
 @dataclass

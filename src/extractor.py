@@ -5,7 +5,7 @@ Executes CSS and XPath extraction rules against HTML documents using BeautifulSo
 Returns structured field outputs accompanied by explicit success/failure status.
 """
 
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Union
 from bs4 import BeautifulSoup
 from lxml import html as lxml_html
 from lxml.etree import XPathError

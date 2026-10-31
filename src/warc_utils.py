@@ -9,6 +9,8 @@ Preserves URL provenance, record IDs, and SHA-256 checksums.
 import hashlib
 import io
 import os
+
+from src.utils.crypto import sha256_file
 from typing import Any, Dict, List, Optional, Tuple
 
 from warcio.archiveiterator import ArchiveIterator
@@ -19,15 +21,10 @@ from warcio.statusandheaders import StatusAndHeaders
 def calculate_warc_sha256(warc_path: str) -> str:
     """
     Calculate the SHA-256 checksum of a WARC file.
-    """
-    if not os.path.exists(warc_path):
-        raise FileNotFoundError(f"WARC file not found: {warc_path}")
 
-    sha256 = hashlib.sha256()
-    with open(warc_path, "rb") as f:
-        while chunk := f.read(65536):
-            sha256.update(chunk)
-    return sha256.hexdigest()
+    Raises FileNotFoundError if *warc_path* does not exist.
+    """
+    return sha256_file(warc_path)
 
 
 def validate_warc_input(warc_path: str) -> Dict[str, Any]:
