@@ -594,3 +594,59 @@ def test_file_count_and_size_limits_enforced(tmp_path):
 
 
 
+
+
+def test_compute_package_fingerprint_and_receipt_streaming_multi_chunk(tmp_path):
+    """
+    Verify that compute_package_fingerprint and verify_deposit_receipt correctly
+    hash a multi-chunk checksums.sha256 (>64KB default chunk size) via streaming
+    without memory exhaustion or digest discrepancy.
+    """
+    from src.zenodo_deposit import compute_package_fingerprint
+    from src.utils.crypto import sha256_file
+
+    pkg_dir = tmp_path / "pkg_large"
+    pkg_dir.mkdir()
+    checksums_file = pkg_dir / "checksums.sha256"
+
+    # Create a >130KB checksums file (exceeds default 65536 chunk size)
+    lines = []
+    dummy_hash = "a" * 64
+    for i in range(2000):
+        lines.append(f"{dummy_hash}  content/articles/article_item_with_long_name_{i:04d}.html\n")
+    large_content = "".join(lines).encode("utf-8")
+    assert len(large_content) > 131072  # >128 KB
+    checksums_file.write_bytes(large_content)
+
+    # Compute via function under test
+    fp = compute_package_fingerprint(str(pkg_dir))
+    expected_fp = sha256_file(str(checksums_file))
+    assert fp == expected_fp
+    assert len(fp) == 64
+
+    # Also test verify_deposit_receipt with multi-chunk checksums.sha256
+    adapter = ZenodoSandboxAdapter(api_token="dummy_token")
+    receipt = DepositReceipt(
+        receipt_id="test_receipt",
+        portal_id="test_portal",
+        run_id="run_1",
+        package_fingerprint=fp,
+        repository_target="zenodo",
+        environment="sandbox",
+        status="UPLOADED",
+        created_at="2026-10-31T00:00:00Z",
+        updated_at="2026-10-31T00:00:00Z",
+    )
+    # Put checksums.sha256 in artifact_inventory
+    from src.utils.crypto import compute_file_md5_and_sha256
+    md5_val, sha256_val, file_sz = compute_file_md5_and_sha256(str(checksums_file))
+    receipt.artifact_inventory["checksums.sha256"] = UploadedArtifactRecord(
+        filename="checksums.sha256",
+        filesize=file_sz,
+        local_md5=md5_val,
+        remote_md5=md5_val,
+        local_sha256=sha256_val,
+    )
+    updated_receipt = adapter.verify_remote_artifacts(receipt, str(pkg_dir))
+    assert updated_receipt.status == "VERIFIED"
+    assert updated_receipt.artifact_inventory["checksums.sha256"].verified is True

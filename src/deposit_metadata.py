@@ -7,10 +7,8 @@ provenance lineages, rights declarations, and archive manifests.
 """
 
 from dataclasses import asdict, dataclass, field
-import datetime
 import json
 import os
-import re
 from typing import Any, Dict, List, Optional
 
 

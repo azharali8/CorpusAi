@@ -5,7 +5,7 @@ Models access interstitials, age gates, consent dialogs, redirect chains,
 origin-scoped session state, gate provenance, and policy approval boundaries.
 """
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urlparse
 
 from src.archive_visit_policy import normalize_article_url

@@ -7,10 +7,9 @@ metadata changes, missing candidates, reorderings, page changes, and anomalies.
 """
 
 from dataclasses import asdict, dataclass, field
-import hashlib
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
-from src.portal_state import ArticleState, ArchivePageState, PortalState
+from src.portal_state import PortalState
 
 
 @dataclass

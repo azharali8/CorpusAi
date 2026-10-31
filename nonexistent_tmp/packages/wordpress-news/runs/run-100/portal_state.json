@@ -1,0 +1,16 @@
+{
+  "portal_id": "wordpress-news",
+  "run_id": "run-20261027T000000Z-wpnews",
+  "schema_version": "1",
+  "captured_at": "2026-10-31T19:42:57.025746+00:00",
+  "archive_pages": {},
+  "articles": {},
+  "archive_order": [],
+  "head_fingerprint": null,
+  "boundary_fingerprints": {},
+  "last_complete_archive_page": null,
+  "last_potentially_incomplete_page": null,
+  "total_articles_count": 0,
+  "total_archive_pages_count": 0,
+  "source_manifest": null
+}

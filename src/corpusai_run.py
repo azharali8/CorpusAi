@@ -17,7 +17,6 @@ import logging
 import os
 import socket
 import sys
-import time
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urljoin, urlparse
@@ -35,10 +34,9 @@ from src.incremental_archive_policy import (
     IncrementalArchivePolicy,
     IncrementalCrawlBudget,
 )
-from src.incremental_run import IncrementalRun
-from src.portal_state import ArticleState, ArchivePageState, PortalState
+from src.portal_state import PortalState
 from src.replay_validation import generate_sha256_manifest
-from src.storage_backend import LocalStateStorageBackend, PortalLock
+from src.storage_backend import LocalStateStorageBackend
 from src.catalog_recovery import (
     validate_baseline_integrity,
     BaselineIntegrityError,

@@ -9,7 +9,6 @@ direct WARC preservation using warcio.
 
 from dataclasses import dataclass, field
 import hashlib
-import os
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 import urllib.parse

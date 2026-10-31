@@ -9,7 +9,7 @@ An open-source research engineering framework for deterministic web discovery, b
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![Tests](https://img.shields.io/badge/tests-355%20passed-blue.svg)]()
+[![Tests](https://img.shields.io/badge/tests-364%20passed-blue.svg)]()
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -89,6 +89,7 @@ flowchart TD
 | **Multi-Level Forums** | 4-level bbPress traversal (Category -> Pages -> Topics -> Posts) with fragment normalization | Verified (Live bbPress) |
 | **Content Separation** | Isolated artifact streams for `content_html`, `content_json`, and supporting `assets` | Verified (Synthetic & Live) |
 | **Archival Provenance** | ISO 28500 WARC/WARC.GZ records with custom provenance headers and SHA-256 digests | Verified (Standard WARC/WACZ) |
+| **Shared Crypto & Manifest** | Streaming 64KB chunked SHA-256/MD5 hashing (`utils.crypto`) and canonical manifest generation (`utils.manifest`) | Verified (24 Dedicated Tests) |
 | **Offline Replay Server** | `ArchiveReplayServer` with index rewriting and strict live-network barriers (HTTP 404) | Verified (14 Tests & Headless) |
 | **Daily Orchestration** | CLI runner (`src.corpusai_run`), exponential backoff retries, and bounded HTTP 429 delays | Verified (29 Offline Tests) |
 | **Local State Durability** | OS advisory file locking (`msvcrt`/`fcntl`), pre-flight checks, and catalog recovery | Verified (16 Offline Tests) |
@@ -154,13 +155,19 @@ CorpusAI/
 │   ├── replay_server.py               # Air-gapped offline HTTP archive replay server
 │   ├── s3_storage_backend.py          # AWS S3 transport adapter with CAS and lease heartbeats
 │   ├── storage_backend.py             # Local filesystem backend and OS advisory locking
+│   ├── utils/                         # Shared core utilities
+│   │   ├── __init__.py                # Utilities package initialization
+│   │   ├── crypto.py                  # Canonical 64KB streaming SHA-256 and MD5 hashing
+│   │   └── manifest.py                # Canonical SHA-256 manifest generation
 │   ├── warc_utils.py                  # ISO 28500 WARC creation and MIME classification
 │   └── zenodo_deposit.py              # Zenodo Sandbox repository deposit client
-├── tests/                             # Comprehensive offline test suite (355 tests)
+├── tests/                             # Comprehensive offline test suite (383 collected, 364 passing)
 │   ├── fixtures/                      # Synthetic WARC and fixture generators
 │   ├── integration/                   # Opt-in live integration tests (S3 / remote)
+│   ├── test_crypto_utils.py           # Streaming crypto and chunking validation tests
 │   ├── test_phase8_runner.py          # Daily runner lifecycle and retry tests
 │   ├── test_phase9cb_s3_adapter.py    # S3 transport adapter and CAS unit tests
+│   ├── test_utils_manifest.py         # Checksum manifest format and sorting tests
 │   └── ...                            # Component unit and benchmark suites
 ├── pyproject.toml                     # Project build and tool configuration
 └── requirements.txt                   # Production and testing dependencies
@@ -319,7 +326,7 @@ pytest -v
 ```
 
 ### Verification Status
-- **Linux CI (`.github/workflows/tests.yml`)**: **355 tests passing** (verified on commit `c401c5a` and `077b8f3`, Python 3.11).
+- **Test Suite**: **383 tests collected, 364 passing offline, 3 skipped** (opt-in live S3 integration tests safely skipped in standard runs).
 - **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
 - **Opt-in Live S3 Integration**: Three opt-in live S3 integration tests in `tests/integration/test_live_s3_storage.py` test real S3 bucket APIs. These are **strictly opt-in**, unverified against production, and safely skipped in standard CI:
   ```bash

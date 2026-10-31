@@ -6,11 +6,11 @@ inventories, evaluates Browsertrix QA summaries, and tracks manual replay status
 """
 
 from dataclasses import asdict, dataclass, field
-import json
 import os
 from typing import Any, Dict, List, Optional
 
 from src.utils.crypto import sha256_file as compute_file_sha256
+from src.utils.manifest import generate_sha256_manifest
 
 
 @dataclass
@@ -106,15 +106,3 @@ class ReplayValidator:
         )
 
 
-def generate_sha256_manifest(files_dict: Dict[str, str], base_dir: str = "") -> str:
-    """
-    Generate standard sha256 checksum lines: `<sha256>  <relative-path>`
-    """
-    lines = []
-    for rel_path in sorted(files_dict.keys()):
-        full_path = os.path.join(base_dir, rel_path) if base_dir else rel_path
-        digest = compute_file_sha256(full_path)
-        # Use forward slashes for portable checksum files
-        clean_rel = rel_path.replace("\\", "/")
-        lines.append(f"{digest}  {clean_rel}")
-    return "\n".join(lines) + "\n"

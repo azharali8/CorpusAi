@@ -11,14 +11,13 @@ Provides:
 """
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
 import datetime
 import json
 import logging
 import os
 import sys
 import time
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Dict, Optional
 
 logger = logging.getLogger("corpusai.storage")
 

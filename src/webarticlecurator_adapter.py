@@ -6,7 +6,6 @@ Invokes supported CLI / API commands safely without shell=True or arbitrary comm
 """
 
 import os
-import shutil
 import subprocess
 import sys
 from typing import Any, Dict, List, Optional

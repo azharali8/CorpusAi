@@ -18,14 +18,13 @@ import hashlib
 import json
 import logging
 import os
-import re
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 import urllib.error
 import urllib.parse
 import urllib.request
 
-from src.archive_package import PackageVerifier, PackageVerificationResult
+from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
 
 logger = logging.getLogger("corpusai.deposit")
@@ -237,8 +236,7 @@ def compute_package_fingerprint(package_dir: str) -> str:
     """
     checksums_path = os.path.join(package_dir, "checksums.sha256")
     if os.path.exists(checksums_path):
-        with open(checksums_path, "rb") as f:
-            return hashlib.sha256(f.read()).hexdigest()
+        return sha256_file(checksums_path)
     # Fallback: hash directory tree listing
     hasher = hashlib.sha256()
     for root, _, files in os.walk(package_dir):
@@ -247,7 +245,7 @@ def compute_package_fingerprint(package_dir: str) -> str:
     return hasher.hexdigest()
 
 
-from src.utils.crypto import compute_file_md5_and_sha256
+from src.utils.crypto import compute_file_md5_and_sha256, sha256_file
 
 
 class ZenodoSandboxAdapter(RepositoryDepositClient):
@@ -644,8 +642,7 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
 
         # Add checksums.sha256 itself if present
         if os.path.exists(checksums_path):
-            with open(checksums_path, "rb") as f:
-                expected_sha256s["checksums.sha256"] = hashlib.sha256(f.read()).hexdigest().lower()
+            expected_sha256s["checksums.sha256"] = sha256_file(checksums_path).lower()
 
         missing_or_mismatched = []
         for rel_path, record in receipt.artifact_inventory.items():

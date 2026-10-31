@@ -10,7 +10,7 @@ from dataclasses import asdict, dataclass, field
 import datetime
 import json
 import os
-from typing import Any, Dict, List, Optional, Set
+from typing import Any, Dict, List, Optional
 
 
 @dataclass
