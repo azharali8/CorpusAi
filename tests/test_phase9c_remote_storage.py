@@ -31,11 +31,11 @@ from src.catalog_recovery import validate_baseline_integrity, BaselineIntegrityE
 from src.portal_state import PortalState
 from src.remote_storage_contract import (
     BaselinePointer,
-    MockRemoteStorageBackend,
     PortalControlRecord,
     RemoteStorageContract,
     RemoteStorageError,
 )
+from tests.mocks.mock_remote_storage import MockRemoteStorageBackend
 
 
 @pytest.fixture
