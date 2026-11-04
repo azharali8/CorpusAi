@@ -7,9 +7,9 @@ preserving run-to-run provenance, change metrics, anomaly detections, and run li
 
 from dataclasses import asdict, dataclass, field
 import datetime
-import json
-import os
 from typing import Any, Dict, List, Optional
+
+from src.utils.serialization import atomic_write_json, read_json
 
 
 @dataclass
@@ -70,21 +70,12 @@ class IncrementalRun:
 
     def save_to_json(self, file_path: str) -> None:
         """Atomically persist IncrementalRun metadata to JSON."""
-        os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
-        tmp_path = f"{file_path}.tmp.{os.getpid()}"
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp_path, file_path)
+        atomic_write_json(file_path, self.to_dict(), indent=2)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "IncrementalRun":
         """Load IncrementalRun from JSON file."""
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"IncrementalRun file not found: {file_path}")
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = read_json(file_path, missing_file_message=f"IncrementalRun file not found: {file_path}")
         return cls.from_dict(data)
 
     def mark_completed(
