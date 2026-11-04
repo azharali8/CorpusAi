@@ -18,6 +18,9 @@ from unittest.mock import patch
 import pytest
 
 from src.archive_catalog import ArchiveCatalog
+from src.archive_run import ArchiveRun
+from src.content_url_registry import ContentURLEntry, ContentURLRegistry
+from src.deposit_metadata import Creator, DepositMetadata
 from src.incremental_run import IncrementalRun
 from src.portal_state import ArticleState, PortalState
 from src.utils.serialization import atomic_write_json, ensure_parent_dir, read_json
@@ -163,6 +166,21 @@ def test_domain_classes_missing_file_exact_messages(tmp_path: Path):
         IncrementalRun.load_from_json(missing_run)
     assert str(exc_run.value) == f"IncrementalRun file not found: {missing_run}"
 
+    missing_arch_run = str(tmp_path / "missing_arch_run.json")
+    with pytest.raises(FileNotFoundError) as exc_arch_run:
+        ArchiveRun.load_from_json(missing_arch_run)
+    assert str(exc_arch_run.value) == f"ArchiveRun file not found: {missing_arch_run}"
+
+    missing_reg = str(tmp_path / "missing_registry.json")
+    with pytest.raises(FileNotFoundError) as exc_reg:
+        ContentURLRegistry.load_from_json(missing_reg)
+    assert str(exc_reg.value) == f"Registry file not found: {missing_reg}"
+
+    missing_dep = str(tmp_path / "missing_deposit.json")
+    with pytest.raises(FileNotFoundError) as exc_dep:
+        DepositMetadata.load_from_json(missing_dep)
+    assert str(exc_dep.value) == f"Deposit metadata file not found: {missing_dep}"
+
 
 def test_archive_catalog_delegation(tmp_path: Path):
     cat_file = tmp_path / "catalog.json"
@@ -218,3 +236,89 @@ def test_incremental_run_delegation(tmp_path: Path):
     assert loaded.run_id == "run-2026-11-04"
     assert loaded.mode == "INCREMENTAL"
     assert loaded.seed_urls == ["http://example.com"]
+
+
+def test_archive_run_delegation_and_path_support(tmp_path: Path):
+    run_file = tmp_path / "deep" / "arch_run.json"
+    run = ArchiveRun(
+        run_id="run-001",
+        target_urls=["http://portal.example.com"],
+        scope="domain",
+        crawler="corpusai",
+        crawler_version="0.1.0",
+        started_at="2026-11-04T00:00:00Z",
+        configuration={},
+        status="RUNNING",
+    )
+    # Test Path input creates nested directory
+    run.save_to_json(run_file)
+    assert run_file.exists()
+
+    loaded = ArchiveRun.load_from_json(str(run_file))
+    assert loaded.run_id == "run-001"
+    assert loaded.target_urls == ["http://portal.example.com"]
+    assert loaded.status == "RUNNING"
+
+
+def test_content_url_registry_delegation_and_path_support(tmp_path: Path):
+    reg_file = tmp_path / "nested" / "registry.json"
+    reg = ContentURLRegistry()
+    reg.register_url(
+        url="http://example.com/art1",
+        source_archive="archive-1",
+        content_role="article",
+    )
+    # Test Path input creates nested directory
+    reg.save_to_json(reg_file)
+    assert reg_file.exists()
+
+    loaded = ContentURLRegistry.load_from_json(str(reg_file))
+    assert loaded.count() == 1
+    entry = loaded.get("http://example.com/art1")
+    assert entry is not None
+    assert entry.source_archive == "archive-1"
+
+
+def test_deposit_metadata_delegation_validation_and_path_support(tmp_path: Path):
+    dep_file = tmp_path / "metadata_dir" / "deposit.json"
+    meta = DepositMetadata(
+        title="Sample Web Corpus",
+        creators=[Creator(name="Jane Doe", affiliation="University")],
+        description="Comprehensive dataset of preserved news articles.",
+        capture_period_start="2026-11-01T00:00:00Z",
+        capture_period_end="2026-11-04T00:00:00Z",
+        source_domains=["http://example.com"],
+        license_status="CC-BY-4.0",
+        copyright_notice="Copyright 2026",
+        software_version="0.1.0",
+        archive_formats=["WARC", "WACZ"],
+        checksum_manifest_path="checksums.sha256",
+    )
+    # Valid metadata saves and creates parent dir
+    meta.save_to_json(dep_file)
+    assert dep_file.exists()
+
+    loaded = DepositMetadata.load_from_json(str(dep_file))
+    assert loaded.title == "Sample Web Corpus"
+    assert len(loaded.creators) == 1
+    assert loaded.creators[0].name == "Jane Doe"
+
+    # Validation failure: ensure invalid metadata raises ValueError before writing
+    invalid_file = tmp_path / "invalid_dir" / "deposit.json"
+    invalid_meta = DepositMetadata(
+        title="",  # Empty title is invalid
+        creators=[],  # No creators is invalid
+        description="test",
+        capture_period_start="",
+        capture_period_end="",
+        source_domains=[],
+        license_status="CC-BY-4.0",
+        copyright_notice="",
+        software_version="0.1.0",
+        archive_formats=[],
+        checksum_manifest_path="",
+    )
+    with pytest.raises(ValueError, match="Invalid deposit metadata"):
+        invalid_meta.save_to_json(invalid_file)
+    assert not invalid_file.exists()
+    assert not invalid_file.parent.exists()

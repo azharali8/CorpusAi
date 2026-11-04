@@ -8,8 +8,9 @@ provenance lineages, rights declarations, and archive manifests.
 
 from dataclasses import asdict, dataclass, field
 import json
-import os
 from typing import Any, Dict, List, Optional
+
+from src.utils.serialization import ensure_parent_dir, read_json
 
 
 @dataclass
@@ -72,14 +73,11 @@ class DepositMetadata:
         errors = self.validate()
         if errors:
             raise ValueError(f"Invalid deposit metadata: {', '.join(errors)}")
-        os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
-        with open(file_path, "w", encoding="utf-8") as f:
+        path = ensure_parent_dir(file_path)
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "DepositMetadata":
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Deposit metadata file not found: {file_path}")
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = read_json(file_path, missing_file_message=f"Deposit metadata file not found: {file_path}")
         return cls.from_dict(data)

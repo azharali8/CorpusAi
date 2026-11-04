@@ -9,8 +9,9 @@ Maintains a dedicated content URL registry separate from generic web crawl front
 from dataclasses import asdict, dataclass, field
 import datetime
 import json
-import os
 from typing import Any, Dict, List, Optional
+
+from src.utils.serialization import ensure_parent_dir, read_json
 
 
 @dataclass
@@ -135,17 +136,14 @@ class ContentURLRegistry:
 
     def save_to_json(self, file_path: str) -> None:
         """Persist registry to a JSON file."""
-        os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
+        path = ensure_parent_dir(file_path)
         data = [e.to_dict() for e in self._entries.values()]
-        with open(file_path, "w", encoding="utf-8") as f:
+        with open(path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2, ensure_ascii=False)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "ContentURLRegistry":
         """Load registry from a JSON file."""
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Registry file not found: {file_path}")
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        data = read_json(file_path, missing_file_message=f"Registry file not found: {file_path}")
         entries = [ContentURLEntry.from_dict(item) for item in data]
         return cls(entries)
