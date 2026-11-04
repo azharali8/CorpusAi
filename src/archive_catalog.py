@@ -7,9 +7,10 @@ of all historical runs and the latest successful run pointer with atomic write s
 
 from dataclasses import asdict, dataclass, field
 import datetime
-import json
-import os
 from typing import Any, Dict, List, Optional
+from pathlib import Path
+
+from src.utils.serialization import atomic_write_json, read_json
 
 
 @dataclass
@@ -105,26 +106,17 @@ class ArchiveCatalog:
 
     def save_to_json(self, file_path: str) -> None:
         """Persist catalog atomically using tempfile + replace."""
-        os.makedirs(os.path.dirname(os.path.abspath(file_path)), exist_ok=True)
-        tmp_path = f"{file_path}.tmp.{os.getpid()}"
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
-            f.flush()
-            os.fsync(f.fileno())
-        os.replace(tmp_path, file_path)
+        atomic_write_json(file_path, self.to_dict(), indent=2)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "ArchiveCatalog":
-        """Load catalog from JSON file, or create a fresh default catalog if missing."""
-        if not os.path.exists(file_path):
-            raise FileNotFoundError(f"Catalog file not found: {file_path}")
-        with open(file_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        """Load catalog from JSON file, or raise FileNotFoundError if missing."""
+        data = read_json(file_path, missing_file_message=f"Catalog file not found: {file_path}")
         return cls.from_dict(data)
 
     @classmethod
     def load_or_create(cls, file_path: str, portal_id: str) -> "ArchiveCatalog":
         """Load existing catalog or create a new empty catalog for the portal."""
-        if os.path.exists(file_path):
+        if Path(file_path).exists():
             return cls.load_from_json(file_path)
         return cls(portal_id=portal_id)
