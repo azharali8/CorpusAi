@@ -451,7 +451,7 @@ def test_deposit_failure_does_not_alter_catalog(tmp_path):
 
 def test_atomic_receipt_persistence(tmp_path):
     """13. Atomic receipt persistence survives malformed or interrupted state updates."""
-    reg_file = str(tmp_path / "deposit_registry.json")
+    reg_file = str(tmp_path / "nested" / "deposit_registry.json")
     registry = DepositRegistry.load_or_create(reg_file)
 
     receipt = DepositReceipt(
@@ -471,6 +471,50 @@ def test_atomic_receipt_persistence(tmp_path):
     with open(reg_file, "r", encoding="utf-8") as f:
         data = json.load(f)
     assert "portal:run-1" in data["receipts"]
+    assert data["receipts"]["portal:run-1"]["receipt_id"] == "r1"
+
+    # Verify reload round-trip
+    reloaded = DepositRegistry.load_or_create(reg_file)
+    rec = reloaded.get_receipt("portal", "run-1")
+    assert rec is not None
+    assert rec.receipt_id == "r1"
+    assert rec.status == STATUS_DRAFT_CREATED
+
+    # Verify atomic update replaces existing registry
+    receipt2 = DepositReceipt(
+        receipt_id="r2",
+        portal_id="portal",
+        run_id="run-2",
+        package_fingerprint="fp-2",
+        repository_target="zenodo",
+        environment="sandbox",
+        status=STATUS_VERIFIED,
+        created_at="2026-10-23T02:00:00Z",
+        updated_at="2026-10-23T02:00:00Z",
+        last_error="Non-ASCII characters: Árvíztűrő tükörfúrógép 🚀",
+    )
+    reloaded.register_receipt(receipt2)
+
+    with open(reg_file, "r", encoding="utf-8") as f:
+        raw_text = f.read()
+    # Indentation and non-ASCII preservation
+    assert "  \"schema_version\": \"1\"" in raw_text
+    assert "Árvíztűrő tükörfúrógép 🚀" in raw_text
+
+    # Failure during serialization preserves original file and cleans up temporary file
+    parent_dir = os.path.dirname(reg_file)
+    with mock.patch("src.utils.serialization.json.dump", side_effect=TypeError("Serialization error")):
+        with pytest.raises(TypeError, match="Serialization error"):
+            reloaded.save()
+
+    # Original file must be completely untouched and valid
+    reloaded_after_fail = DepositRegistry.load_or_create(reg_file)
+    assert reloaded_after_fail.get_receipt("portal", "run-1") is not None
+    assert reloaded_after_fail.get_receipt("portal", "run-2") is not None
+
+    # No leftover .tmp files
+    tmp_files = [f for f in os.listdir(parent_dir) if ".tmp." in f]
+    assert tmp_files == []
 
 
 def test_missing_artifacts_or_verification_prevent_verified_state(tmp_path):
