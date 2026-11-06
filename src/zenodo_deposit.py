@@ -26,6 +26,7 @@ import urllib.request
 
 from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
+from src.utils.serialization import atomic_write_json
 
 logger = logging.getLogger("corpusai.deposit")
 
@@ -159,16 +160,12 @@ class DepositRegistry:
 
     def save(self) -> None:
         """Atomic write to disk to prevent corrupted state on interruption."""
-        os.makedirs(os.path.dirname(self.registry_path), exist_ok=True)
-        temp_path = f"{self.registry_path}.tmp.{os.getpid()}_{int(time.time()*1000)}"
         data = {
             "schema_version": "1",
             "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "receipts": {k: v.to_dict() for k, v in self.receipts.items()},
         }
-        with open(temp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
-        os.replace(temp_path, self.registry_path)
+        atomic_write_json(self.registry_path, data)
 
     def get_receipt(self, portal_id: str, run_id: str) -> Optional[DepositReceipt]:
         return self.receipts.get(f"{portal_id}:{run_id}")
