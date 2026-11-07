@@ -1,11 +1,17 @@
+# CorpusAI production and test dependencies.
+# Used by CI: pip install -r requirements.txt
+# For a local install using pyproject.toml: pip install -e ".[test]"
+#
+# Optional dependency NOT listed here (not needed for tests):
+#   Pillow>=10.0.0  — required only for compare_screenshots() in src/utils/browser.py
+#
 requests>=2.31.0
 beautifulsoup4>=4.12.0
 lxml>=5.1.0
 pyyaml>=6.0.1
 warcio>=1.7.4
-Pillow>=10.0.0
-pytest>=8.0.0
-pytest-asyncio>=1.4.0
 webarticlecurator>=1.13.0
 boto3>=1.35.0
 botocore>=1.35.0
+pytest>=8.0.0
+pytest-asyncio>=1.4.0
