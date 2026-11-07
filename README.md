@@ -9,7 +9,7 @@ An open-source research engineering framework for deterministic web discovery, b
 [![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![CI](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml/badge.svg)](https://github.com/azharali8/CorpusAi/actions)
-[![CI Tests](https://img.shields.io/badge/CI%20tests-355%20passed%20(commit%20077b8f3)-blue.svg)](https://github.com/azharali8/CorpusAi/actions/workflows/tests.yml)
+
 [![Status](https://img.shields.io/badge/status-research%20prototype-orange.svg)]()
 
 </div>
@@ -155,12 +155,22 @@ CorpusAI/
 │   ├── replay_server.py               # Air-gapped offline HTTP archive replay server
 │   ├── s3_storage_backend.py          # AWS S3 transport adapter with CAS and lease heartbeats
 │   ├── storage_backend.py             # Local filesystem backend and OS advisory locking
+│   ├── crawling_logic/                # Extracted fetcher closures (Batch 2J)
+│   │   ├── __init__.py                # Package initialization
+│   │   └── portal_fetchers.py         # build_portal_fetchers(): page, article, confirmation closures
 │   ├── utils/                         # Shared core utilities
 │   │   ├── __init__.py                # Utilities package initialization
+│   │   ├── browser.py                 # Browser discovery, isolation flags, screenshot comparison
 │   │   ├── crypto.py                  # Canonical 64KB streaming SHA-256 and MD5 hashing
-│   │   └── manifest.py                # Canonical SHA-256 manifest generation
+│   │   ├── manifest.py                # Canonical SHA-256 manifest generation
+│   │   └── serialization.py           # Atomic JSON write utility
 │   ├── warc_utils.py                  # ISO 28500 WARC creation and MIME classification
-│   └── zenodo_deposit.py              # Zenodo Sandbox repository deposit client
+│   ├── zenodo_deposit.py              # Zenodo Sandbox HTTP adapter and fingerprinting
+│   └── zenodo_stuff/                  # Zenodo domain model decomposition (Batch 2I)
+│       ├── __init__.py                # Re-exports all public symbols
+│       ├── models.py                  # DepositReceipt, UploadedArtifactRecord, status constants
+│       ├── orchestrator.py            # DepositOrchestrator, RepositoryDepositClient
+│       └── registry.py               # DepositRegistry (load, save, register)
 ├── tests/                             # Comprehensive offline test suite (383 collected, 364 passing offline, 3 skipped)
 │   ├── fixtures/                      # Synthetic WARC and fixture generators
 │   ├── integration/                   # Opt-in live integration tests (S3 / remote)
@@ -181,7 +191,7 @@ CorpusAI/
 ## Installation & Setup
 
 ### Prerequisites
-- **Python**: Version `3.11` or higher
+- **Python**: Version `3.11` or higher (CI: Python 3.11 on Linux; local: Python 3.13 on Windows)
 - **Browser (Optional for Replay QA)**: Google Chrome, Chromium, or Microsoft Edge
 - **Local LLM (Optional for AI Selector Proposals)**: [Ollama](https://ollama.com/) with `qwen2.5-coder:3b`
 
@@ -202,9 +212,15 @@ source .venv/bin/activate
 # On Windows (cmd):
 .venv\Scripts\activate.bat
 
-# Install dependencies
+# Install all dependencies (production + test)
 pip install --upgrade pip
 pip install -r requirements.txt
+
+# Alternative: install via pyproject.toml (editable)
+# pip install -e ".[test]"
+
+# Optional: install Pillow only if screenshot comparison is needed
+# pip install "Pillow>=10.0.0"
 ```
 
 ---
@@ -329,8 +345,11 @@ pytest -v
 ```
 
 ### Verification Status
-- **Historical Linux CI (`.github/workflows/tests.yml`)**: **355 tests passing, 3 skipped, 0 failed** in automated GitHub Actions CI (Python 3.11 on `ubuntu-latest`, verified on commit `077b8f3` / `c401c5a`). *Note: Subsequent cleanup batches (Batch 1, 2A, 2B, 2C) add tests and improve code structure locally; fresh CI results will update upon pushing to GitHub.*
-- **Offline Test Suite Inventory (Local)**: **383 tests collected** across the complete codebase. In local offline testing, **364 tests pass** and **3 live S3 integration tests are skipped**. The 16 remaining tests (9 in `test_browser_replay.py` and 7 loopback crawler tests) encounter local Windows environment limitations (Chromium crashpad and Windows TCP loopback socket isolation in sandboxed sessions).
+- **Linux CI (`.github/workflows/tests.yml`)**: The CI badge above reflects the latest push result. CI runs the full offline suite on Python 3.11 (`ubuntu-latest`).
+- **Local Offline Suite (Windows, Python 3.13)**: The majority of tests pass offline on Windows. Known pre-existing failures unrelated to cleanup work:
+  - **9 tests in `test_browser_replay.py`**: Windows TCP loopback socket isolation in sandboxed sessions (`[WinError 10013]`) and Chromium Crashpad `TransactNamedPipe` errors.
+  - **7 loopback crawler tests**: Same Windows sandbox socket restriction.
+- **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
 - **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
 - **Opt-in Live S3 Integration**: Three opt-in live S3 integration tests in `tests/integration/test_live_s3_storage.py` test real S3 bucket APIs. These are **strictly opt-in**, unverified against production, and safely skipped in standard CI:
   ```bash

@@ -26,7 +26,26 @@ import urllib.request
 
 from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
+from src.utils.crypto import compute_file_md5_and_sha256, sha256_file
 from src.utils.serialization import atomic_write_json
+from src.zenodo_stuff.models import (
+    DepositReceipt,
+    STATUS_DRAFT_CREATED,
+    STATUS_FAILED,
+    STATUS_NEEDS_RECONCILIATION,
+    STATUS_PENDING,
+    STATUS_PUBLISHED,
+    STATUS_UPLOADED,
+    STATUS_UPLOADING,
+    STATUS_VERIFIED,
+    UploadedArtifactRecord,
+    VALID_TRANSITIONS,
+)
+from src.zenodo_stuff.orchestrator import (
+    DepositOrchestrator,
+    RepositoryDepositClient,
+)
+from src.zenodo_stuff.registry import DepositRegistry
 
 logger = logging.getLogger("corpusai.deposit")
 
@@ -38,192 +57,6 @@ ZENODO_PRODUCTION_BASE_URL = "https://zenodo.org/api"
 ZENODO_MAX_RECORD_FILES = 100
 ZENODO_MAX_RECORD_BYTES = 50 * 1024 * 1024 * 1024  # 50 GB
 ZENODO_MAX_SINGLE_FILE_BYTES = 50 * 1024 * 1024 * 1024  # 50 GB
-
-# Status Constants
-STATUS_PENDING = "PENDING"
-STATUS_DRAFT_CREATED = "DRAFT_CREATED"
-STATUS_UPLOADING = "UPLOADING"
-STATUS_UPLOADED = "UPLOADED"
-STATUS_VERIFIED = "VERIFIED"
-STATUS_PUBLISHED = "PUBLISHED"
-STATUS_FAILED = "FAILED"
-STATUS_NEEDS_RECONCILIATION = "NEEDS_RECONCILIATION"
-
-VALID_TRANSITIONS = {
-    STATUS_PENDING: {STATUS_DRAFT_CREATED, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
-    STATUS_DRAFT_CREATED: {STATUS_UPLOADING, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
-    STATUS_UPLOADING: {STATUS_UPLOADED, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
-    STATUS_UPLOADED: {STATUS_VERIFIED, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
-    STATUS_VERIFIED: {STATUS_PUBLISHED, STATUS_FAILED},
-    STATUS_FAILED: {STATUS_DRAFT_CREATED, STATUS_UPLOADING, STATUS_UPLOADED, STATUS_VERIFIED, STATUS_NEEDS_RECONCILIATION},
-    STATUS_NEEDS_RECONCILIATION: {STATUS_DRAFT_CREATED, STATUS_UPLOADING, STATUS_UPLOADED, STATUS_VERIFIED, STATUS_FAILED},
-    STATUS_PUBLISHED: set(),  # Terminal state
-}
-
-
-@dataclass
-class UploadedArtifactRecord:
-    """Metadata for an individual uploaded file on the repository."""
-    filename: str
-    filesize: int
-    local_sha256: str
-    local_md5: str
-    remote_md5: Optional[str] = None
-    remote_checksum: Optional[str] = None
-    remote_file_id: Optional[str] = None
-    verified: bool = False
-
-    def to_dict(self) -> Dict[str, Any]:
-        return asdict(self)
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "UploadedArtifactRecord":
-        return cls(**data)
-
-
-@dataclass
-class DepositReceipt:
-    """
-    Durable receipt tracking the outcome of an archival package deposit.
-    Maintained separately from ArchiveCatalog to prevent deposit failures from
-    invalidating valid crawls.
-    """
-    receipt_id: str
-    portal_id: str
-    run_id: str
-    package_fingerprint: str
-    repository_target: str
-    environment: str
-    status: str
-    created_at: str
-    updated_at: str
-    remote_record_id: Optional[str] = None
-    remote_bucket_url: Optional[str] = None
-    remote_record_url: Optional[str] = None
-    doi: Optional[str] = None
-    artifact_inventory: Dict[str, UploadedArtifactRecord] = field(default_factory=dict)
-    checksum_verification_outcome: str = "UNVERIFIED"
-    last_error: Optional[str] = None
-    last_error_category: Optional[str] = None
-    retry_eligible: bool = True
-    reconciliation_notes: Optional[str] = None
-
-    def to_dict(self) -> Dict[str, Any]:
-        d = asdict(self)
-        d["artifact_inventory"] = {
-            k: v.to_dict() if hasattr(v, "to_dict") else v
-            for k, v in self.artifact_inventory.items()
-        }
-        return d
-
-    @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> "DepositReceipt":
-        cleaned = dict(data)
-        inv = cleaned.get("artifact_inventory", {})
-        cleaned["artifact_inventory"] = {
-            k: UploadedArtifactRecord.from_dict(v) if isinstance(v, dict) else v
-            for k, v in inv.items()
-        }
-        return cls(**cleaned)
-
-    def transition_to(self, new_status: str, error: Optional[str] = None, error_category: Optional[str] = None) -> None:
-        """Enforce permitted state transitions."""
-        allowed = VALID_TRANSITIONS.get(self.status, set())
-        if new_status not in allowed:
-            raise ValueError(f"Invalid deposit status transition from '{self.status}' to '{new_status}'.")
-        self.status = new_status
-        self.updated_at = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        if error:
-            self.last_error = error
-            self.last_error_category = error_category or "UNKNOWN"
-
-
-class DepositRegistry:
-    """
-    Durable on-disk registry mapping (portal_id, run_id) to DepositReceipt.
-    Stored atomically alongside or inside portal results (e.g. deposit_registry.json).
-    """
-
-    def __init__(self, registry_path: str):
-        self.registry_path = os.path.abspath(registry_path)
-        self.receipts: Dict[str, DepositReceipt] = {}  # key: f"{portal_id}:{run_id}"
-
-    @classmethod
-    def load_or_create(cls, registry_path: str) -> "DepositRegistry":
-        reg = cls(registry_path)
-        if os.path.exists(registry_path):
-            with open(registry_path, "r", encoding="utf-8") as f:
-                data = json.load(f)
-                for k, v in data.get("receipts", {}).items():
-                    reg.receipts[k] = DepositReceipt.from_dict(v)
-        return reg
-
-    def save(self) -> None:
-        """Atomic write to disk to prevent corrupted state on interruption."""
-        data = {
-            "schema_version": "1",
-            "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            "receipts": {k: v.to_dict() for k, v in self.receipts.items()},
-        }
-        atomic_write_json(self.registry_path, data)
-
-    def get_receipt(self, portal_id: str, run_id: str) -> Optional[DepositReceipt]:
-        return self.receipts.get(f"{portal_id}:{run_id}")
-
-    def register_receipt(self, receipt: DepositReceipt) -> None:
-        self.receipts[f"{receipt.portal_id}:{receipt.run_id}"] = receipt
-        self.save()
-
-
-class RepositoryDepositClient(ABC):
-    """Abstract interface defining the repository deposit lifecycle contract."""
-
-    @abstractmethod
-    def create_draft(
-        self,
-        metadata: DepositMetadata,
-        portal_id: str,
-        run_id: str,
-        package_fingerprint: str,
-    ) -> DepositReceipt:
-        pass
-
-    @abstractmethod
-    def find_existing_draft(
-        self,
-        portal_id: str,
-        run_id: str,
-    ) -> Optional[DepositReceipt]:
-        """Search repository for an existing draft created for this portal and run."""
-        pass
-
-    @abstractmethod
-    def upload_artifacts(
-        self,
-        receipt: DepositReceipt,
-        package_dir: str,
-    ) -> DepositReceipt:
-        pass
-
-    @abstractmethod
-    def verify_remote_artifacts(
-        self,
-        receipt: DepositReceipt,
-        package_dir: str,
-    ) -> DepositReceipt:
-        pass
-
-    @abstractmethod
-    def get_status(self, receipt: DepositReceipt) -> DepositReceipt:
-        pass
-
-    @abstractmethod
-    def publish_deposit(
-        self,
-        receipt: DepositReceipt,
-        allow_publish: bool = False,
-    ) -> DepositReceipt:
-        pass
 
 
 def compute_package_fingerprint(package_dir: str) -> str:
@@ -240,9 +73,6 @@ def compute_package_fingerprint(package_dir: str) -> str:
         for f in sorted(files):
             hasher.update(f.encode("utf-8"))
     return hasher.hexdigest()
-
-
-from src.utils.crypto import compute_file_md5_and_sha256, sha256_file
 
 
 class ZenodoSandboxAdapter(RepositoryDepositClient):
@@ -707,125 +537,4 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         receipt.doi = resp_data.get("doi") or receipt.doi
         receipt.remote_record_url = resp_data.get("links", {}).get("record_html") or receipt.remote_record_url
         receipt.transition_to(STATUS_PUBLISHED)
-        return receipt
-
-
-class DepositOrchestrator:
-    """
-    High-level orchestrator that executes safe, idempotent deposits of finalized
-    archival packages to Zenodo Sandbox.
-    """
-
-    def __init__(
-        self,
-        client: RepositoryDepositClient,
-        registry: DepositRegistry,
-    ):
-        self.client = client
-        self.registry = registry
-
-    def deposit_package(
-        self,
-        portal_id: str,
-        run_id: str,
-        package_dir: str,
-        deposit_metadata: DepositMetadata,
-    ) -> DepositReceipt:
-        """
-        Orchestrate deposit with idempotency, local verification, and safe retry.
-        """
-        package_fingerprint = compute_package_fingerprint(package_dir)
-
-        # 1. Check existing receipt for duplicate protection & resumption
-        existing = self.registry.get_receipt(portal_id, run_id)
-        if existing:
-            # If package modified, require reconciliation
-            if existing.package_fingerprint != package_fingerprint:
-                existing.transition_to(
-                    STATUS_NEEDS_RECONCILIATION,
-                    error=f"Local package fingerprint changed ({existing.package_fingerprint[:8]} -> {package_fingerprint[:8]}).",
-                    error_category="PACKAGE_FINGERPRINT_CHANGED",
-                )
-                self.registry.save()
-                return existing
-
-            # If already verified or published, return existing receipt (idempotent)
-            if existing.status in (STATUS_VERIFIED, STATUS_PUBLISHED):
-                logger.info(f"Run '{run_id}' already deposited and {existing.status}. Returning receipt.")
-                return existing
-
-            # Resume from existing draft
-            receipt = existing
-        else:
-            # 2. Local verification before remote draft creation
-            v_res = PackageVerifier.verify_package(package_dir)
-            if not v_res.is_valid:
-                now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                err_msg = "; ".join(v_res.metadata_errors + v_res.missing_files + v_res.checksum_mismatches + v_res.unexpected_files)
-                failed_receipt = DepositReceipt(
-                    receipt_id=f"receipt-{portal_id}-{run_id}-{package_fingerprint[:8]}",
-                    portal_id=portal_id,
-                    run_id=run_id,
-                    package_fingerprint=package_fingerprint,
-                    repository_target="zenodo",
-                    environment="sandbox",
-                    status=STATUS_FAILED,
-                    created_at=now,
-                    updated_at=now,
-                    last_error=f"Local package verification failed: {err_msg}",
-                    last_error_category="LOCAL_PACKAGE_INVALID",
-                    retry_eligible=False,
-                )
-                self.registry.register_receipt(failed_receipt)
-                return failed_receipt
-
-            # 3. Check for existing remote draft to avoid duplicate creation if interrupted earlier
-            existing_remote = self.client.find_existing_draft(portal_id, run_id)
-            if existing_remote:
-                existing_remote.package_fingerprint = package_fingerprint
-                self.registry.register_receipt(existing_remote)
-                receipt = existing_remote
-            else:
-                # Create remote draft
-                try:
-                    receipt = self.client.create_draft(deposit_metadata, portal_id, run_id, package_fingerprint)
-                    self.registry.register_receipt(receipt)
-                except Exception as e:
-                    now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-                    failed_receipt = DepositReceipt(
-                        receipt_id=f"receipt-{portal_id}-{run_id}-{package_fingerprint[:8]}",
-                        portal_id=portal_id,
-                        run_id=run_id,
-                        package_fingerprint=package_fingerprint,
-                        repository_target="zenodo",
-                        environment="sandbox",
-                        status=STATUS_FAILED,
-                        created_at=now,
-                        updated_at=now,
-                        last_error=str(e),
-                        last_error_category="DRAFT_CREATION_FAILED",
-                    )
-                    self.registry.register_receipt(failed_receipt)
-                    return failed_receipt
-
-        # 4. Upload artifacts
-        if receipt.status in (STATUS_DRAFT_CREATED, STATUS_UPLOADING, STATUS_FAILED):
-            try:
-                receipt = self.client.upload_artifacts(receipt, package_dir)
-                self.registry.save()
-            except Exception as e:
-                receipt.transition_to(STATUS_FAILED, error=str(e), error_category="UPLOAD_EXCEPTION")
-                self.registry.save()
-                return receipt
-
-        # 5. Verify remote artifacts
-        if receipt.status == STATUS_UPLOADED:
-            try:
-                receipt = self.client.verify_remote_artifacts(receipt, package_dir)
-                self.registry.save()
-            except Exception as e:
-                receipt.transition_to(STATUS_FAILED, error=str(e), error_category="VERIFICATION_EXCEPTION")
-                self.registry.save()
-                return receipt
-
         return receipt

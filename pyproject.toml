@@ -4,19 +4,24 @@ version = "0.1.0"
 description = "An experimental research prototype for robust, reproducible web-corpus crawling and archival workflows."
 readme = "README.md"
 license = "Apache-2.0"
-requires-python = ">=3.11.14"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "requests>=2.31.0",
     "beautifulsoup4>=4.12.0",
     "lxml>=5.1.0",
     "pyyaml>=6.0.1",
     "warcio>=1.7.4",
-    "Pillow>=10.0.0",
+    "webarticlecurator>=1.13.0",
     "boto3>=1.35.0",
     "botocore>=1.35.0",
 ]
 
 [project.optional-dependencies]
+# Pillow is an optional dependency used only for screenshot comparison (src/utils/browser.py).
+# Install manually when visual diffing is required: pip install "Pillow>=10.0.0"
+screenshots = [
+    "Pillow>=10.0.0",
+]
 test = [
     "pytest>=8.0.0",
     "pytest-asyncio>=1.4.0",
