@@ -14,6 +14,7 @@ import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import socket
 import sys
 import uuid
@@ -64,8 +65,9 @@ def setup_logging(
     run_id: str = "",
 ) -> logging.Logger:
     """Configure file + console logging for a run."""
-    os.makedirs(run_dir, exist_ok=True)
-    log_path = os.path.join(run_dir, "run.log")
+    run_path = Path(run_dir)
+    run_path.mkdir(parents=True, exist_ok=True)
+    log_path = run_path / "run.log"
 
     fmt = "%(asctime)s [%(levelname)s] %(name)s: %(message)s"
     datefmt = "%Y-%m-%dT%H:%M:%SZ"
@@ -82,7 +84,7 @@ def setup_logging(
         logger.removeHandler(h)
 
     # File handler — always DEBUG level for full diagnostics
-    fh = logging.FileHandler(log_path, encoding="utf-8")
+    fh = logging.FileHandler(str(log_path), encoding="utf-8")
     fh.setLevel(logging.DEBUG)
     fh.setFormatter(logging.Formatter(fmt, datefmt=datefmt))
 
@@ -144,10 +146,27 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--portal", required=True, help="Target portal identifier (e.g. wordpress-news)")
     parser.add_argument("--mode", required=True, choices=["baseline", "incremental"], help="Crawl execution mode")
     parser.add_argument("--results-dir", default=None, help="Optional override for results base directory")
-    parser.add_argument("--dry-run", action="store_true", help="Parse args and resolve config but make no HTTP calls or file writes")
-    parser.add_argument("--log-level", default="INFO", choices=["DEBUG", "INFO", "WARNING", "ERROR"], help="Console logging level (default: INFO)")
-    parser.add_argument("--reconcile-catalog", action="store_true", help="Audit and reconcile catalog with verified packages before run")
-    parser.add_argument("--cleanup-staging", action="store_true", help="Execute conservative retention cleanup on raw staging runs")
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Parse args and resolve config but make no HTTP calls or file writes",
+    )
+    parser.add_argument(
+        "--log-level",
+        default="INFO",
+        choices=["DEBUG", "INFO", "WARNING", "ERROR"],
+        help="Console logging level (default: INFO)",
+    )
+    parser.add_argument(
+        "--reconcile-catalog",
+        action="store_true",
+        help="Audit and reconcile catalog with verified packages before run",
+    )
+    parser.add_argument(
+        "--cleanup-staging",
+        action="store_true",
+        help="Execute conservative retention cleanup on raw staging runs",
+    )
     parser.add_argument(
         "--storage-backend",
         default="local",
@@ -270,18 +289,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         # 5. Resolve run directory
         timestamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
         run_folder = f"{args.mode}-{timestamp}"
-        run_dir = os.path.join(results_base_dir, "runs", run_folder)
+        run_dir_path = Path(results_base_dir) / "runs" / run_folder
         run_id = f"run-{timestamp}-{args.portal[:6]}"
 
         # Ensure uniqueness across rapid invocations within the same second
         counter = 1
-        target_package_dir = os.path.join(results_base_dir, "packages", args.portal, "runs", run_id)
-        while os.path.exists(run_dir) or os.path.exists(target_package_dir):
+        target_pkg_path = Path(results_base_dir) / "packages" / args.portal / "runs" / run_id
+        while run_dir_path.exists() or target_pkg_path.exists():
             run_folder = f"{args.mode}-{timestamp}-{counter}"
-            run_dir = os.path.join(results_base_dir, "runs", run_folder)
+            run_dir_path = Path(results_base_dir) / "runs" / run_folder
             run_id = f"run-{timestamp}-{counter}-{args.portal[:6]}"
-            target_package_dir = os.path.join(results_base_dir, "packages", args.portal, "runs", run_id)
+            target_pkg_path = Path(results_base_dir) / "packages" / args.portal / "runs" / run_id
             counter += 1
+
+        run_dir = str(run_dir_path)
 
         # Setup operational logging
         logger = setup_logging(run_dir, log_level=args.log_level, portal_id=args.portal, run_id=run_id)
@@ -289,7 +310,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         logger.info(f"Run ID: {run_id}")
         logger.info(f"Target head URL: {config['head_page_url']}")
         logger.info(f"Run directory: {run_dir}")
-        logger.info(f"Configuration: max_pages={config['max_archive_pages']}, max_articles={config['max_articles']}, max_requests={config['max_requests']}, max_retries={config['max_retries']}")
+        logger.info(
+            f"Configuration: max_pages={config['max_archive_pages']}, "
+            f"max_articles={config['max_articles']}, "
+            f"max_requests={config['max_requests']}, "
+            f"max_retries={config['max_retries']}"
+        )
         if remote_backend is not None and remote_control_record is not None:
             logger.info(
                 f"Remote storage (S3): hydrated state and acquired portal lease "
@@ -325,7 +351,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                     results_base_dir=results_base_dir,
                     portal_id=args.portal,
                 )
-                logger.info(f"Validated baseline run '{prev_run_id}' with package verification. Loaded {len(previous_state.articles)} articles from '{prev_state_file}'.")
+                logger.info(
+                    f"Validated baseline run '{prev_run_id}' with package verification. "
+                    f"Loaded {len(previous_state.articles)} articles from '{prev_state_file}'."
+                )
             except BaselineIntegrityError as bie:
                 # Fallback to local state file if package directory not yet created
                 prev_entry = catalog.runs[prev_run_id]
@@ -396,7 +425,11 @@ def main(argv: Optional[List[str]] = None) -> int:
             logger.error(f"Crawl finished with remote lease heartbeat failure: {heartbeat.failure_reason}. Exiting 10.")
             flush_logger(logger)
             sys.exit(10)
-        logger.info(f"Article metrics: total={inc_run.article_count}, new={inc_run.new_article_count}, unchanged={inc_run.unchanged_article_count}, changed={inc_run.changed_article_count}, missing={inc_run.missing_article_count}, failures={inc_run.fetch_failure_count}")
+        logger.info(
+            f"Article metrics: total={inc_run.article_count}, new={inc_run.new_article_count}, "
+            f"unchanged={inc_run.unchanged_article_count}, changed={inc_run.changed_article_count}, "
+            f"missing={inc_run.missing_article_count}, failures={inc_run.fetch_failure_count}"
+        )
         logger.info(f"Requests made: {inc_run.requests_made} (budget: {config['max_requests']})")
         if inc_run.errors:
             for err in inc_run.errors:
@@ -420,16 +453,16 @@ def main(argv: Optional[List[str]] = None) -> int:
                 logger.info(f"Saved content WARC with {len(new_article_res)} articles to {warc_content_path}")
 
         # Set log path in run artifacts
-        inc_run.artifact_paths["run_log"] = os.path.join(run_dir, "run.log")
+        inc_run.artifact_paths["run_log"] = str(Path(run_dir) / "run.log")
 
         # 15. Save portal_state.json and run_manifest.json
-        state_file = os.path.join(run_dir, "portal_state.json")
-        portal_state.save_to_json(state_file)
-        logger.info(f"Saved PortalState snapshot to {state_file}")
+        state_path = Path(run_dir) / "portal_state.json"
+        portal_state.save_to_json(str(state_path))
+        logger.info(f"Saved PortalState snapshot to {state_path}")
 
-        manifest_file = os.path.join(run_dir, "run_manifest.json")
-        inc_run.save_to_json(manifest_file)
-        logger.info(f"Saved run manifest to {manifest_file}")
+        manifest_path = Path(run_dir) / "run_manifest.json"
+        inc_run.save_to_json(str(manifest_path))
+        logger.info(f"Saved run manifest to {manifest_path}")
 
         # 16. Save run_summary.json
         summary_data: Dict[str, Any] = {
@@ -448,35 +481,35 @@ def main(argv: Optional[List[str]] = None) -> int:
             "requests_made": inc_run.requests_made,
             "started_at": inc_run.started_at,
             "completed_at": inc_run.completed_at,
-            "log_file": os.path.join(run_dir, "run.log"),
+            "log_file": str(Path(run_dir) / "run.log"),
             "anomalies": inc_run.anomalies_detected,
             "errors": inc_run.errors,
             "warnings": inc_run.warnings,
             "retry_log": inc_run.retry_log,
         }
-        summary_file = os.path.join(run_dir, "run_summary.json")
-        with open(summary_file, "w", encoding="utf-8") as f:
+        summary_path = Path(run_dir) / "run_summary.json"
+        with open(summary_path, "w", encoding="utf-8") as f:
             json.dump(summary_data, f, indent=2, ensure_ascii=False)
-        logger.info(f"Saved run summary to {summary_file}")
+        logger.info(f"Saved run summary to {summary_path}")
 
         # Ensure log output is flushed before hashing
         flush_logger(logger)
 
         # 17. Compute SHA-256 checksums
         files_to_hash: Dict[str, str] = {
-            "portal_state.json": state_file,
-            "run_manifest.json": manifest_file,
-            "run_summary.json": summary_file,
-            "run.log": os.path.join(run_dir, "run.log"),
+            "portal_state.json": str(state_path),
+            "run_manifest.json": str(manifest_path),
+            "run_summary.json": str(summary_path),
+            "run.log": str(Path(run_dir) / "run.log"),
         }
-        if os.path.exists(warc_content_path):
+        if Path(warc_content_path).exists():
             files_to_hash["content_html.warc.gz"] = warc_content_path
 
         checksums_manifest = generate_sha256_manifest(files_to_hash, base_dir=run_dir)
-        checksums_file = os.path.join(run_dir, "checksums.sha256")
-        with open(checksums_file, "w", encoding="utf-8") as f:
+        checksums_path = Path(run_dir) / "checksums.sha256"
+        with open(checksums_path, "w", encoding="utf-8") as f:
             f.write(checksums_manifest)
-        logger.info(f"Saved SHA-256 checksums to {checksums_file}")
+        logger.info(f"Saved SHA-256 checksums to {checksums_path}")
 
         cat_entry = CatalogRunEntry(
             run_id=run_id,
@@ -495,15 +528,15 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         # 18. Verified Packaging on CONVERGED
         if inc_run.convergence_status == "CONVERGED":
-            packages_root = os.path.join(results_base_dir, "packages")
+            packages_root = str(Path(results_base_dir) / "packages")
             packager = ArchivePackager(archives_root=packages_root)
             extra_artifacts = {
-                "portal_state.json": state_file,
-                "run_manifest.json": manifest_file,
-                "run_summary.json": summary_file,
-                "run.log": os.path.join(run_dir, "run.log"),
+                "portal_state.json": str(state_path),
+                "run_manifest.json": str(manifest_path),
+                "run_summary.json": str(summary_path),
+                "run.log": str(Path(run_dir) / "run.log"),
             }
-            content_warc = warc_content_path if os.path.exists(warc_content_path) else None
+            content_warc = warc_content_path if Path(warc_content_path).exists() else None
 
             try:
                 pkg_dir, verification = packager.package_run(
@@ -529,7 +562,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                 verification = verifier_fn(pkg_dir)
 
                 if not verification.is_valid:
-                    logger.error(f"Package verification failed for '{pkg_dir}': missing={verification.missing_files}, mismatches={verification.checksum_mismatches}, errors={verification.metadata_errors}")
+                    logger.error(
+                        f"Package verification failed for '{pkg_dir}': missing={verification.missing_files}, "
+                        f"mismatches={verification.checksum_mismatches}, errors={verification.metadata_errors}"
+                    )
                     catalog.register_run(cat_entry, is_successful=False)
                     catalog.save_to_json(catalog_path)
                     logger.info("Exiting with code 5 (package verification failed).")
@@ -636,7 +672,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
                 catalog.register_run(cat_entry, is_successful=True)
                 catalog.save_to_json(catalog_path)
-                logger.info(f"Updated catalog at {catalog_path} (latest_successful_run_id={catalog.latest_successful_run_id})")
+                logger.info(
+                    f"Updated catalog at {catalog_path} "
+                    f"(latest_successful_run_id={catalog.latest_successful_run_id})"
+                )
                 logger.info("Run finished successfully with status CONVERGED. Exiting 0.")
                 flush_logger(logger)
                 sys.exit(0)
@@ -652,7 +691,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         # 19 & 20. Non-converged catalog registration & exit
         catalog.register_run(cat_entry, is_successful=False)
         catalog.save_to_json(catalog_path)
-        logger.info(f"Catalog updated for non-converged run (latest_successful_run_id remains {catalog.latest_successful_run_id})")
+        logger.info(
+            f"Catalog updated for non-converged run "
+            f"(latest_successful_run_id remains {catalog.latest_successful_run_id})"
+        )
 
         if inc_run.convergence_status == "BUDGET_EXHAUSTED":
             logger.warning(f"Run exited with BUDGET_EXHAUSTED. Checkpoint preserved in {run_dir}. Exiting 6.")

@@ -5,9 +5,9 @@ Provides an isolated interoperability wrapper around the official ELTE-DH/WebArt
 Invokes supported CLI / API commands safely without shell=True or arbitrary command execution.
 """
 
-import os
 import subprocess
 import sys
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
@@ -87,10 +87,10 @@ class WebArticleCuratorAdapter:
         """
         List URLs recorded in a WARC file using 'webarticlecurator listurls'.
         """
-        if not os.path.exists(warc_path):
+        if not Path(warc_path).exists():
             return {"success": False, "urls": [], "error": f"WARC file not found: {warc_path}"}
 
-        res = self._run_cli(["listurls", warc_path])
+        res = self._run_cli(["listurls", str(warc_path)])
         if not res["success"]:
             return {"success": False, "urls": [], "error": res["stderr"]}
 
@@ -101,10 +101,10 @@ class WebArticleCuratorAdapter:
         """
         Validate a WARC file using 'webarticlecurator validate'.
         """
-        if not os.path.exists(warc_path):
+        if not Path(warc_path).exists():
             return {"success": False, "valid": False, "error": f"WARC file not found: {warc_path}"}
 
-        res = self._run_cli(["validate", warc_path])
+        res = self._run_cli(["validate", str(warc_path)])
         return {
             "success": res["success"],
             "valid": res["success"],
@@ -118,8 +118,9 @@ class WebArticleCuratorAdapter:
         """
         Download a single URL to a WARC file using 'webarticlecurator download'.
         """
-        os.makedirs(os.path.dirname(os.path.abspath(target_warc)), exist_ok=True)
-        res = self._run_cli(["download", url, target_warc], timeout=timeout)
+        target_path = Path(target_warc).resolve()
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        res = self._run_cli(["download", url, str(target_path)], timeout=timeout)
 
         if not res["success"]:
             return {
