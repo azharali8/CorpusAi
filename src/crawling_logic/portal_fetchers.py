@@ -2,7 +2,6 @@
 Portal-specific fetcher and crawler probe construction.
 """
 
-import hashlib
 import logging
 from typing import Any, Callable, Dict, List, Optional
 from urllib.parse import urljoin
@@ -13,6 +12,7 @@ from src.archive_page_discovery import ArchivePageDiscovery
 from src.article_inspector import extract_article_metadata
 from src.downloader import ResourcePreservationHarvester
 from src.portal_state import PortalState
+from src.utils.crypto import sha256_bytes
 
 
 def build_portal_fetchers(
@@ -130,7 +130,7 @@ def build_portal_fetchers(
 
         art_html = res.payload.decode("utf-8", errors="replace")
         meta = extract_article_metadata(art_html, base_url=article_url)
-        content_hash = hashlib.sha256(art_html.encode("utf-8")).hexdigest()
+        content_hash = sha256_bytes(art_html.encode("utf-8"))
 
         return {
             "status_code": res.status_code,
@@ -144,7 +144,7 @@ def build_portal_fetchers(
             "status": "NEW",
             "content_capture_status": "CAPTURED",
             "warc_file": warc_content_path,
-            "warc_record_id": f"<urn:uuid:{hashlib.sha256(article_url.encode('utf-8')).hexdigest()[:16]}>",
+            "warc_record_id": f"<urn:uuid:{sha256_bytes(article_url.encode('utf-8'))[:16]}>",
             "metadata": meta,
         }
 

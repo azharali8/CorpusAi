@@ -12,28 +12,30 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.11", "3.12", "3.13"]
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v5
         with:
-          python-version: ${{ matrix.python-version }}
-          cache: 'pip'
+          version: "latest"
+          enable-cache: true
 
-      - name: Install Dependencies
+      - name: Set up Python ${{ matrix.python-version }}
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install ".[screenshots]"
+          uv python install ${{ matrix.python-version }}
+
+      - name: Install Dependencies from Lockfile
+        run: |
+          uv sync --locked --extra screenshots --extra test --python ${{ matrix.python-version }}
 
       - name: Generate Synthetic WARC Fixtures
         run: |
-          python tests/fixtures/generate_warc_fixtures.py
+          uv run --python ${{ matrix.python-version }} python tests/fixtures/generate_warc_fixtures.py
 
       - name: Execute Offline Test Suite
         run: |
-          pytest -v
+          uv run --python ${{ matrix.python-version }} pytest -v
