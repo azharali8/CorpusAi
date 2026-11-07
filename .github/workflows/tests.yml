@@ -28,6 +28,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          pip install ".[screenshots]"
 
       - name: Generate Synthetic WARC Fixtures
         run: |
