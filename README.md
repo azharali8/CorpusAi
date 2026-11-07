@@ -121,7 +121,7 @@ CorpusAI adheres to foundational research principles for reproducible data colle
 CorpusAI/
 ├── .github/
 │   └── workflows/
-│       ├── tests.yml                  # Offline CI test suite (Python 3.11)
+│       ├── tests.yml                  # Offline CI test suite (Python 3.11, 3.12, 3.13 matrix via uv)
 │       └── daily_run.yml              # Daily archival orchestration workflow (manual dispatch)
 ├── config/                            # Extraction schemas and selector rules
 ├── data/                              # Synthetic HTML benchmarks and ground-truth fixtures
@@ -146,7 +146,6 @@ CorpusAI/
 │   ├── corpusai_run.py                # Operational CLI entrypoint and lifecycle coordinator
 │   ├── deposit_metadata.py            # Research corpus deposit schema
 │   ├── downloader.py                  # Polite fetcher and asset harvester
-│   ├── head_verification.py           # Sentinel polling and boundary reconciliation
 │   ├── incremental_archive_policy.py  # Incremental crawl coordinator and retry policy
 │   ├── multipage_article_policy.py    # Multi-component logical document assembly
 │   ├── navigation_gate_policy.py      # Navigation gate finite state machine
@@ -171,7 +170,7 @@ CorpusAI/
 │       ├── models.py                  # DepositReceipt, UploadedArtifactRecord, status constants
 │       ├── orchestrator.py            # DepositOrchestrator, RepositoryDepositClient
 │       └── registry.py               # DepositRegistry (load, save, register)
-├── tests/                             # Comprehensive offline test suite (383 collected, 364 passing offline, 3 skipped)
+├── tests/                             # Comprehensive offline test suite (413 collected; unit, storage protocol, and runner suites)
 │   ├── fixtures/                      # Synthetic WARC and fixture generators
 │   ├── integration/                   # Opt-in live integration tests (S3 / remote)
 │   ├── mocks/                         # Test-support mock implementations
@@ -201,26 +200,17 @@ CorpusAI/
 git clone https://github.com/azharali8/CorpusAi.git
 cd CorpusAi
 
-# Create virtual environment
+# Preferred: Reproducible installation using uv and the locked dependency graph
+uv sync --locked --extra screenshots --extra test
+
+# Alternative: Standard pip environment setup
 python -m venv .venv
-
-# Activate environment
-# On Linux / macOS:
-source .venv/bin/activate
-# On Windows (PowerShell):
-.venv\Scripts\Activate.ps1
-# On Windows (cmd):
-.venv\Scripts\activate.bat
-
-# Install all dependencies (production + test)
+# On Linux / macOS: source .venv/bin/activate
+# On Windows (PowerShell): .venv\Scripts\Activate.ps1
 pip install --upgrade pip
 pip install -r requirements.txt
-
-# Alternative: install via pyproject.toml (editable)
-# pip install -e ".[test]"
-
-# Optional: install Pillow only if screenshot comparison is needed
-# pip install "Pillow>=10.0.0"
+# Optional: install extras for screenshot comparison and testing
+pip install ".[screenshots,test]"
 ```
 
 ---
@@ -344,14 +334,16 @@ All standard unit and protocol tests execute completely **offline** using determ
 pytest -v
 ```
 
-### Verification Status
-- **Linux CI (`.github/workflows/tests.yml`)**: The CI badge above reflects the latest push result. CI runs the full offline suite on Python 3.11 (`ubuntu-latest`).
-- **Local Offline Suite (Windows, Python 3.13)**: The majority of tests pass offline on Windows. Known pre-existing failures unrelated to cleanup work:
-  - **9 tests in `test_browser_replay.py`**: Windows TCP loopback socket isolation in sandboxed sessions (`[WinError 10013]`) and Chromium Crashpad `TransactNamedPipe` errors.
-  - **7 loopback crawler tests**: Same Windows sandbox socket restriction.
+### Verification Status & Execution Matrix
+The repository collects **413 total tests** across unit, protocol, runner, and integration suites:
+- **Offline & Unit Test Suites (367 passed offline)**: Complete coverage for deterministic hashing, WARC creation, HTML text extraction, 15-stage run orchestration, and catalog recovery.
+- **Protocol Mock Suites (52 passed offline)**: S3 Content-Addressable Storage (CAS) with lease heartbeats (`tests/test_phase9cb_s3_adapter.py`, 35 passed) and Zenodo Sandbox deposit handling (`tests/test_zenodo_deposit.py`, 17 passed) verified using isolated mocks.
+- **Environment-Blocked Tests on Windows Sandbox (16 tests)**:
+  - 6 controlled incremental crawler tests (`test_controlled_incremental_crawler.py`) and 1 package integration test (`test_controlled_crawl_to_archival_package_integration`) fail on Windows sandbox loopback socket connect (`[WinError 10013]`).
+  - 9 browser tests in `test_browser_replay.py` fail on local loopback HTTP calls (`[WinError 10013]`) and Chromium Crashpad IPC pipe termination. (Note: 27 browser and screenshot tests pass; Pillow is verified installed).
+- **Opt-in Live Integration (3 skipped)**: Three live S3 integration tests in `tests/integration/test_live_s3_storage.py` test real AWS APIs. These are **strictly opt-in**, unverified without live AWS credentials, and safely skipped by default.
+- **Continuous Integration**: GitHub Actions workflow (`.github/workflows/tests.yml`) executes fixture generation and the offline suite using `uv sync --locked --extra screenshots --extra test` across Python `["3.11", "3.12", "3.13"]`. (Python 3.11 is verified in PR #29; 3.13 verified locally; 3.12 configured awaiting remote CI execution).
 - **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
-- **Synthetic Fixtures**: Clean checkouts automatically generate required test WARCs (`synthetic_portal.warc`, `mixed_content_test.warc`) via `conftest.py` hooks without storing binary blobs in Git.
-- **Opt-in Live S3 Integration**: Three opt-in live S3 integration tests in `tests/integration/test_live_s3_storage.py` test real S3 bucket APIs. These are **strictly opt-in**, unverified against production, and safely skipped in standard CI:
   ```bash
   export CORPUSAI_STORAGE_LIVE_TEST=1
   export CORPUSAI_S3_BUCKET=my-test-bucket
@@ -374,7 +366,7 @@ pytest -v
 - **`[✓]` Daily Run Orchestration**: Production CLI runner with exponential retries and deterministic exit codes.
 - **`[✓]` Durable Local Storage**: OS advisory file locking, catalog recovery, and package verification.
 - **`[~]` S3 Remote Storage Adapter**: Fully implemented with CAS, lease heartbeats, and recovery (35/35 offline mock tests passing; live S3 integration pending real AWS environment).
-- **`[~]` Zenodo Sandbox Deposit**: Adapter implemented with quota enforcement and receipt registry (16/16 offline mock tests passing; production deposit disabled).
+- **`[~]` Zenodo Sandbox Deposit**: Adapter implemented with quota enforcement and receipt registry (17/17 offline mock tests passing; production deposit disabled).
 - **`[ ]` Unattended Scheduled Crawling**: Cron triggers remain gated until persistent storage credentials are configured.
 - **`[ ]` Public Repository Deposits**: Public publishing strictly disabled by default (`allow_publish=False`).
 
