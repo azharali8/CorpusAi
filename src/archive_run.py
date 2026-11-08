@@ -7,17 +7,17 @@ preserving provenance, configuration hashes, artifact references, and review sta
 
 from dataclasses import asdict, dataclass, field
 import datetime
-import hashlib
 import json
 from typing import Any, Dict, List, Optional
 
+from src.utils.crypto import sha256_bytes
 from src.utils.serialization import ensure_parent_dir, read_json
 
 
 def compute_config_hash(config: Dict[str, Any]) -> str:
     """Compute deterministic short SHA-256 hash of configuration parameters."""
     serialized = json.dumps(config, sort_keys=True, ensure_ascii=False)
-    return hashlib.sha256(serialized.encode("utf-8")).hexdigest()[:8]
+    return sha256_bytes(serialized.encode("utf-8"))[:8]
 
 
 def generate_run_id(timestamp_str: Optional[str] = None, config: Optional[Dict[str, Any]] = None) -> str:

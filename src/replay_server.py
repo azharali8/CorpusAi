@@ -13,7 +13,6 @@ Provides:
 """
 
 from dataclasses import dataclass, field
-import hashlib
 import http.server
 import io
 import json
@@ -23,6 +22,8 @@ import re
 import socketserver
 import threading
 from typing import Any, Dict, List, Optional
+
+from src.utils.crypto import sha256_bytes
 from urllib.parse import parse_qs, urljoin, urlparse, urlsplit, urlunsplit
 import zipfile
 
@@ -75,7 +76,7 @@ class ArchivedResource:
 
     @property
     def payload_sha256(self) -> str:
-        return hashlib.sha256(self.payload).hexdigest()
+        return sha256_bytes(self.payload)
 
     @property
     def is_html(self) -> bool:

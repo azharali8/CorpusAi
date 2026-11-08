@@ -7,9 +7,10 @@ revisit policies (Naive, Precision, Robust, Robust_Head_Verified) to handle unst
 same-date random reordering, cross-page shifts, mid-crawl insertions, and cached pages.
 """
 
-import hashlib
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse, urlunparse, parse_qs, urlencode
+
+from src.utils.crypto import sha256_bytes
 
 
 def normalize_article_url(raw_url: str, strip_fragment: bool = True, strip_tracking_params: bool = True) -> str:
@@ -57,12 +58,12 @@ def compute_page_fingerprints(article_urls: List[str]) -> Tuple[str, str]:
 
     # Ordered fingerprint: exact sequence
     ordered_str = "\n".join(normalized_urls)
-    ordered_hash = hashlib.sha256(ordered_str.encode("utf-8")).hexdigest()
+    ordered_hash = sha256_bytes(ordered_str.encode("utf-8"))
 
     # Set fingerprint: sorted unique set
     unique_sorted = sorted(list(set(normalized_urls)))
     set_str = "\n".join(unique_sorted)
-    set_hash = hashlib.sha256(set_str.encode("utf-8")).hexdigest()
+    set_hash = sha256_bytes(set_str.encode("utf-8"))
 
     return ordered_hash, set_hash
 

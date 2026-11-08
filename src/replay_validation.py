@@ -6,7 +6,7 @@ inventories, evaluates Browsertrix QA summaries, and tracks manual replay status
 """
 
 from dataclasses import asdict, dataclass, field
-import os
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from src.utils.crypto import sha256_file as compute_file_sha256
@@ -54,16 +54,17 @@ class ReplayValidator:
 
         # Check artifact existence and verify checksums
         all_exist = True
+        base_path = Path(base_dir) if base_dir else None
         for name, rel_path in artifacts.items():
-            full_path = os.path.join(base_dir, rel_path) if base_dir else rel_path
-            if not os.path.exists(full_path):
+            full_path_obj = (base_path / rel_path) if base_path else Path(rel_path)
+            if not full_path_obj.exists():
                 errors.append(f"Referenced artifact not found on disk: {rel_path}")
                 all_exist = False
                 continue
 
             expected_hash = checksums.get(rel_path) or checksums.get(name)
             if expected_hash:
-                actual_hash = compute_file_sha256(full_path)
+                actual_hash = compute_file_sha256(str(full_path_obj))
                 if actual_hash.lower() != expected_hash.lower():
                     checksum_errors.append(
                         f"Checksum mismatch for {rel_path}: expected {expected_hash}, calculated {actual_hash}"

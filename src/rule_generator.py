@@ -11,6 +11,7 @@ Provides:
 from abc import ABC, abstractmethod
 import json
 import os
+from pathlib import Path
 import re
 import time
 from typing import Any, Dict, List, Optional, Set
@@ -90,8 +91,9 @@ def validate_rule_proposal(proposal: Dict[str, Any]) -> None:
             )
 
         if sel_type.lower() not in ALLOWED_SELECTOR_TYPES:
+            allowed = sorted(ALLOWED_SELECTOR_TYPES)
             raise SchemaValidationError(
-                f"Field '{field}' specifies unsupported selector type '{sel_type}'. Allowed: {sorted(ALLOWED_SELECTOR_TYPES)}"
+                f"Field '{field}' specifies unsupported selector type '{sel_type}'. Allowed: {allowed}"
             )
 
         # Safety: reject common code injection / execution tokens
@@ -183,8 +185,8 @@ class OllamaRuleGenerator(RuleGenerator):
     Operates with strict schema validation and a single controlled formatting retry.
     """
 
-    DEFAULT_PROMPT_PATH = os.path.join(
-        os.path.dirname(__file__), "..", "config", "prompts", "selector_generation.txt"
+    DEFAULT_PROMPT_PATH = str(
+        Path(__file__).resolve().parent.parent / "config" / "prompts" / "selector_generation.txt"
     )
 
     def __init__(
@@ -245,9 +247,9 @@ class OllamaRuleGenerator(RuleGenerator):
         """
         Build prompt incorporating preprocessed HTML sample blocks.
         """
-        if os.path.exists(self.prompt_template_path):
-            with open(self.prompt_template_path, "r", encoding="utf-8") as f:
-                template = f.read()
+        prompt_path = Path(self.prompt_template_path)
+        if prompt_path.is_file():
+            template = prompt_path.read_text(encoding="utf-8")
         else:
             # Safe default template
             template = (

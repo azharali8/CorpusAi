@@ -15,9 +15,10 @@ import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import sys
 import time
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 logger = logging.getLogger("corpusai.storage")
 
@@ -38,8 +39,8 @@ class PortalLock:
       relying on file deletion or timestamp expiration to release ownership.
     """
 
-    def __init__(self, lock_file_path: str, portal_id: str = ""):
-        self.lock_file_path = os.path.abspath(lock_file_path)
+    def __init__(self, lock_file_path: Union[str, Path], portal_id: str = ""):
+        self.lock_file_path = str(Path(lock_file_path).resolve())
         self.portal_id = portal_id
         self._file_obj = None
         self._acquired = False
@@ -56,19 +57,20 @@ class PortalLock:
         if self._acquired:
             return True
 
-        os.makedirs(os.path.dirname(self.lock_file_path), exist_ok=True)
+        lock_path = Path(self.lock_file_path)
+        lock_path.parent.mkdir(parents=True, exist_ok=True)
         start_time = time.time()
 
         while True:
             try:
                 # Open with read/write (create if not exists)
                 # On Windows, open('a+b') or open('r+b') works with msvcrt.locking
-                if not os.path.exists(self.lock_file_path):
-                    with open(self.lock_file_path, "a+b") as f:
+                if not lock_path.exists():
+                    with open(lock_path, "a+b") as f:
                         f.write(b" ")
                         f.flush()
 
-                f = open(self.lock_file_path, "r+b")
+                f = open(lock_path, "r+b")
 
                 # Apply OS-level lock on first byte
                 if sys.platform == "win32":
@@ -188,21 +190,21 @@ class LocalStateStorageBackend(StateStorageBackend):
       └── packages/<portal_id>/runs/<run_id>/
     """
 
-    def __init__(self, results_base_dir: str):
-        self.results_base_dir = os.path.abspath(results_base_dir)
+    def __init__(self, results_base_dir: Union[str, Path]):
+        self.results_base_dir = str(Path(results_base_dir).resolve())
 
     def resolve_portal_root(self, portal_id: str) -> str:
         return self.results_base_dir
 
     def get_lock(self, portal_id: str) -> PortalLock:
-        lock_file = os.path.join(self.results_base_dir, f"{portal_id}.lock")
+        lock_file = str(Path(self.results_base_dir) / f"{portal_id}.lock")
         return PortalLock(lock_file, portal_id=portal_id)
 
     def get_catalog_path(self, portal_id: str) -> str:
-        return os.path.join(self.results_base_dir, "catalog.json")
+        return str(Path(self.results_base_dir) / "catalog.json")
 
     def get_deposit_registry_path(self, portal_id: str) -> str:
-        return os.path.join(self.results_base_dir, "deposit_registry.json")
+        return str(Path(self.results_base_dir) / "deposit_registry.json")
 
     def get_packages_root(self) -> str:
-        return os.path.join(self.results_base_dir, "packages")
+        return str(Path(self.results_base_dir) / "packages")

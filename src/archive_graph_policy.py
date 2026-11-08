@@ -6,8 +6,9 @@ implements BFS and DFS navigation strategies, cycle detection, scope controls,
 dynamic child verification, and integrates leaf archives directly with ArchiveVisitPolicy.
 """
 
-import hashlib
 from typing import Any, Dict, List, Optional, Set, Tuple
+
+from src.utils.crypto import sha256_bytes
 from urllib.parse import urlparse
 
 from src.archive_visit_policy import ArticleLedger, normalize_article_url
@@ -19,10 +20,10 @@ def compute_node_child_fingerprints(child_urls: List[str]) -> Tuple[str, str]:
     """
     cleaned = [u.strip() for u in child_urls if u and isinstance(u, str)]
     ordered_str = "\n".join(cleaned)
-    ordered_hash = hashlib.sha256(ordered_str.encode("utf-8")).hexdigest()
+    ordered_hash = sha256_bytes(ordered_str.encode("utf-8"))
 
     set_str = "\n".join(sorted(list(set(cleaned))))
-    set_hash = hashlib.sha256(set_str.encode("utf-8")).hexdigest()
+    set_hash = sha256_bytes(set_str.encode("utf-8"))
 
     return ordered_hash, set_hash
 
@@ -54,7 +55,9 @@ class ArchiveGraphTraversalPolicy:
         self.allowed_domains = {d.lower() for d in allowed_domains} if allowed_domains else set()
         self.archive_patterns = archive_patterns or ["/archive", "/category", "/group", "/topic", "/forum"]
         self.article_patterns = article_patterns or ["/article/", "/post/", "/item_", "/article_"]
-        self.exclude_patterns = exclude_patterns or ["/login", "/privacy", "/contact", "/author", "/tag", "/ads", "/promo"]
+        self.exclude_patterns = exclude_patterns or [
+            "/login", "/privacy", "/contact", "/author", "/tag", "/ads", "/promo"
+        ]
         self.max_visits_per_navigation_node = max_visits_per_navigation_node
         self.verify_dynamic_children = verify_dynamic_children
         self.max_child_verification_rounds = max_child_verification_rounds
