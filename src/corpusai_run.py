@@ -206,7 +206,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     config = dict(PORTAL_CONFIGS[args.portal])
     results_base_dir = args.results_dir or config["results_base_dir"]
-    catalog_path = os.path.join(results_base_dir, "catalog.json") if args.results_dir else config["catalog_path"]
+    catalog_path = str(Path(results_base_dir) / "catalog.json") if args.results_dir else config["catalog_path"]
 
     # Dry-run handling: make no HTTP requests or disk modifications
     if args.dry_run:
@@ -358,9 +358,9 @@ def main(argv: Optional[List[str]] = None) -> int:
             except BaselineIntegrityError as bie:
                 # Fallback to local state file if package directory not yet created
                 prev_entry = catalog.runs[prev_run_id]
-                cand = os.path.join(results_base_dir, prev_entry.run_dir, "portal_state.json")
-                if os.path.exists(cand):
-                    previous_state = PortalState.load_from_json(cand)
+                cand = Path(results_base_dir) / prev_entry.run_dir / "portal_state.json"
+                if cand.exists():
+                    previous_state = PortalState.load_from_json(str(cand))
                     logger.info(f"Loaded previous state from staging run '{prev_run_id}'.")
                 else:
                     logger.error(f"Cannot run incremental crawl: baseline integrity check failed: {bie}")
@@ -380,7 +380,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             delay_seconds=config["polite_delay_seconds"],
         )
 
-        warc_content_path = os.path.join(run_dir, "content_html.warc.gz")
+        warc_content_path = str(Path(run_dir) / "content_html.warc.gz")
 
         # 10. Fetcher closures and confirmation probe
         fetchers = build_portal_fetchers(
@@ -580,7 +580,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                     if heartbeat is not None:
                         if not heartbeat.is_healthy():
                             logger.error(
-                                "Cannot publish remote baseline: remote lease heartbeat failed (%s). Aborting publication.",
+                                "Cannot publish remote baseline: remote lease heartbeat failed (%s). "
+                                "Aborting publication.",
                                 heartbeat.failure_reason,
                             )
                             heartbeat.stop()
@@ -594,10 +595,10 @@ def main(argv: Optional[List[str]] = None) -> int:
 
                     try:
                         local_files: Dict[str, str] = {}
-                        for fname in os.listdir(pkg_dir):
-                            fpath = os.path.join(pkg_dir, fname)
-                            if os.path.isfile(fpath):
-                                local_files[fname] = fpath
+                        pkg_path = Path(pkg_dir)
+                        for item in pkg_path.iterdir():
+                            if item.is_file():
+                                local_files[item.name] = str(item)
 
                         staged_meta = remote_backend.stage_package_artifacts(
                             portal_id=args.portal,
@@ -607,8 +608,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                         logger.info(f"Remote storage: staged {len(staged_meta)} package artifacts to S3.")
 
                         pkg_checksums: Dict[str, str] = {}
-                        checksums_file = os.path.join(pkg_dir, "checksums.sha256")
-                        if os.path.exists(checksums_file):
+                        checksums_file = pkg_path / "checksums.sha256"
+                        if checksums_file.exists():
                             with open(checksums_file, "r", encoding="utf-8") as cs_f:
                                 for line in cs_f:
                                     line = line.strip()
@@ -725,7 +726,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                 )
                 if not released:
                     logging.getLogger(f"corpusai.{args.portal}").warning(
-                        "Remote portal lease release failed or was already superseded (stale ETag). This is safe to ignore."
+                        "Remote portal lease release failed or was already superseded "
+                        "(stale ETag). This is safe to ignore."
                     )
             except Exception as e:
                 logging.getLogger(f"corpusai.{args.portal}").warning(

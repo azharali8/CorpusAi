@@ -4,8 +4,8 @@ Local deposit registry tracking receipts for archival runs.
 
 import datetime
 import json
-import os
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Dict, Optional, Union
 
 from src.utils.serialization import atomic_write_json
 from src.zenodo_stuff.models import DepositReceipt
@@ -17,15 +17,16 @@ class DepositRegistry:
     Stored atomically alongside or inside portal results (e.g. deposit_registry.json).
     """
 
-    def __init__(self, registry_path: str):
-        self.registry_path = os.path.abspath(registry_path)
+    def __init__(self, registry_path: Union[str, Path]):
+        self.registry_path = Path(registry_path).resolve()
         self.receipts: Dict[str, DepositReceipt] = {}  # key: f"{portal_id}:{run_id}"
 
     @classmethod
-    def load_or_create(cls, registry_path: str) -> "DepositRegistry":
+    def load_or_create(cls, registry_path: Union[str, Path]) -> "DepositRegistry":
         reg = cls(registry_path)
-        if os.path.exists(registry_path):
-            with open(registry_path, "r", encoding="utf-8") as f:
+        path_obj = Path(registry_path)
+        if path_obj.is_file():
+            with open(path_obj, "r", encoding="utf-8") as f:
                 data = json.load(f)
                 for k, v in data.get("receipts", {}).items():
                     reg.receipts[k] = DepositReceipt.from_dict(v)
@@ -38,7 +39,7 @@ class DepositRegistry:
             "updated_at": datetime.datetime.now(datetime.timezone.utc).isoformat(),
             "receipts": {k: v.to_dict() for k, v in self.receipts.items()},
         }
-        atomic_write_json(self.registry_path, data)
+        atomic_write_json(str(self.registry_path), data)
 
     def get_receipt(self, portal_id: str, run_id: str) -> Optional[DepositReceipt]:
         return self.receipts.get(f"{portal_id}:{run_id}")

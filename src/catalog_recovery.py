@@ -185,7 +185,8 @@ class CatalogReconciler:
                 res = verifier_fn(pkg_path)
                 if not res.is_valid:
                     report.corrupted_packages.append(run_id)
-                    report.details.append(f"Package '{run_id}' failed verification: {res.metadata_errors or res.missing_files}.")
+                    err_msg = res.metadata_errors or res.missing_files
+                    report.details.append(f"Package '{run_id}' failed verification: {err_msg}.")
 
         # Scan packages directory on disk for orphaned packages
         if os.path.exists(self.packages_dir):
@@ -209,10 +210,13 @@ class CatalogReconciler:
                                 with open(manifest_file, "r", encoding="utf-8") as f:
                                     mdata = json.load(f)
                                 st = PortalState.load_from_json(state_file)
-                                # Crucial: Check that the package represents a successfully completed crawl (CONVERGED/COMPLETED)
-                                # Package integrity alone is NOT proof that the crawl itself completed successfully!
+                                # Crucial: Check that the package represents a successful crawl
+                                # Package integrity alone is NOT proof of crawl success
                                 status = mdata.get("status")
-                                if status not in ("CONVERGED", "COMPLETED", "PILOT_SCOPE_CONVERGED", "MULTIPAGE_PILOT_COMPLETE"):
+                                valid_st = (
+                                    "CONVERGED", "COMPLETED", "PILOT_SCOPE_CONVERGED", "MULTIPAGE_PILOT_COMPLETE"
+                                )
+                                if status not in valid_st:
                                     report.ambiguous_candidates.append(entry)
                                     report.details.append(
                                         f"Orphaned package '{entry}' has non-successful crawl status '{status}' "
@@ -265,7 +269,9 @@ class CatalogReconciler:
             if valid_prior:
                 report.proposed_new_head = valid_prior[-1]
                 report.repairable = True
-                report.details.append(f"Current head is invalid. Proposing rollback to last valid run: '{valid_prior[-1]}'.")
+                report.details.append(
+                    f"Current head is invalid. Proposing rollback to last valid run: '{valid_prior[-1]}'."
+                )
             else:
                 report.repairable = False
                 report.details.append("Current head is invalid and no valid historical prior baseline found.")
@@ -370,7 +376,11 @@ class StorageRetentionManager:
             # Check if this folder matches or contains current head run
             is_current_baseline = False
             if current_head:
-                if current_head in folder or (current_head in catalog.runs and catalog.runs[current_head].run_dir.rstrip("/").endswith(folder)):
+                in_cat = (
+                    current_head in catalog.runs
+                    and catalog.runs[current_head].run_dir.rstrip("/").endswith(folder)
+                )
+                if current_head in folder or in_cat:
                     is_current_baseline = True
 
             if is_current_baseline:

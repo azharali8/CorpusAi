@@ -26,12 +26,14 @@ should treat this as a CAS conflict and not retry blindly.
 """
 
 import datetime
-import hashlib
 import json
 import logging
+from pathlib import Path
 import time
 import threading
 from typing import Any, Dict, List, Optional, Tuple
+
+from src.utils.crypto import sha256_bytes
 
 import boto3
 from botocore.exceptions import ClientError
@@ -423,7 +425,10 @@ class S3RemoteStorageBackend(RemoteStorageContract):
                 return True, record, new_etag
             except RemoteConditionalConflictError:
                 # 409 Conflict: refresh authoritative state and determine if acquisition/takeover is safe
-                logger.info("409 ConditionalRequestConflict on initial lease creation; refreshing state for %s", portal_id)
+                logger.info(
+                    "409 ConditionalRequestConflict on initial lease creation; refreshing state for %s",
+                    portal_id,
+                )
                 try:
                     body, current_etag = self._get_object(control_key)
                 except Exception:
@@ -646,7 +651,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         try:
             body, control_etag = self._get_object(control_key)
             c_dict = json.loads(body.decode("utf-8"))
-            local_control_path = os.path.join(target_dir, "portal_control.json")
+            local_control_path = Path(target_dir) / "portal_control.json"
             with open(local_control_path, "w", encoding="utf-8") as f:
                 json.dump(c_dict, f, indent=2)
             control_record = PortalControlRecord.from_dict(c_dict)
@@ -661,7 +666,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         try:
             body, catalog_etag = self._get_object(catalog_key)
             cat_dict = json.loads(body.decode("utf-8"))
-            local_cat_path = os.path.join(target_dir, "catalog.json")
+            local_cat_path = Path(target_dir) / "catalog.json"
             with open(local_cat_path, "w", encoding="utf-8") as f:
                 json.dump(cat_dict, f, indent=2)
             catalog = ArchiveCatalog.from_dict(cat_dict)
@@ -676,8 +681,8 @@ class S3RemoteStorageBackend(RemoteStorageContract):
             active_baseline_id = control_record.baseline.latest_successful_run_id
             if catalog and catalog.latest_successful_run_id != active_baseline_id:
                 catalog.latest_successful_run_id = active_baseline_id
-                local_cat_path = os.path.join(target_dir, "catalog.json")
-                catalog.save_to_json(local_cat_path)
+                local_cat_path = Path(target_dir) / "catalog.json"
+                catalog.save_to_json(str(local_cat_path))
 
         # --- Download baseline package artifacts ---
         if active_baseline_id:
@@ -690,15 +695,15 @@ class S3RemoteStorageBackend(RemoteStorageContract):
                         rel_file = obj_key[len(pkg_prefix):]
                         if not rel_file:
                             continue
-                        dst_path = os.path.join(
-                            target_dir,
-                            "packages",
-                            portal_id,
-                            "runs",
-                            active_baseline_id,
-                            rel_file,
+                        dst_path = (
+                            Path(target_dir)
+                            / "packages"
+                            / portal_id
+                            / "runs"
+                            / active_baseline_id
+                            / rel_file
                         )
-                        os.makedirs(os.path.dirname(dst_path), exist_ok=True)
+                        dst_path.parent.mkdir(parents=True, exist_ok=True)
                         try:
                             file_body, _ = self._get_object(obj_key)
                             with open(dst_path, "wb") as f:
@@ -723,7 +728,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         try:
             body, _ = self._get_object(deposit_key)
             deposit_data = json.loads(body.decode("utf-8"))
-            local_dep_path = os.path.join(target_dir, "deposit_registry.json")
+            local_dep_path = Path(target_dir) / "deposit_registry.json"
             with open(local_dep_path, "w", encoding="utf-8") as f:
                 json.dump(deposit_data, f, indent=2)
         except ClientError as e:
@@ -765,7 +770,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
                     f"Cannot read local artifact '{local_abs_path}': {e}"
                 ) from e
 
-            sha256 = hashlib.sha256(file_bytes).hexdigest()
+            sha256 = sha256_bytes(file_bytes)
             meta = {"sha256": sha256}
 
             try:
@@ -836,7 +841,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
                 )
                 continue
 
-            actual_sha256 = hashlib.sha256(body).hexdigest()
+            actual_sha256 = sha256_bytes(body)
             if actual_sha256 != expected_sha256:
                 mismatches.append(
                     f"Checksum mismatch for {norm_rel}: "
@@ -990,7 +995,11 @@ class S3RemoteStorageBackend(RemoteStorageContract):
             return False, None, None
         except Exception as e:
             # Ambiguous publication outcome: network timeout/socket error after S3 may have processed write
-            logger.warning("Ambiguous outcome on control record write for %s: %s; re-reading authoritative state", portal_id, e)
+            logger.warning(
+                "Ambiguous outcome on control record write for %s: %s; re-reading authoritative state",
+                portal_id,
+                e,
+            )
             try:
                 verify_body, verify_etag = self._get_object(control_key)
                 verified_record = PortalControlRecord.from_dict(json.loads(verify_body.decode("utf-8")))

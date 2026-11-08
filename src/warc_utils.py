@@ -6,11 +6,10 @@ Web ARChive (WARC) files using warcio.
 Preserves URL provenance, record IDs, and SHA-256 checksums.
 """
 
-import hashlib
 import io
 import os
 
-from src.utils.crypto import sha256_file
+from src.utils.crypto import sha256_bytes, sha256_file
 from typing import Any, Dict, List, Optional, Tuple
 
 from warcio.archiveiterator import ArchiveIterator
@@ -312,7 +311,7 @@ def create_warc_response_file(
             else:
                 payload_bytes = payload
 
-            payload_sha256 = hashlib.sha256(payload_bytes).hexdigest()
+            payload_sha256 = sha256_bytes(payload_bytes)
 
             http_headers = StatusAndHeaders(
                 status_line,

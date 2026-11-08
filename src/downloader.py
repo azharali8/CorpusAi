@@ -8,7 +8,6 @@ direct WARC preservation using warcio.
 """
 
 from dataclasses import dataclass, field
-import hashlib
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 import urllib.parse
@@ -16,6 +15,7 @@ import urllib.request
 import urllib.robotparser
 
 from src.article_inspector import extract_referenced_assets
+from src.utils.crypto import sha256_bytes
 from src.warc_utils import create_warc_response_file
 
 
@@ -39,9 +39,11 @@ class ResourcePreservationHarvester:
     referenced assets, storing them as distinguishable records in a WARC file.
     """
 
+    DEFAULT_USER_AGENT = "CorpusAI-Research-Validator/1.0 (+https://github.com/CorpusAI; Academic Research Evaluation)"
+
     def __init__(
         self,
-        user_agent: str = "CorpusAI-Research-Validator/1.0 (+https://github.com/CorpusAI; Academic Research Evaluation)",
+        user_agent: str = DEFAULT_USER_AGENT,
         delay_seconds: float = 1.0,
         max_asset_requests: int = 50,
         timeout: float = 15.0,
@@ -71,7 +73,7 @@ class ResourcePreservationHarvester:
                 content_type = resp.headers.get("Content-Type", "application/octet-stream")
                 headers = dict(resp.headers.items())
                 duration = round(time.time() - t0, 3)
-                digest = hashlib.sha256(content_bytes).hexdigest()
+                digest = sha256_bytes(content_bytes)
 
                 res = DownloadedResource(
                     url=url,

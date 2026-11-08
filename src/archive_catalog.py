@@ -101,7 +101,8 @@ class ArchiveCatalog:
         self.latest_capture = entry.completed_at or entry.started_at
 
         # Crucial safety rule: Failed runs MUST NEVER advance latest_successful_run_id
-        if is_successful and entry.status in ("CONVERGED", "COMPLETED", "PILOT_SCOPE_CONVERGED", "MULTIPAGE_PILOT_COMPLETE"):
+        valid_statuses = ("CONVERGED", "COMPLETED", "PILOT_SCOPE_CONVERGED", "MULTIPAGE_PILOT_COMPLETE")
+        if is_successful and entry.status in valid_statuses:
             self.latest_successful_run_id = entry.run_id
 
     def save_to_json(self, file_path: str) -> None:
