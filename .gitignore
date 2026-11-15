@@ -33,6 +33,19 @@ Thumbs.db
 results/**/browsertrix/
 results/**/archive_snapshot.html
 
+# SQLite Authoritative Operational Database & Transient Files
+**/corpusai_state.db
+**/corpusai_state.db-wal
+**/corpusai_state.db-shm
+**/corpusai_state.db-journal
+*.db-wal
+*.db-shm
+*.db-journal
+
+# Operational Portal Advisory Locks
+results/**/*.lock
+storage/**/*.lock
+
 # Python Build / Packaging Artifacts
 build/
 dist/
