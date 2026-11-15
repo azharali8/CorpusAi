@@ -15,6 +15,7 @@ import datetime
 import json
 import logging
 import os
+from pathlib import Path
 import shutil
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -66,7 +67,7 @@ def validate_baseline_integrity(
         )
 
     # Resolve finalized package directory
-    pkg_dir = os.path.join(results_base_dir, "packages", portal_id, "runs", prev_run_id)
+    pkg_dir = str(Path(results_base_dir) / "packages" / portal_id / "runs" / prev_run_id)
     if not os.path.exists(pkg_dir):
         raise BaselineIntegrityError(
             f"Finalized package directory not found for baseline run '{prev_run_id}' at '{pkg_dir}'."
@@ -83,11 +84,11 @@ def validate_baseline_integrity(
 
     # Resolve portal_state.json from authoritative package location or staging run directory
     candidate_state_paths = [
-        os.path.join(pkg_dir, "portal_state.json"),
-        os.path.join(pkg_dir, "extra", "portal_state.json"),
-        os.path.join(results_base_dir, cat_entry.run_dir, "portal_state.json"),
-        os.path.join(results_base_dir, "runs", prev_run_id, "portal_state.json"),
-        os.path.join(cat_entry.run_dir, "portal_state.json"),
+        str(Path(pkg_dir) / "portal_state.json"),
+        str(Path(pkg_dir) / "extra" / "portal_state.json"),
+        str(Path(results_base_dir) / cat_entry.run_dir / "portal_state.json"),
+        str(Path(results_base_dir) / "runs" / prev_run_id / "portal_state.json"),
+        str(Path(cat_entry.run_dir) / "portal_state.json"),
     ]
     state_file = next((p for p in candidate_state_paths if os.path.exists(p)), None)
     if not state_file:
@@ -161,8 +162,8 @@ class CatalogReconciler:
     def __init__(self, results_base_dir: str, portal_id: str):
         self.results_base_dir = os.path.abspath(results_base_dir)
         self.portal_id = portal_id
-        self.catalog_path = os.path.join(self.results_base_dir, "catalog.json")
-        self.packages_dir = os.path.join(self.results_base_dir, "packages", self.portal_id, "runs")
+        self.catalog_path = str(Path(self.results_base_dir) / "catalog.json")
+        self.packages_dir = str(Path(self.results_base_dir) / "packages" / self.portal_id / "runs")
 
     def inspect(self) -> ReconciliationReport:
         """Run read-only audit and return a dry-run ReconciliationReport."""
@@ -176,7 +177,7 @@ class CatalogReconciler:
 
         # Check existing catalog entries
         for run_id in catalog.all_run_ids:
-            pkg_path = os.path.join(self.packages_dir, run_id)
+            pkg_path = str(Path(self.packages_dir) / run_id)
             if not os.path.exists(pkg_path):
                 report.missing_packages.append(run_id)
                 report.details.append(f"Catalog entry '{run_id}' has no package directory at '{pkg_path}'.")
@@ -191,7 +192,7 @@ class CatalogReconciler:
         # Scan packages directory on disk for orphaned packages
         if os.path.exists(self.packages_dir):
             for entry in sorted(os.listdir(self.packages_dir)):
-                pkg_path = os.path.join(self.packages_dir, entry)
+                pkg_path = str(Path(self.packages_dir) / entry)
                 if not os.path.isdir(pkg_path):
                     continue
 
@@ -201,10 +202,10 @@ class CatalogReconciler:
                     res = verifier_fn(pkg_path)
                     if res.is_valid:
                         # Verify it has valid manifest and portal_state
-                        manifest_file = os.path.join(pkg_path, "manifest.json")
-                        state_file = os.path.join(pkg_path, "portal_state.json")
+                        manifest_file = str(Path(pkg_path) / "manifest.json")
+                        state_file = str(Path(pkg_path) / "portal_state.json")
                         if not os.path.exists(state_file):
-                            state_file = os.path.join(pkg_path, "extra", "portal_state.json")
+                            state_file = str(Path(pkg_path) / "extra" / "portal_state.json")
                         if os.path.exists(manifest_file) and os.path.exists(state_file):
                             try:
                                 with open(manifest_file, "r", encoding="utf-8") as f:
@@ -291,8 +292,8 @@ class CatalogReconciler:
 
         # Case 1: Adopt orphaned package
         if new_head in report.orphaned_verified_packages:
-            pkg_path = os.path.join(self.packages_dir, new_head)
-            manifest_file = os.path.join(pkg_path, "manifest.json")
+            pkg_path = str(Path(self.packages_dir) / new_head)
+            manifest_file = str(Path(pkg_path) / "manifest.json")
             with open(manifest_file, "r", encoding="utf-8") as f:
                 mdata = json.load(f)
 
@@ -347,9 +348,9 @@ class StorageRetentionManager:
     def __init__(self, results_base_dir: str, portal_id: str):
         self.results_base_dir = os.path.abspath(results_base_dir)
         self.portal_id = portal_id
-        self.catalog_path = os.path.join(self.results_base_dir, "catalog.json")
-        self.runs_dir = os.path.join(self.results_base_dir, "runs")
-        self.packages_dir = os.path.join(self.results_base_dir, "packages", self.portal_id, "runs")
+        self.catalog_path = str(Path(self.results_base_dir) / "catalog.json")
+        self.runs_dir = str(Path(self.results_base_dir) / "runs")
+        self.packages_dir = str(Path(self.results_base_dir) / "packages" / self.portal_id / "runs")
 
     def plan_cleanup(self, min_keep_staging: int = 5) -> RetentionPlan:
         """Compute conservative cleanup plan."""
@@ -369,7 +370,7 @@ class StorageRetentionManager:
         all_staging_folders = sorted(os.listdir(self.runs_dir))
 
         for folder in all_staging_folders:
-            folder_path = os.path.join(self.runs_dir, folder)
+            folder_path = str(Path(self.runs_dir) / folder)
             if not os.path.isdir(folder_path):
                 continue
 
@@ -389,7 +390,7 @@ class StorageRetentionManager:
                 continue
 
             # Check if run has anomalies or manual review
-            summary_file = os.path.join(folder_path, "run_summary.json")
+            summary_file = str(Path(folder_path) / "run_summary.json")
             if os.path.exists(summary_file):
                 try:
                     with open(summary_file, "r", encoding="utf-8") as f:
@@ -418,11 +419,11 @@ class StorageRetentionManager:
                 plan.protected_reasons[f] = "Protected by min_keep_staging count"
 
         for f in plan.eligible_for_removal:
-            folder_path = os.path.join(self.runs_dir, f)
+            folder_path = str(Path(self.runs_dir) / f)
             try:
                 for root, _, files in os.walk(folder_path):
                     for file in files:
-                        plan.bytes_reclaimable += os.path.getsize(os.path.join(root, file))
+                        plan.bytes_reclaimable += os.path.getsize(Path(root) / file)
             except Exception:
                 pass
 
@@ -435,7 +436,7 @@ class StorageRetentionManager:
             return plan
 
         for f in plan.eligible_for_removal:
-            folder_path = os.path.join(self.runs_dir, f)
+            folder_path = str(Path(self.runs_dir) / f)
             try:
                 shutil.rmtree(folder_path)
                 logger.info(f"Cleaned up obsolete staging run directory: {folder_path}")

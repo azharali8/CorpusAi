@@ -23,43 +23,52 @@ from src.content_url_registry import ContentURLEntry, ContentURLRegistry
 from src.deposit_metadata import Creator, DepositMetadata
 from src.incremental_run import IncrementalRun
 from src.portal_state import ArticleState, PortalState
-from src.utils.serialization import atomic_write_json, ensure_parent_dir, read_json
+from src.utils.serialization import atomic_write_json, read_json
 
 
-def test_ensure_parent_dir_creates_nested_directories(tmp_path: Path):
+def test_atomic_write_json_creates_nested_directories(tmp_path: Path):
     target = tmp_path / "deep" / "nested" / "dir" / "test.json"
     assert not target.parent.exists()
-    ret = ensure_parent_dir(target)
-    assert ret.parent.exists()
-    assert ret == target
+    atomic_write_json(target, {"status": "ok"})
+    assert target.parent.exists()
+    assert target.exists()
+    assert read_json(target) == {"status": "ok"}
 
 
-def test_ensure_parent_dir_accepts_str(tmp_path: Path):
+def test_atomic_write_json_accepts_str(tmp_path: Path):
     target_str = str(tmp_path / "str_dir" / "file.json")
-    ret = ensure_parent_dir(target_str)
-    assert isinstance(ret, Path)
-    assert ret.parent.exists()
-    assert ret == Path(target_str)
+    atomic_write_json(target_str, {"saved": True})
+    assert Path(target_str).parent.exists()
+    assert Path(target_str).exists()
+    assert read_json(target_str) == {"saved": True}
 
 
-def test_ensure_parent_dir_preserves_lexical_path_without_resolving(tmp_path: Path):
+def test_atomic_write_json_with_bare_filename_in_cwd(tmp_path: Path, monkeypatch):
+    """Confirm atomic_write_json handles bare filename in current working directory."""
+    monkeypatch.chdir(tmp_path)
+    target = "bare_output.json"
+    atomic_write_json(target, {"bare": True})
+    assert Path(target).exists()
+    assert read_json(target) == {"bare": True}
+
+
+def test_atomic_write_json_preserves_lexical_path_without_resolving(tmp_path: Path):
     # Lexical path with relative navigation ("..")
     nested = tmp_path / "sub"
     nested.mkdir()
     lexical = nested / ".." / "outside.json"
-    ret = ensure_parent_dir(lexical)
-    assert ret == lexical
-    assert not ret.is_absolute() if not lexical.is_absolute() else True
+    atomic_write_json(lexical, {"lexical": True})
+    assert lexical.exists()
+    assert read_json(lexical) == {"lexical": True}
 
     # Symlink target preservation
     target_file = tmp_path / "target_real.json"
     target_file.write_text("{\"v\": 1}", encoding="utf-8")
-    link_file = tmp_path / "symlink_dir" / "link.json"
-    ensure_parent_dir(link_file)
+    link_dir = tmp_path / "symlink_dir"
+    link_dir.mkdir(parents=True, exist_ok=True)
+    link_file = link_dir / "link.json"
     try:
         link_file.symlink_to(target_file)
-        ret_link = ensure_parent_dir(link_file)
-        assert ret_link == link_file
         # When writing to link_file, os.replace replaces the link file itself,
         # exactly matching baseline behavior (without writing into target_file).
         atomic_write_json(link_file, {"v": 2})
@@ -322,3 +331,198 @@ def test_deposit_metadata_delegation_validation_and_path_support(tmp_path: Path)
         invalid_meta.save_to_json(invalid_file)
     assert not invalid_file.exists()
     assert not invalid_file.parent.exists()
+
+
+def test_archive_run_save_to_json_bare_filename_in_cwd(tmp_path: Path, monkeypatch):
+    """Test ArchiveRun.save_to_json with a bare filename in current working directory."""
+    monkeypatch.chdir(tmp_path)
+    run = ArchiveRun(
+        run_id="run-bare-001",
+        target_urls=["http://portal.example.com"],
+        status="COMPLETED",
+    )
+    run.save_to_json("bare_run.json")
+    assert Path("bare_run.json").exists()
+    loaded = ArchiveRun.load_from_json("bare_run.json")
+    assert loaded.run_id == "run-bare-001"
+    assert loaded.status == "COMPLETED"
+
+
+def test_content_url_registry_save_to_json_bare_filename_in_cwd(tmp_path: Path, monkeypatch):
+    """Test ContentURLRegistry.save_to_json with a bare filename in current working directory."""
+    monkeypatch.chdir(tmp_path)
+    reg = ContentURLRegistry()
+    reg.register_url(
+        url="http://example.com/bare",
+        source_archive="archive-bare",
+    )
+    reg.save_to_json("bare_reg.json")
+    assert Path("bare_reg.json").exists()
+    loaded = ContentURLRegistry.load_from_json("bare_reg.json")
+    assert loaded.count() == 1
+    assert loaded.get("http://example.com/bare") is not None
+
+
+def test_deposit_metadata_save_to_json_bare_filename_in_cwd(tmp_path: Path, monkeypatch):
+    """Test DepositMetadata.save_to_json with a bare filename in current working directory."""
+    monkeypatch.chdir(tmp_path)
+    meta = DepositMetadata(
+        title="Bare Metadata Corpus",
+        creators=[Creator(name="John Doe")],
+        description="Dataset of preserved news articles testing bare paths.",
+        capture_period_start="2026-11-01T00:00:00Z",
+        capture_period_end="2026-11-04T00:00:00Z",
+        source_domains=["http://bare.example.com"],
+        license_status="CC-BY-4.0",
+        copyright_notice="Copyright 2026",
+        software_version="0.1.0",
+        archive_formats=["WARC"],
+        checksum_manifest_path="checksums.sha256",
+    )
+    meta.save_to_json("bare_deposit.json")
+    assert Path("bare_deposit.json").exists()
+    loaded = DepositMetadata.load_from_json("bare_deposit.json")
+    assert loaded.title == "Bare Metadata Corpus"
+    assert loaded.creators[0].name == "John Doe"
+
+
+# ---------------------------------------------------------------------------
+# Tests for Phase 6B: Failure isolation and atomic preservation for domain classes
+# ---------------------------------------------------------------------------
+
+class _NonSerializableObj:
+    """Helper test double that raises TypeError during JSON serialization."""
+    pass
+
+
+def test_archive_run_failed_serialization_preserves_destination_and_cleans_tmp(tmp_path: Path):
+    """Confirm ArchiveRun.save_to_json preserves destination when serialization fails."""
+    target = tmp_path / "target_arch_run.json"
+    original_bytes = b'{"original": "archive_run_data"}'
+    target.write_bytes(original_bytes)
+
+    run = ArchiveRun(
+        run_id="run-fail-test",
+        target_urls=["http://fail.example.com"],
+        configuration={"bad_key": _NonSerializableObj()},
+    )
+
+    with pytest.raises(TypeError):
+        run.save_to_json(str(target))
+
+    # Existing destination must remain untouched
+    assert target.read_bytes() == original_bytes
+
+    # No leftover temporary files
+    tmp_files = list(tmp_path.glob("*.tmp.*"))
+    assert tmp_files == []
+
+
+def test_archive_run_failed_serialization_new_destination_no_partial_file(tmp_path: Path):
+    """Confirm ArchiveRun.save_to_json leaves no partial file if destination was new."""
+    target = tmp_path / "new_dir" / "new_arch_run.json"
+
+    run = ArchiveRun(
+        run_id="run-new-fail-test",
+        target_urls=["http://new.example.com"],
+        configuration={"bad_key": _NonSerializableObj()},
+    )
+
+    with pytest.raises(TypeError):
+        run.save_to_json(str(target))
+
+    assert not target.exists()
+    tmp_files = list(tmp_path.glob("**/*.tmp.*"))
+    assert tmp_files == []
+
+
+def test_content_url_registry_failed_serialization_preserves_destination_and_cleans_tmp(tmp_path: Path):
+    """Confirm ContentURLRegistry.save_to_json preserves destination when serialization fails."""
+    target = tmp_path / "target_registry.json"
+    original_bytes = b'[{"url": "http://existing.com", "source_archive": "arch1"}]'
+    target.write_bytes(original_bytes)
+
+    reg = ContentURLRegistry()
+    # Inject non-serializable object into an entry's field
+    entry = ContentURLEntry(url="http://fail.com", source_archive="arch_fail")
+    entry.final_url = _NonSerializableObj()  # type: ignore
+    reg.register(entry)
+
+    with pytest.raises(TypeError):
+        reg.save_to_json(str(target))
+
+    assert target.read_bytes() == original_bytes
+    tmp_files = list(tmp_path.glob("*.tmp.*"))
+    assert tmp_files == []
+
+
+def test_content_url_registry_failed_serialization_new_destination_no_partial_file(tmp_path: Path):
+    """Confirm ContentURLRegistry.save_to_json leaves no partial file on new destination failure."""
+    target = tmp_path / "nested_dir" / "new_registry.json"
+
+    reg = ContentURLRegistry()
+    entry = ContentURLEntry(url="http://fail.com", source_archive="arch_fail")
+    entry.final_url = _NonSerializableObj()  # type: ignore
+    reg.register(entry)
+
+    with pytest.raises(TypeError):
+        reg.save_to_json(str(target))
+
+    assert not target.exists()
+    tmp_files = list(tmp_path.glob("**/*.tmp.*"))
+    assert tmp_files == []
+
+
+def test_deposit_metadata_failed_serialization_preserves_destination_and_cleans_tmp(tmp_path: Path):
+    """Confirm DepositMetadata.save_to_json preserves destination when serialization fails."""
+    target = tmp_path / "target_deposit.json"
+    original_bytes = b'{"title": "Original Deposit"}'
+    target.write_bytes(original_bytes)
+
+    # Valid metadata according to validate(), but with non-serializable custom field injected
+    meta = DepositMetadata(
+        title="Valid Metadata",
+        creators=[Creator(name="Jane Doe", affiliation=_NonSerializableObj())],  # type: ignore
+        description="Comprehensive dataset description of preserved news articles.",
+        capture_period_start="2026-11-01T00:00:00Z",
+        capture_period_end="2026-11-04T00:00:00Z",
+        source_domains=["http://example.com"],
+        license_status="CC-BY-4.0",
+        copyright_notice="Copyright 2026",
+        software_version="0.1.0",
+        archive_formats=["WARC"],
+        checksum_manifest_path="checksums.sha256",
+    )
+
+    with pytest.raises(TypeError):
+        meta.save_to_json(str(target))
+
+    assert target.read_bytes() == original_bytes
+    tmp_files = list(tmp_path.glob("*.tmp.*"))
+    assert tmp_files == []
+
+
+def test_deposit_metadata_failed_serialization_new_destination_no_partial_file(tmp_path: Path):
+    """Confirm DepositMetadata.save_to_json leaves no partial file on new destination failure."""
+    target = tmp_path / "new_meta_dir" / "new_deposit.json"
+
+    meta = DepositMetadata(
+        title="Valid Metadata",
+        creators=[Creator(name="Jane Doe", affiliation=_NonSerializableObj())],  # type: ignore
+        description="Comprehensive dataset description of preserved news articles.",
+        capture_period_start="2026-11-01T00:00:00Z",
+        capture_period_end="2026-11-04T00:00:00Z",
+        source_domains=["http://example.com"],
+        license_status="CC-BY-4.0",
+        copyright_notice="Copyright 2026",
+        software_version="0.1.0",
+        archive_formats=["WARC"],
+        checksum_manifest_path="checksums.sha256",
+    )
+
+    with pytest.raises(TypeError):
+        meta.save_to_json(str(target))
+
+    assert not target.exists()
+    tmp_files = list(tmp_path.glob("**/*.tmp.*"))
+    assert tmp_files == []

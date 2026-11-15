@@ -11,8 +11,8 @@ from dataclasses import dataclass, field
 import time
 from typing import Any, Dict, List, Optional, Set, Tuple
 import urllib.parse
-import urllib.request
-import urllib.robotparser
+
+import requests
 
 from src.article_inspector import extract_referenced_assets
 from src.utils.crypto import sha256_bytes
@@ -59,48 +59,72 @@ class ResourcePreservationHarvester:
         """Fetch a single URL politely and record response."""
         time.sleep(self.delay_seconds)
         t0 = time.time()
-        req = urllib.request.Request(
-            url,
-            headers={
-                "User-Agent": self.user_agent,
-                "Accept": "*/*",
-            },
-        )
+        headers = {
+            "User-Agent": self.user_agent,
+            "Accept": "*/*",
+        }
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                status = resp.status
-                content_bytes = resp.read()
+            with requests.get(
+                url,
+                headers=headers,
+                timeout=self.timeout,
+                allow_redirects=True,
+            ) as resp:
+                status = resp.status_code
+                content_bytes = resp.content
                 content_type = resp.headers.get("Content-Type", "application/octet-stream")
-                headers = dict(resp.headers.items())
+                resp_headers = dict(resp.headers.items())
                 duration = round(time.time() - t0, 3)
-                digest = sha256_bytes(content_bytes)
 
-                res = DownloadedResource(
-                    url=url,
-                    status_code=status,
-                    content_type=content_type,
-                    payload=content_bytes,
-                    sha256=digest,
-                    headers=headers,
-                    resource_type=resource_type,
-                    fetch_duration=duration,
-                )
-                self.downloaded_resources[url] = res
-                self.request_log.append({
-                    "url": url,
-                    "status_code": status,
-                    "duration_seconds": duration,
-                    "bytes": len(content_bytes),
-                    "resource_type": resource_type,
-                })
-                return res
-        except urllib.error.HTTPError as e:
+                if 200 <= status < 300:
+                    digest = sha256_bytes(content_bytes)
+                    res = DownloadedResource(
+                        url=url,
+                        status_code=status,
+                        content_type=content_type,
+                        payload=content_bytes,
+                        sha256=digest,
+                        headers=resp_headers,
+                        resource_type=resource_type,
+                        fetch_duration=duration,
+                    )
+                    self.downloaded_resources[url] = res
+                    self.request_log.append({
+                        "url": url,
+                        "status_code": status,
+                        "duration_seconds": duration,
+                        "bytes": len(content_bytes),
+                        "resource_type": resource_type,
+                    })
+                    return res
+                else:
+                    err_msg = f"HTTP Error {status}: {resp.reason}"
+                    res = DownloadedResource(
+                        url=url,
+                        status_code=status,
+                        content_type=resp.headers.get("Content-Type", "text/plain"),
+                        payload=content_bytes,
+                        sha256="",
+                        resource_type=resource_type,
+                        fetch_duration=duration,
+                        error=err_msg,
+                    )
+                    self.downloaded_resources[url] = res
+                    self.request_log.append({
+                        "url": url,
+                        "status_code": status,
+                        "error": err_msg,
+                        "duration_seconds": duration,
+                        "resource_type": resource_type,
+                    })
+                    return res
+        except requests.RequestException as e:
             duration = round(time.time() - t0, 3)
             res = DownloadedResource(
                 url=url,
-                status_code=e.code,
-                content_type=e.headers.get("Content-Type", "text/plain") if e.headers else "text/plain",
-                payload=e.read() if hasattr(e, "read") else b"",
+                status_code=0,
+                content_type="text/plain",
+                payload=b"",
                 sha256="",
                 resource_type=resource_type,
                 fetch_duration=duration,
@@ -109,7 +133,6 @@ class ResourcePreservationHarvester:
             self.downloaded_resources[url] = res
             self.request_log.append({
                 "url": url,
-                "status_code": e.code,
                 "error": str(e),
                 "duration_seconds": duration,
                 "resource_type": resource_type,

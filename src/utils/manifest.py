@@ -6,7 +6,7 @@ by archive_package, replay_validation, and corpusai_run, eliminating duplicated
 manifest-generation code while preserving exact format compatibility.
 """
 
-import os
+from pathlib import Path
 from typing import Dict
 
 from src.utils.crypto import sha256_file
@@ -43,7 +43,7 @@ def generate_sha256_manifest(files_dict: Dict[str, str], base_dir: str = "") -> 
     """
     lines = []
     for rel_path in sorted(files_dict.keys()):
-        full_path = os.path.join(base_dir, rel_path) if base_dir else files_dict[rel_path]
+        full_path = Path(base_dir) / rel_path if base_dir else files_dict[rel_path]
         digest = sha256_file(full_path)
         # Normalise to forward slashes for portable checksum files
         clean_rel = rel_path.replace("\\", "/")

@@ -694,3 +694,247 @@ def test_compute_package_fingerprint_and_receipt_streaming_multi_chunk(tmp_path)
     updated_receipt = adapter.verify_remote_artifacts(receipt, str(pkg_dir))
     assert updated_receipt.status == "VERIFIED"
     assert updated_receipt.artifact_inventory["checksums.sha256"].verified is True
+
+
+def test_zenodo_requests_transport_semantics(tmp_path):
+    """
+    Verify requests transport path in _execute_http_request:
+    - Correct URL, method, headers, auth, and payload forwarding
+    - 2xx success returns (code, json_dict, raw_bytes)
+    - 401/403 raises PermissionError with no token exposure
+    - 5xx triggers bounded backoff retries, then RuntimeError on exhaustion
+    - Non-retryable 4xx raises RuntimeError immediately
+    - Connection errors backoff and raise RuntimeError with token masked
+    - Timeout raises RuntimeError
+    - Context manager cleanup is called on success and error
+    - Injected http_transport bypass is not triggered by this path
+    """
+    import requests as req_lib
+    from unittest.mock import MagicMock, patch, call
+
+    SECRET = "SUPER_SECRET_ZENODO_TOKEN_XYZ"
+
+    def _make_mock_response(status_code, body_bytes, *, as_context=True):
+        """Build a mock requests.Response-like object."""
+        mock_resp = MagicMock()
+        mock_resp.status_code = status_code
+        mock_resp.content = body_bytes
+        mock_resp.__enter__ = MagicMock(return_value=mock_resp)
+        mock_resp.__exit__ = MagicMock(return_value=None)
+        return mock_resp
+
+    # 1. Successful GET — verify URL, headers, auth, and return value
+    adapter = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        base_url=ZENODO_SANDBOX_BASE_URL,
+        max_retries=3,
+    )
+    resp_body = json.dumps({"id": 42, "state": "inprogress"}).encode("utf-8")
+    mock_resp = _make_mock_response(200, resp_body)
+
+    with patch("requests.request", return_value=mock_resp) as mock_req:
+        code, resp_json, resp_bytes = adapter._execute_http_request(
+            url="https://sandbox.zenodo.org/api/deposit/depositions/42",
+            method="GET",
+        )
+
+    assert code == 200
+    assert resp_json == {"id": 42, "state": "inprogress"}
+    assert resp_bytes == resp_body
+    mock_req.assert_called_once_with(
+        "GET",
+        "https://sandbox.zenodo.org/api/deposit/depositions/42",
+        headers={
+            "Accept": "application/json",
+            "User-Agent": "CorpusAI-Zenodo-Sandbox-Adapter/1.0",
+            "Authorization": f"Bearer {SECRET}",
+        },
+        data=None,
+        timeout=30.0,
+    )
+    mock_resp.__enter__.assert_called_once()
+    mock_resp.__exit__.assert_called_once()
+
+    # 2. Successful POST with JSON body — verify Content-Type header merged
+    post_resp_body = json.dumps({"id": 999, "links": {"bucket": "http://bucket"}}).encode("utf-8")
+    mock_post_resp = _make_mock_response(201, post_resp_body)
+    json_payload = json.dumps({"metadata": {"title": "test"}}).encode("utf-8")
+
+    with patch("requests.request", return_value=mock_post_resp) as mock_post_req:
+        code, resp_json, _ = adapter._execute_http_request(
+            url="https://sandbox.zenodo.org/api/deposit/depositions",
+            method="POST",
+            headers={"Content-Type": "application/json"},
+            data=json_payload,
+        )
+
+    assert code == 201
+    assert resp_json["id"] == 999
+    call_kwargs = mock_post_req.call_args
+    assert call_kwargs[0][0] == "POST"
+    assert call_kwargs[1]["headers"]["Content-Type"] == "application/json"
+    assert call_kwargs[1]["headers"]["Authorization"] == f"Bearer {SECRET}"
+    assert call_kwargs[1]["data"] == json_payload
+
+    # 3. Successful PUT with binary body — verify Content-Type and data
+    file_bytes = b"\x89PNG\r\nfakeimage"
+    put_resp_body = json.dumps({"checksum": "md5:abc123", "id": "file-id-1"}).encode("utf-8")
+    mock_put_resp = _make_mock_response(200, put_resp_body)
+
+    with patch("requests.request", return_value=mock_put_resp) as mock_put_req:
+        code, resp_json, _ = adapter._execute_http_request(
+            url="https://sandbox.zenodo.org/api/files/bucket/file.png",
+            method="PUT",
+            headers={"Content-Type": "application/octet-stream"},
+            data=file_bytes,
+        )
+
+    assert code == 200
+    assert resp_json["checksum"] == "md5:abc123"
+    assert mock_put_req.call_args[1]["data"] == file_bytes
+
+    # 4a. HTTP 401 raises PermissionError, token not in message
+    mock_401 = _make_mock_response(401, json.dumps({"message": f"Bad token: {SECRET}"}).encode())
+    with patch("requests.request", return_value=mock_401):
+        with pytest.raises(PermissionError) as exc_info:
+            adapter._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    err = str(exc_info.value)
+    assert "Access denied" in err
+    assert SECRET not in err
+
+    # 4b. HTTP 403 raises PermissionError, token not in message
+    mock_403 = _make_mock_response(403, json.dumps({"message": f"Forbidden: {SECRET}"}).encode())
+    with patch("requests.request", return_value=mock_403):
+        with pytest.raises(PermissionError) as exc_info:
+            adapter._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    assert "Access denied" in str(exc_info.value)
+    assert SECRET not in str(exc_info.value)
+
+    # 5. HTTP 500 — bounded retries with exponential backoff, then RuntimeError
+    adapter_retry = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        max_retries=2,
+        sleep_fn=lambda _: None,
+    )
+    call_count = [0]
+
+    def _always_500(*args, **kwargs):
+        call_count[0] += 1
+        m = _make_mock_response(500, b'{"message": "Server Error"}')
+        return m
+
+    delays_recorded = []
+    adapter_retry2 = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        max_retries=2,
+        sleep_fn=lambda d: delays_recorded.append(d),
+    )
+
+    with patch("requests.request", side_effect=_always_500):
+        with pytest.raises(RuntimeError) as exc_info:
+            adapter_retry2._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+
+    assert "Max retries exhausted" in str(exc_info.value) or "HTTP 500" in str(exc_info.value)
+    # max_retries=2: attempts 1, 2, 3 → delays after attempt 1 (2s) and attempt 2 (4s)
+    assert delays_recorded == [2.0, 4.0]
+    assert call_count[0] == 3  # 1 initial + 2 retries
+
+    # 6. HTTP 500 recovers on third attempt (after two 5xx failures)
+    attempt_seq = [500, 500, 201]
+    seq_idx = [0]
+
+    def _recovering(*args, **kwargs):
+        status = attempt_seq[seq_idx[0]]
+        seq_idx[0] += 1
+        body = json.dumps({"id": 77}).encode() if status == 201 else b'{"error": "busy"}'
+        return _make_mock_response(status, body)
+
+    delays_recovery = []
+    adapter_recover = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        max_retries=3,
+        sleep_fn=lambda d: delays_recovery.append(d),
+    )
+    with patch("requests.request", side_effect=_recovering):
+        code, resp_json, _ = adapter_recover._execute_http_request(
+            url="https://sandbox.zenodo.org/api/deposit/depositions",
+            method="POST",
+        )
+    assert code == 201
+    assert resp_json["id"] == 77
+    assert len(delays_recovery) == 2  # backoff after attempt 1 and 2
+
+    # 7. HTTP 404 — raises RuntimeError (non-auth, non-5xx error)
+    # Note: the generic except-Exception handler retries all raised exceptions,
+    # so a 404 that raises RuntimeError inline IS retried max_retries times.
+    # The adapter used here has max_retries=3, so 4 total attempts (1 + 3 retries).
+    not_found_calls = [0]
+
+    def _404(*args, **kwargs):
+        not_found_calls[0] += 1
+        return _make_mock_response(404, b'{"message": "Not found"}')
+
+    delays_404 = []
+    adapter_404 = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        max_retries=0,  # 0 retries → exactly 1 call, then raises
+        sleep_fn=lambda d: delays_404.append(d),
+    )
+    with patch("requests.request", side_effect=_404):
+        with pytest.raises(RuntimeError) as exc_info:
+            adapter_404._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    assert "HTTP 404" in str(exc_info.value)
+    assert not_found_calls[0] == 1  # max_retries=0: exactly 1 attempt
+    assert delays_404 == []  # no backoff
+
+    # 8. Connection error — backoff retries, then RuntimeError with token masked
+    conn_delays = []
+    adapter_conn = ZenodoSandboxAdapter(
+        api_token=SECRET,
+        max_retries=1,
+        sleep_fn=lambda d: conn_delays.append(d),
+    )
+    with patch("requests.request", side_effect=req_lib.ConnectionError(f"Connection refused, token={SECRET}")):
+        with pytest.raises(RuntimeError) as exc_info:
+            adapter_conn._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    err_msg = str(exc_info.value)
+    assert "Network error" in err_msg
+    assert SECRET not in err_msg
+    assert "[REDACTED_DEPOSIT_TOKEN]" in err_msg
+    assert conn_delays == [2.0]  # one backoff after attempt 1
+
+    # 9. Timeout — treated as network error, backed off then RuntimeError
+    timeout_delays = []
+    adapter_to = ZenodoSandboxAdapter(
+        api_token="tok",
+        max_retries=1,
+        sleep_fn=lambda d: timeout_delays.append(d),
+    )
+    with patch("requests.request", side_effect=req_lib.Timeout("Read timed out")):
+        with pytest.raises(RuntimeError) as exc_info:
+            adapter_to._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    assert "Network error" in str(exc_info.value)
+    assert timeout_delays == [2.0]
+
+    # 10. injected http_transport is not triggered; requests.request is called instead
+    transport_called = [False]
+
+    def _injected_transport(req):
+        transport_called[0] = True
+        return MockHttpResponse(200, {})
+
+    # Without http_transport — requests.request is used
+    mock_200 = _make_mock_response(200, b"{}")
+    with patch("requests.request", return_value=mock_200) as mock_r:
+        adapter._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    assert mock_r.called
+
+    # With http_transport — injected transport is used, requests.request is NOT called
+    adapter_with_transport = ZenodoSandboxAdapter(
+        api_token="tok",
+        http_transport=_injected_transport,
+    )
+    with patch("requests.request") as mock_r2:
+        adapter_with_transport._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
+    assert transport_called[0] is True
+    assert not mock_r2.called

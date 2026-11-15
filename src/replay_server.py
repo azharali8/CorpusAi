@@ -351,7 +351,7 @@ class ReplayRewriter:
 
         def rewrite_attr(tag: Any, attr_name: str):
             val = tag.get(attr_name)
-            if not val or val.startswith("data:") or val.startswith("blob:") or val.startswith("javascript:"):
+            if not val or val.startswith(("data:", "blob:", "javascript:")):
                 return
             full_orig = urljoin(doc_base, val.strip())
             tag[attr_name] = self.to_replay_url(full_orig)
@@ -394,7 +394,7 @@ class ReplayRewriter:
         # 6. Anchors (internal navigation between archived pages)
         for a in soup.find_all("a", href=True):
             href = a["href"].strip()
-            if href.startswith("#") or href.startswith("mailto:") or href.startswith("javascript:"):
+            if href.startswith(("#", "mailto:", "javascript:")):
                 continue
             full_orig = urljoin(doc_base, href)
             # Route through replay
@@ -434,7 +434,7 @@ class ReplayRewriter:
 
         def replacer(match: Any) -> str:
             raw_url = match.group(2).strip()
-            if not raw_url or raw_url.startswith("data:") or raw_url.startswith("blob:"):
+            if not raw_url or raw_url.startswith(("data:", "blob:")):
                 return match.group(0)
             full_orig = urljoin(base_url, raw_url)
             rewritten = self.to_replay_url(full_orig)

@@ -553,3 +553,32 @@ def test_catalog_reconciler_refuses_orphaned_package_with_failed_crawl_status(tm
     # Catalog head remains unassigned
     cat = ArchiveCatalog.load_from_json(catalog_path)
     assert cat.latest_successful_run_id is None
+
+
+def test_catalog_recovery_path_attributes_return_strings_and_preserve_hierarchy(tmp_path):
+    """Verify that CatalogReconciler and StorageRetentionManager path attributes are str.
+
+    Expected paths are built with os.path.abspath() to match both constructors, which
+    store os.path.abspath(results_base_dir). No Path.resolve() or Path.absolute() is used.
+    """
+    import os
+    results_base = str(tmp_path / "results")
+    portal_id = "portal-test"
+
+    abs_base = os.path.abspath(results_base)
+
+    reconciler = CatalogReconciler(results_base, portal_id)
+    assert isinstance(reconciler.catalog_path, str)
+    assert isinstance(reconciler.packages_dir, str)
+
+    assert reconciler.catalog_path == os.path.join(abs_base, "catalog.json")
+    assert reconciler.packages_dir == os.path.join(abs_base, "packages", portal_id, "runs")
+
+    retention_mgr = StorageRetentionManager(results_base, portal_id)
+    assert isinstance(retention_mgr.catalog_path, str)
+    assert isinstance(retention_mgr.runs_dir, str)
+    assert isinstance(retention_mgr.packages_dir, str)
+
+    assert retention_mgr.catalog_path == os.path.join(abs_base, "catalog.json")
+    assert retention_mgr.runs_dir == os.path.join(abs_base, "runs")
+    assert retention_mgr.packages_dir == os.path.join(abs_base, "packages", portal_id, "runs")

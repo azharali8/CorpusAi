@@ -11,6 +11,7 @@ Executes baseline and incremental crawls for web portals with:
 
 import argparse
 import datetime
+import hashlib
 import json
 import logging
 import os
@@ -20,8 +21,9 @@ import sys
 import uuid
 from typing import Any, Dict, List, Optional, Tuple
 from urllib.parse import urlparse
-import urllib.request
 import urllib.robotparser
+
+import requests
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
 from src.archive_package import ArchivePackager, PackageVerifier
@@ -40,6 +42,9 @@ from src.catalog_recovery import (
     CatalogReconciler,
     StorageRetentionManager,
 )
+from src.storage import CorpusAIStateDatabase
+from src.storage.repository import CorpusAIRepository
+from src.storage.migration_tool import StateMigrationTool
 
 
 PORTAL_CONFIGS: Dict[str, Dict[str, Any]] = {
@@ -105,12 +110,13 @@ def check_robots_txt(url: str, user_agent: str) -> Tuple[bool, str]:
     robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
     rp = urllib.robotparser.RobotFileParser()
     try:
-        req = urllib.request.Request(robots_url, headers={"User-Agent": user_agent})
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            content = resp.read().decode("utf-8", errors="replace")
+        with requests.get(robots_url, headers={"User-Agent": user_agent}, timeout=10.0) as resp:
+            if not 200 <= resp.status_code < 300:
+                raise requests.HTTPError(f"HTTP Error {resp.status_code}: {resp.reason}", response=resp)
+            content = resp.content.decode("utf-8", errors="replace")
             rp.parse(content.splitlines())
-        allowed = rp.can_fetch(user_agent, url)
-        return allowed, f"robots.txt fetched successfully from {robots_url}"
+            allowed = rp.can_fetch(user_agent, url)
+            return allowed, f"robots.txt fetched successfully from {robots_url}"
     except Exception as e:
         # Default allow with warning on unreachable robots.txt
         return True, f"robots.txt check warning: {e}"
@@ -332,8 +338,88 @@ def main(argv: Optional[List[str]] = None) -> int:
             )
             heartbeat.start()
 
-        # 6. Load catalog
-        catalog = ArchiveCatalog.load_or_create(catalog_path, args.portal)
+        # 6. Initialize Authoritative SQLite Storage & Load catalog
+        state_db_path = Path(results_base_dir) / "storage" / "corpusai_state.db"
+        state_db = CorpusAIStateDatabase(db_path=state_db_path)
+        state_repo = CorpusAIRepository(state_db)
+        migration_tool = StateMigrationTool(state_db)
+
+        # Ensure portal registered
+        state_repo.upsert_portal(
+            portal_id=args.portal,
+            name=config.get("portal_name", args.portal),
+            base_url=config["head_page_url"],
+            parser_type="wordpress" if "wordpress" in args.portal.lower() else "generic",
+        )
+
+        # Check if legacy catalog exists and needs one-time ingestion into SQLite
+        catalog_file_path = Path(catalog_path)
+        if catalog_file_path.exists():
+            # Check if this portal has already been imported or initialized in SQLite
+            if not state_repo.is_portal_migrated(args.portal):
+                db_runs = state_repo.list_runs(args.portal, limit=1)
+                # Only ingest if database has never had any runs for this portal
+                if len(db_runs) == 0:
+                    try:
+                        migration_tool.import_catalog_json(
+                            catalog_path=catalog_file_path,
+                            portal_id=args.portal,
+                            portal_name=config.get("portal_name", args.portal),
+                            base_url=config["head_page_url"],
+                        )
+                        logger.info(f"Ingested legacy catalog from {catalog_path} into authoritative SQLite storage.")
+                    except Exception as mig_err:
+                        logger.warning(f"Initial catalog ingestion into SQLite skipped or failed: {mig_err}")
+                else:
+                    # Mark portal as migrated to prevent checking legacy JSON again
+                    state_repo.record_portal_migration(args.portal, True)
+        else:
+            # Genuinely new portal without legacy catalog: record migration status as complete
+            state_repo.record_portal_migration(args.portal, True)
+
+        # Check and reconcile previous interrupted runs (RUNNING or FINALIZING)
+        interrupted_runs = state_repo.get_interrupted_runs(args.portal)
+        if interrupted_runs:
+            for ir in interrupted_runs:
+                ir_id = ir["run_id"]
+                ir_status = ir.get("status")
+                if ir_status == "FINALIZING":
+                    recovered_status = state_repo.recover_finalizing_run(
+                        portal_id=args.portal,
+                        run_id=ir_id,
+                        results_base_dir=results_base_dir,
+                    )
+                    logger.info(
+                        f"Reconciled orphaned FINALIZING run '{ir_id}': resolved to '{recovered_status}'."
+                    )
+                else:
+                    logger.warning(
+                        f"Detected previous interrupted run '{ir_id}' in non-terminal state '{ir_status}'. "
+                        f"Marking as INTERRUPTED. Preserving all prior progress."
+                    )
+                    state_repo.mark_run_interrupted(
+                        portal_id=args.portal,
+                        run_id=ir_id,
+                        error_message=f"Process interrupted while run was in {ir_status} state.",
+                    )
+
+        # Authoritatively resolve and export catalog exclusively from SQLite records
+        catalog = migration_tool.export_catalog_json(portal_id=args.portal, dest_path=catalog_file_path)
+
+        # Register the new run in SQLite with RUNNING status
+        state_repo.upsert_run(
+            portal_id=args.portal,
+            run_id=run_id,
+            started_at=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            status="RUNNING",
+            run_type=args.mode,
+            seed_urls=[config["head_page_url"]],
+            metadata={
+                "head_page_url": config["head_page_url"],
+                "run_dir": f"runs/{run_folder}/",
+                "mode": args.mode.upper(),
+            },
+        )
 
         # 7. Incremental baseline validation
         previous_state: Optional[PortalState] = None
@@ -382,7 +468,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         warc_content_path = str(Path(run_dir) / "content_html.warc.gz")
 
-        # 10. Fetcher closures and confirmation probe
+        # 10. Fetcher closures and confirmation probe with durable SQLite boundaries
         fetchers = build_portal_fetchers(
             harvester=harvester,
             logger=logger,
@@ -390,9 +476,69 @@ def main(argv: Optional[List[str]] = None) -> int:
             previous_state=previous_state,
             heartbeat=heartbeat,
         )
-        page_fetcher = fetchers["page_fetcher"]
-        article_fetcher = fetchers["article_fetcher"]
+        raw_page_fetcher = fetchers["page_fetcher"]
+        raw_article_fetcher = fetchers["article_fetcher"]
         confirmation_probe = fetchers["confirmation_probe"]
+
+        def page_fetcher(page_url: str):
+            res = raw_page_fetcher(page_url)
+            # Durable boundary: persist archive page observation and discovered URLs
+            try:
+                now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                art_urls = res.get("article_urls", [])
+                with state_db.transaction() as conn:
+                    state_repo.upsert_archive_page_observation(
+                        portal_id=args.portal,
+                        run_id=run_id,
+                        page_url=page_url,
+                        page_number=1,
+                        observed_at=now_str,
+                        discovered_article_count=len(art_urls),
+                        conn=conn,
+                    )
+                    for a_url in art_urls:
+                        u_hash = hashlib.sha256(a_url.encode("utf-8")).hexdigest()
+                        state_repo.upsert_discovered_url(
+                            portal_id=args.portal,
+                            url_hash=u_hash,
+                            normalized_url=a_url,
+                            first_seen_run_id=run_id,
+                            first_seen_at=now_str,
+                            last_seen_run_id=run_id,
+                            last_seen_at=now_str,
+                            conn=conn,
+                        )
+            except Exception as e:
+                logger.debug(f"Intermediate archive page observation persist skipped: {e}")
+            return res
+
+        def article_fetcher(article_url: str):
+            res = raw_article_fetcher(article_url)
+            # Durable boundary: persist article state update immediately
+            try:
+                now_str = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+                u_hash = hashlib.sha256(article_url.encode("utf-8")).hexdigest()
+                with state_db.transaction() as conn:
+                    state_repo.upsert_article_state(
+                        portal_id=args.portal,
+                        url_hash=u_hash,
+                        article_url=article_url,
+                        first_discovered_run_id=run_id,
+                        first_discovered_at=now_str,
+                        last_extracted_run_id=run_id,
+                        last_extracted_at=now_str,
+                        extraction_status=res.get("status", "NEW"),
+                        warc_record_id=res.get("warc_record_id"),
+                        warc_path=res.get("warc_file"),
+                        content_sha256=res.get("content_hash"),
+                        title=res.get("title"),
+                        published_date=res.get("published_at"),
+                        metadata=res.get("metadata"),
+                        conn=conn,
+                    )
+            except Exception as e:
+                logger.debug(f"Intermediate article state persist skipped: {e}")
+            return res
 
         # 12. Instantiate IncrementalArchivePolicy
         policy = IncrementalArchivePolicy(
@@ -455,7 +601,88 @@ def main(argv: Optional[List[str]] = None) -> int:
         # Set log path in run artifacts
         inc_run.artifact_paths["run_log"] = str(Path(run_dir) / "run.log")
 
-        # 15. Save portal_state.json and run_manifest.json
+        # 15. Save portal_state snapshot and observations to SQLite (authoritative) and export JSON
+        manifest_wrapper = {
+            "source_manifest": inc_run.to_dict(),
+            "archive_order": portal_state.archive_order,
+            "head_fingerprint": portal_state.head_fingerprint,
+            "boundary_fingerprints": portal_state.boundary_fingerprints,
+        }
+        with state_db.transaction() as db_conn:
+            # 15a. Snapshot header
+            state_repo.save_portal_state_snapshot(
+                portal_id=args.portal,
+                run_id=run_id,
+                state_timestamp=portal_state.captured_at,
+                last_successful_run=getattr(portal_state, "last_successful_run_id", None),
+                last_run_timestamp=portal_state.captured_at,
+                total_runs_count=getattr(portal_state, "total_runs_count", 0),
+                total_articles_count=len(portal_state.articles),
+                total_archive_pages_count=len(portal_state.archive_pages),
+                source_manifest=manifest_wrapper,
+                conn=db_conn,
+            )
+
+            # 15b. Archive page observations
+            for page_url, p_state in portal_state.archive_pages.items():
+                state_repo.upsert_archive_page_observation(
+                    portal_id=args.portal,
+                    run_id=run_id,
+                    page_url=page_url,
+                    page_number=p_state.page_number or 0,
+                    observed_at=p_state.observed_at or portal_state.captured_at,
+                    content_hash=p_state.ordered_fingerprint,
+                    discovered_article_count=len(p_state.article_urls),
+                    conn=db_conn,
+                )
+
+            # 15c. Discovered URLs and Article states
+            for art_url, a_state in portal_state.articles.items():
+                url_h = hashlib.sha256(art_url.encode("utf-8")).hexdigest()
+                first_seen = a_state.first_seen_run_id or run_id
+                last_seen = a_state.last_seen_run_id or run_id
+                seen_time = a_state.last_captured_at or portal_state.captured_at
+
+                state_repo.upsert_discovered_url(
+                    portal_id=args.portal,
+                    url_hash=url_h,
+                    normalized_url=art_url,
+                    first_seen_run_id=first_seen,
+                    first_seen_at=seen_time,
+                    last_seen_run_id=last_seen,
+                    last_seen_at=seen_time,
+                    content_hash=a_state.content_hash,
+                    conn=db_conn,
+                )
+                state_repo.add_url_observation(
+                    portal_id=args.portal,
+                    url_hash=url_h,
+                    run_id=run_id,
+                    observed_at=seen_time,
+                    content_hash=a_state.content_hash,
+                    conn=db_conn,
+                )
+                state_repo.upsert_article_state(
+                    portal_id=args.portal,
+                    url_hash=url_h,
+                    article_url=art_url,
+                    first_discovered_run_id=first_seen,
+                    first_discovered_at=seen_time,
+                    last_extracted_run_id=last_seen,
+                    last_extracted_at=seen_time,
+                    extraction_status=a_state.status,
+                    warc_record_id=a_state.warc_record_id,
+                    warc_path=a_state.warc_file,
+                    content_sha256=a_state.content_hash,
+                    title=a_state.title,
+                    published_date=a_state.published_at,
+                    metadata=a_state.metadata,
+                    conn=db_conn,
+                )
+
+        logger.info(f"Persisted authoritative PortalState snapshot and {len(portal_state.articles)} articles to SQLite.")
+
+        # Export compatibility portal_state.json and run_manifest.json
         state_path = Path(run_dir) / "portal_state.json"
         portal_state.save_to_json(str(state_path))
         logger.info(f"Saved PortalState snapshot to {state_path}")
@@ -538,6 +765,15 @@ def main(argv: Optional[List[str]] = None) -> int:
             }
             content_warc = warc_content_path if Path(warc_content_path).exists() else None
 
+            # Mark run as FINALIZING in SQLite before packaging promotion
+            state_repo.upsert_run(
+                portal_id=args.portal,
+                run_id=run_id,
+                started_at=inc_run.started_at,
+                status="FINALIZING",
+                run_type=args.mode,
+            )
+
             try:
                 pkg_dir, verification = packager.package_run(
                     portal_id=args.portal,
@@ -566,13 +802,39 @@ def main(argv: Optional[List[str]] = None) -> int:
                         f"Package verification failed for '{pkg_dir}': missing={verification.missing_files}, "
                         f"mismatches={verification.checksum_mismatches}, errors={verification.metadata_errors}"
                     )
-                    catalog.register_run(cat_entry, is_successful=False)
-                    catalog.save_to_json(catalog_path)
+                    state_repo.upsert_run(
+                        portal_id=args.portal,
+                        run_id=run_id,
+                        started_at=inc_run.started_at,
+                        completed_at=inc_run.completed_at,
+                        status="FAILED",
+                        articles_discovered=inc_run.article_count,
+                        error_message="Package verification failed",
+                    )
+                    migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                     logger.info("Exiting with code 5 (package verification failed).")
                     flush_logger(logger)
                     sys.exit(5)
 
                 logger.info(f"Package created and verified at {pkg_dir}")
+
+                # Register package in SQLite
+                pkg_checksum = None
+                chk_file = Path(pkg_dir) / "checksums.sha256"
+                if chk_file.exists():
+                    pkg_checksum = hashlib.sha256(chk_file.read_bytes()).hexdigest()
+
+                state_repo.upsert_package(
+                    portal_id=args.portal,
+                    package_id=run_id,
+                    package_path=str(pkg_dir),
+                    total_articles=inc_run.article_count,
+                    warc_count=1 if content_warc else 0,
+                    checksum_sha256=pkg_checksum,
+                    manifest_path=str(Path(pkg_dir) / "manifest.json"),
+                    package_status="SEALED",
+                    sealed_at=datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+                )
 
                 # Remote storage post-run: stage, verify, commit baseline
                 if remote_backend is not None and remote_control_etag is not None:
@@ -585,8 +847,15 @@ def main(argv: Optional[List[str]] = None) -> int:
                                 heartbeat.failure_reason,
                             )
                             heartbeat.stop()
-                            catalog.register_run(cat_entry, is_successful=False)
-                            catalog.save_to_json(catalog_path)
+                            state_repo.upsert_run(
+                                portal_id=args.portal,
+                                run_id=run_id,
+                                started_at=inc_run.started_at,
+                                completed_at=inc_run.completed_at,
+                                status="FAILED",
+                                error_message=f"Remote lease heartbeat failure: {heartbeat.failure_reason}",
+                            )
+                            migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                             flush_logger(logger)
                             sys.exit(10)
                         # Stop heartbeat before CAS commit to avoid overlapping renewal writes
@@ -635,8 +904,15 @@ def main(argv: Optional[List[str]] = None) -> int:
                                 details={"mismatches": mismatches},
                             )
                             logger.error(f"Quarantined failed upload as {qid}. Prior remote baseline preserved.")
-                            catalog.register_run(cat_entry, is_successful=False)
-                            catalog.save_to_json(catalog_path)
+                            state_repo.upsert_run(
+                                portal_id=args.portal,
+                                run_id=run_id,
+                                started_at=inc_run.started_at,
+                                completed_at=inc_run.completed_at,
+                                status="FAILED",
+                                error_message=f"Remote artifact verification failed: {mismatches}",
+                            )
+                            migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                             flush_logger(logger)
                             sys.exit(9)
 
@@ -659,23 +935,87 @@ def main(argv: Optional[List[str]] = None) -> int:
                                 "Remote baseline commit failed (CAS conflict or stale lease). "
                                 "Prior remote baseline preserved."
                             )
-                            catalog.register_run(cat_entry, is_successful=False)
-                            catalog.save_to_json(catalog_path)
+                            state_repo.upsert_run(
+                                portal_id=args.portal,
+                                run_id=run_id,
+                                started_at=inc_run.started_at,
+                                completed_at=inc_run.completed_at,
+                                status="FAILED",
+                                error_message="Remote baseline commit failed (CAS conflict)",
+                            )
+                            migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                             flush_logger(logger)
                             sys.exit(9)
 
                     except Exception as e:
                         logger.error(f"Remote storage post-run exception: {e}", exc_info=True)
-                        catalog.register_run(cat_entry, is_successful=False)
-                        catalog.save_to_json(catalog_path)
+                        state_repo.upsert_run(
+                            portal_id=args.portal,
+                            run_id=run_id,
+                            started_at=inc_run.started_at,
+                            completed_at=inc_run.completed_at,
+                            status="FAILED",
+                            error_message=str(e),
+                        )
+                        migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                         flush_logger(logger)
                         sys.exit(9)
 
-                catalog.register_run(cat_entry, is_successful=True)
-                catalog.save_to_json(catalog_path)
+                # Authoritative Run and Portal update in SQLite
+                with state_db.transaction() as commit_conn:
+                    state_repo.upsert_run(
+                        portal_id=args.portal,
+                        run_id=run_id,
+                        started_at=inc_run.started_at,
+                        completed_at=inc_run.completed_at,
+                        status=inc_run.convergence_status,
+                        articles_discovered=inc_run.article_count,
+                        articles_downloaded=inc_run.article_count,
+                        articles_extracted=inc_run.article_count,
+                        warc_records=1 if content_warc else 0,
+                        run_type=args.mode,
+                        seed_urls=[config["head_page_url"]],
+                        archive_page_count=inc_run.archive_page_count,
+                        pages_revisited=inc_run.pages_revisited,
+                        scope_completion=inc_run.scope_completion,
+                        full_portal_coverage=inc_run.full_portal_coverage,
+                        head_changed=inc_run.head_changed,
+                        new_articles_count=inc_run.new_article_count,
+                        changed_articles_count=inc_run.changed_article_count,
+                        unchanged_articles_count=inc_run.unchanged_article_count,
+                        terminal_reason=inc_run.convergence_status,
+                        last_checkpoint_timestamp=inc_run.completed_at,
+                        interrupted=False,
+                        metadata={
+                            "previous_run_id": inc_run.previous_run_id,
+                            "run_dir": f"runs/{run_folder}/",
+                            "manual_review_status": inc_run.manual_review_status,
+                            "anomalies": inc_run.anomalies_detected,
+                            "errors": inc_run.errors,
+                            "warnings": inc_run.warnings,
+                            "retry_log": inc_run.retry_log,
+                            "requests_made": inc_run.requests_made,
+                            "missing_article_count": inc_run.missing_article_count,
+                            "fetch_failure_count": inc_run.fetch_failure_count,
+                            "reordered_article_count": inc_run.reordered_article_count,
+                            "boundary_status": inc_run.boundary_status,
+                            "artifact_paths": inc_run.artifact_paths,
+                            "mode": args.mode.upper(),
+                        },
+                        conn=commit_conn,
+                    )
+                    state_repo.upsert_portal(
+                        portal_id=args.portal,
+                        name=config.get("portal_name", args.portal),
+                        base_url=config["head_page_url"],
+                        latest_successful_run_id=run_id,
+                        conn=commit_conn,
+                    )
+
+                exported_catalog = migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                 logger.info(
-                    f"Updated catalog at {catalog_path} "
-                    f"(latest_successful_run_id={catalog.latest_successful_run_id})"
+                    f"Committed run {run_id} to authoritative SQLite and exported catalog to {catalog_path} "
+                    f"(latest_successful_run_id={run_id})"
                 )
                 logger.info("Run finished successfully with status CONVERGED. Exiting 0.")
                 flush_logger(logger)
@@ -683,18 +1023,65 @@ def main(argv: Optional[List[str]] = None) -> int:
 
             except Exception as e:
                 logger.error(f"Package creation or verification exception: {e}", exc_info=True)
-                catalog.register_run(cat_entry, is_successful=False)
-                catalog.save_to_json(catalog_path)
+                state_repo.upsert_run(
+                    portal_id=args.portal,
+                    run_id=run_id,
+                    started_at=inc_run.started_at,
+                    completed_at=inc_run.completed_at,
+                    status="FAILED",
+                    error_message=str(e),
+                )
+                migration_tool.export_catalog_json(args.portal, Path(catalog_path))
                 logger.info("Exiting with code 5 (package verification failed).")
                 flush_logger(logger)
                 sys.exit(5)
 
         # 19 & 20. Non-converged catalog registration & exit
-        catalog.register_run(cat_entry, is_successful=False)
-        catalog.save_to_json(catalog_path)
+        state_repo.upsert_run(
+            portal_id=args.portal,
+            run_id=run_id,
+            started_at=inc_run.started_at,
+            completed_at=inc_run.completed_at,
+            status=inc_run.convergence_status,
+            articles_discovered=inc_run.article_count,
+            articles_downloaded=inc_run.article_count,
+            articles_extracted=inc_run.article_count,
+            warc_records=1 if Path(warc_content_path).exists() else 0,
+            run_type=args.mode,
+            seed_urls=[config["head_page_url"]],
+            archive_page_count=inc_run.archive_page_count,
+            pages_revisited=inc_run.pages_revisited,
+            scope_completion=inc_run.scope_completion,
+            full_portal_coverage=inc_run.full_portal_coverage,
+            head_changed=inc_run.head_changed,
+            new_articles_count=inc_run.new_article_count,
+            changed_articles_count=inc_run.changed_article_count,
+            unchanged_articles_count=inc_run.unchanged_article_count,
+            terminal_reason=inc_run.convergence_status,
+            last_checkpoint_timestamp=inc_run.completed_at,
+            interrupted=False,
+            error_message="; ".join(inc_run.errors) if inc_run.errors else None,
+            metadata={
+                "previous_run_id": inc_run.previous_run_id,
+                "run_dir": f"runs/{run_folder}/",
+                "manual_review_status": inc_run.manual_review_status,
+                "anomalies": inc_run.anomalies_detected,
+                "errors": inc_run.errors,
+                "warnings": inc_run.warnings,
+                "retry_log": inc_run.retry_log,
+                "requests_made": inc_run.requests_made,
+                "missing_article_count": inc_run.missing_article_count,
+                "fetch_failure_count": inc_run.fetch_failure_count,
+                "reordered_article_count": inc_run.reordered_article_count,
+                "boundary_status": inc_run.boundary_status,
+                "artifact_paths": inc_run.artifact_paths,
+                "mode": args.mode.upper(),
+            },
+        )
+        exported_catalog = migration_tool.export_catalog_json(args.portal, Path(catalog_path))
         logger.info(
             f"Catalog updated for non-converged run "
-            f"(latest_successful_run_id remains {catalog.latest_successful_run_id})"
+            f"(latest_successful_run_id remains {exported_catalog.latest_successful_run_id})"
         )
 
         if inc_run.convergence_status == "BUDGET_EXHAUSTED":

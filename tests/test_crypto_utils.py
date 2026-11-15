@@ -3,14 +3,19 @@ Tests for shared cryptographic utilities (src/utils/crypto.py).
 """
 
 import hashlib
+import io
+from unittest.mock import patch
+
 import pytest
 
 from src.utils.crypto import (
-    sha256_bytes,
-    md5_bytes,
-    sha256_file,
-    md5_file,
+    _create_hasher,
+    _hash_stream,
     compute_file_md5_and_sha256,
+    md5_bytes,
+    md5_file,
+    sha256_bytes,
+    sha256_file,
 )
 
 
@@ -131,3 +136,137 @@ def test_directory_supplied_raises(tmp_path):
 
     with pytest.raises(OSError):
         compute_file_md5_and_sha256(d)
+
+
+# --- Narrowly Scoped Batch 2B Characterization and Regression Tests ---
+
+
+def test_known_test_vectors():
+    """Verify digests against authoritative known test vectors (empty and RFC vectors)."""
+    assert sha256_bytes(b"") == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    assert md5_bytes(b"") == "d41d8cd98f00b204e9800998ecf8427e"
+
+    abc = b"abc"
+    assert sha256_bytes(abc) == "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
+    assert md5_bytes(abc) == "900150983cd24fb0d6963f7d28e17f72"
+
+
+def test_file_and_bytes_digest_equivalence(tmp_path):
+    """Confirm file hashing and byte hashing yield exact identical hexadecimal digests."""
+    payload = b"Reproducible content verifying byte and file equivalence.\n" * 100
+    test_file = tmp_path / "equivalence.bin"
+    test_file.write_bytes(payload)
+
+    assert sha256_file(test_file) == sha256_bytes(payload)
+    assert md5_file(test_file) == md5_bytes(payload)
+
+    m, s, total = compute_file_md5_and_sha256(test_file)
+    assert m == md5_bytes(payload)
+    assert s == sha256_bytes(payload)
+    assert total == len(payload)
+
+
+def test_empty_file_combined_hashing(tmp_path):
+    """Confirm compute_file_md5_and_sha256 returns zero byte count and correct digests for empty files."""
+    empty_file = tmp_path / "empty_combined.txt"
+    empty_file.write_bytes(b"")
+
+    m, s, sz = compute_file_md5_and_sha256(empty_file)
+    assert m == "d41d8cd98f00b204e9800998ecf8427e"
+    assert s == "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    assert sz == 0
+
+
+def test_validation_precedes_file_opening():
+    """Confirm chunk_size validation occurs before opening the file (so ValueError/TypeError precede FileNotFoundError)."""
+    non_existent = "definitely_non_existent_file_path_12345.bin"
+
+    with pytest.raises(ValueError, match="chunk_size must be a positive integer"):
+        sha256_file(non_existent, chunk_size=-1)
+
+    with pytest.raises(TypeError, match="chunk_size must be an integer"):
+        md5_file(non_existent, chunk_size="invalid")
+
+    with pytest.raises(ValueError, match="chunk_size must be a positive integer"):
+        compute_file_md5_and_sha256(non_existent, chunk_size=0)
+
+
+def test_single_file_opening_for_combined_hashing(tmp_path):
+    """Confirm compute_file_md5_and_sha256 opens the file exactly once."""
+    test_file = tmp_path / "single_open.bin"
+    test_file.write_bytes(b"verify single open")
+
+    open_calls = 0
+    orig_open = open
+
+    def tracking_open(*args, **kwargs):
+        nonlocal open_calls
+        if args and str(args[0]) == str(test_file):
+            open_calls += 1
+        return orig_open(*args, **kwargs)
+
+    with patch("builtins.open", side_effect=tracking_open):
+        m, s, sz = compute_file_md5_and_sha256(test_file)
+
+    assert open_calls == 1
+    assert sz == len(b"verify single open")
+    assert m == md5_bytes(b"verify single open")
+    assert s == sha256_bytes(b"verify single open")
+
+
+def test_non_seekable_stream_behavior():
+    """Confirm _hash_stream processes non-seekable streams in a single pass without seek()."""
+
+    class NonSeekableStream:
+        def __init__(self, data: bytes):
+            self._buffer = io.BytesIO(data)
+
+        def read(self, size=-1):
+            return self._buffer.read(size)
+
+        def seek(self, offset, whence=io.SEEK_SET):
+            raise io.UnsupportedOperation("seek is not supported on this stream")
+
+    payload = b"non-seekable stream payload across multiple chunks " * 50
+    stream = NonSeekableStream(payload)
+
+    digests, total = _hash_stream(stream, ["sha256", "md5"], chunk_size=32)
+    assert digests[0] == sha256_bytes(payload)
+    assert digests[1] == md5_bytes(payload)
+    assert total == len(payload)
+
+
+def test_stream_algorithm_ordering_and_empty():
+    """Confirm requested algorithm ordering is preserved and empty sequences raise ValueError."""
+    data = b"deterministic ordering test"
+    stream1 = io.BytesIO(data)
+    d1, _ = _hash_stream(stream1, ["sha256", "md5"], chunk_size=64)
+    assert d1 == [sha256_bytes(data), md5_bytes(data)]
+
+    stream2 = io.BytesIO(data)
+    d2, _ = _hash_stream(stream2, ["md5", "sha256"], chunk_size=64)
+    assert d2 == [md5_bytes(data), sha256_bytes(data)]
+
+    stream3 = io.BytesIO(data)
+    with pytest.raises(ValueError, match="At least one algorithm must be specified"):
+        _hash_stream(stream3, [], chunk_size=64)
+
+
+def test_create_hasher_unsupported_algorithm():
+    """Confirm _create_hasher raises ValueError on unsupported algorithms."""
+    with pytest.raises(ValueError, match="Unsupported hashing algorithm"):
+        _create_hasher("sha3_unsupported_xyz")
+
+
+def test_multithreaded_hashing_parity(tmp_path):
+    """Verify multithreaded=True MtHasher pipeline produces exact digest and byte count parity."""
+    payload = b"MtHasher multithreaded pipeline parity verification " * 1024
+    test_file = tmp_path / "mt_test.bin"
+    test_file.write_bytes(payload)
+
+    seq_md5, seq_sha, seq_bytes = compute_file_md5_and_sha256(test_file, multithreaded=False)
+    mt_md5, mt_sha, mt_bytes = compute_file_md5_and_sha256(test_file, multithreaded=True)
+
+    assert mt_md5 == seq_md5 == md5_bytes(payload)
+    assert mt_sha == seq_sha == sha256_bytes(payload)
+    assert mt_bytes == seq_bytes == len(payload)

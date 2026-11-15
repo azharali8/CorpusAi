@@ -290,3 +290,206 @@ def test_max_articles_limit_enforced(tmp_path):
     assert len(target_subset) == 3
     assert target_subset[0] == "https://wordpress.org/news/2026/09/article-0"
     assert target_subset[2] == "https://wordpress.org/news/2026/09/article-2"
+
+
+def test_extract_referenced_assets_font_and_scheme_exclusions():
+    """Verify font extension handling, as='font' identification, and scheme exclusions."""
+    html = """<!DOCTYPE html>
+<html>
+<head>
+    <link rel="preload" as="font" href="https://example.org/fonts/font-a">
+    <link rel="preload" href="https://example.org/fonts/font-b.woff">
+    <link rel="preload" href="https://example.org/fonts/font-c.woff2">
+    <link rel="preload" href="https://example.org/fonts/font-d.ttf">
+    <link rel="preload" href="https://example.org/fonts/font-e.otf">
+    <link rel="preload" as="style" href="https://example.org/css/not-font.css">
+    <link rel="preload">
+    <link rel="stylesheet" href="data:text/css;base64,YWJj">
+    <link rel="stylesheet" href="blob:https://example.org/uuid">
+    <link rel="stylesheet" href="javascript:void(0)">
+    <link rel="stylesheet" href="https://example.org/css/main.css">
+</head>
+<body>
+    <img src="data:image/png;base64,iVBORw0KGgo">
+    <img src="blob:https://example.org/image-blob">
+    <img src="javascript:alert(1)">
+    <img src="https://example.org/images/logo.png">
+</body>
+</html>"""
+
+    assets = extract_referenced_assets(html, page_url="https://example.org/page.html")
+    font_urls = [a["url"] for a in assets if a["resource_type"] == "font"]
+
+    # All five font configurations must be extracted
+    assert "https://example.org/fonts/font-a" in font_urls
+    assert "https://example.org/fonts/font-b.woff" in font_urls
+    assert "https://example.org/fonts/font-c.woff2" in font_urls
+    assert "https://example.org/fonts/font-d.ttf" in font_urls
+    assert "https://example.org/fonts/font-e.otf" in font_urls
+    # Non-font preload must not be categorized as font
+    assert "https://example.org/css/not-font.css" not in font_urls
+
+    # data:, blob:, and javascript: must be excluded across all assets
+    all_urls = [a["url"] for a in assets]
+    assert "https://example.org/css/main.css" in all_urls
+    assert "https://example.org/images/logo.png" in all_urls
+    assert not any(u.startswith(("data:", "blob:", "javascript:")) for u in all_urls)
+
+
+# ---------------------------------------------------------------------------
+# Tests for ResourcePreservationHarvester (src/downloader.py) & check_robots_txt (src/corpusai_run.py)
+# ---------------------------------------------------------------------------
+
+def test_downloader_and_robots_transport_semantics():
+    from unittest.mock import MagicMock, patch
+    import requests
+    from src.downloader import ResourcePreservationHarvester
+    from src.corpusai_run import check_robots_txt
+
+    # --- check_robots_txt tests ---
+    # 1. 200 OK with valid robots rules
+    mock_200 = MagicMock()
+    mock_200.status_code = 200
+    mock_200.content = b"User-agent: *\nDisallow: /private/\nAllow: /"
+    mock_200.reason = "OK"
+    mock_200.__enter__.return_value = mock_200
+    mock_200.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_200):
+        allowed, msg = check_robots_txt("http://example.com/public", "TestBot")
+        assert allowed is True
+        assert "robots.txt fetched successfully" in msg
+        mock_200.__enter__.assert_called_once()
+        mock_200.__exit__.assert_called_once()
+
+    # 2. Another successful 2xx (201 Created) accepted and parsed
+    mock_201 = MagicMock()
+    mock_201.status_code = 201
+    mock_201.content = b"User-agent: *\nDisallow: /admin/\nAllow: /"
+    mock_201.reason = "Created"
+    mock_201.__enter__.return_value = mock_201
+    mock_201.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_201):
+        allowed, msg = check_robots_txt("http://example.com/admin/settings", "TestBot")
+        assert allowed is False
+        assert "robots.txt fetched successfully" in msg
+
+    # 3. HTTP 304 triggers fail-open behavior with warning
+    mock_304 = MagicMock()
+    mock_304.status_code = 304
+    mock_304.reason = "Not Modified"
+    mock_304.__enter__.return_value = mock_304
+    mock_304.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_304):
+        allowed, msg = check_robots_txt("http://example.com/page", "TestBot")
+        assert allowed is True
+        assert "robots.txt check warning: HTTP Error 304" in msg
+
+    # 4. HTTP 404 triggers fail-open behavior with warning
+    mock_404 = MagicMock()
+    mock_404.status_code = 404
+    mock_404.reason = "Not Found"
+    mock_404.__enter__.return_value = mock_404
+    mock_404.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_404):
+        allowed, msg = check_robots_txt("http://example.com/page", "TestBot")
+        assert allowed is True
+        assert "robots.txt check warning: HTTP Error 404" in msg
+
+    # 5. Invalid UTF-8 bytes are decoded using replacement semantics
+    mock_bad_utf8 = MagicMock()
+    mock_bad_utf8.status_code = 200
+    mock_bad_utf8.content = b"User-agent: *\nDisallow: /invalid_\xff\xfe_path/\nAllow: /"
+    mock_bad_utf8.reason = "OK"
+    mock_bad_utf8.__enter__.return_value = mock_bad_utf8
+    mock_bad_utf8.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_bad_utf8):
+        allowed, msg = check_robots_txt("http://example.com/invalid_\ufffd\ufffd_path/item", "TestBot")
+        assert allowed is False
+        assert "robots.txt fetched successfully" in msg
+
+    # --- ResourcePreservationHarvester.fetch_url tests ---
+    # 6. Successful 2xx response
+    harvester = ResourcePreservationHarvester(delay_seconds=0.0)
+    mock_h200 = MagicMock()
+    mock_h200.status_code = 200
+    mock_h200.content = b"<html><body>OK</body></html>"
+    mock_h200.headers = {"Content-Type": "text/html"}
+    mock_h200.reason = "OK"
+    mock_h200.__enter__.return_value = mock_h200
+    mock_h200.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_h200):
+        res = harvester.fetch_url("http://example.com/ok.html")
+        assert res.status_code == 200
+        assert res.payload == b"<html><body>OK</body></html>"
+        assert len(res.sha256) == 64
+        assert res.error is None
+
+    # 7. Final 304 response preserves status and error information
+    with patch("requests.get", return_value=mock_304):
+        res = harvester.fetch_url("http://example.com/cached.html")
+        assert res.status_code == 304
+        assert res.sha256 == ""
+        assert "HTTP Error 304: Not Modified" in res.error
+
+    # 8. HTTP 404 preserves actual status code and payload
+    mock_h404 = MagicMock()
+    mock_h404.status_code = 404
+    mock_h404.content = b"Not Found Body"
+    mock_h404.headers = {"Content-Type": "text/html"}
+    mock_h404.reason = "Not Found"
+    mock_h404.__enter__.return_value = mock_h404
+    mock_h404.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_h404):
+        res_404 = harvester.fetch_url("http://example.com/missing.html")
+        assert res_404.status_code == 404
+        assert res_404.payload == b"Not Found Body"
+        assert res_404.sha256 == ""
+        assert "HTTP Error 404: Not Found" in res_404.error
+        assert any(
+            entry["url"] == "http://example.com/missing.html" and entry["status_code"] == 404
+            for entry in harvester.request_log
+        )
+        assert "http://example.com/missing.html" in harvester.downloaded_resources
+        assert harvester.downloaded_resources["http://example.com/missing.html"] == res_404
+
+    # 9. HTTP 500 preserves actual status code and payload
+    mock_h500 = MagicMock()
+    mock_h500.status_code = 500
+    mock_h500.content = b"Server Error Body"
+    mock_h500.headers = {"Content-Type": "text/plain"}
+    mock_h500.reason = "Internal Server Error"
+    mock_h500.__enter__.return_value = mock_h500
+    mock_h500.__exit__.return_value = None
+
+    with patch("requests.get", return_value=mock_h500):
+        res = harvester.fetch_url("http://example.com/err.html")
+        assert res.status_code == 500
+        assert res.payload == b"Server Error Body"
+        assert "HTTP Error 500: Internal Server Error" in res.error
+
+    # 10. Connection failure and timeout use status code zero
+    with patch("requests.get", side_effect=requests.ConnectionError("Failed connection")):
+        res = harvester.fetch_url("http://example.com/down.html")
+        assert res.status_code == 0
+        assert res.payload == b""
+        assert "Failed connection" in res.error
+
+    with patch("requests.get", side_effect=requests.Timeout("Request timeout")):
+        res = harvester.fetch_url("http://example.com/slow.html")
+        assert res.status_code == 0
+        assert "Request timeout" in res.error
+
+    # 11. Unexpected non-requests exception retains generic fallback behavior
+    with patch("requests.get", side_effect=RuntimeError("Arbitrary unexpected exception")):
+        res = harvester.fetch_url("http://example.com/unexpected.html")
+        assert res.status_code == 0
+        assert res.payload == b""
+        assert res.sha256 == ""
+        assert "Arbitrary unexpected exception" in res.error

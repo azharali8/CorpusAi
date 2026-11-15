@@ -225,6 +225,57 @@ def test_replay_rewriting_html_and_css():
     assert "https%3A%2F%2Fexample.org%2Fimg%2Fbg.jpg" in rewritten_css
 
 
+def test_replay_rewriter_scheme_and_predicate_exclusions():
+    """Verify that ReplayRewriter excludes data, blob, javascript, mailto, and fragment URLs."""
+    rewriter = ReplayRewriter(replay_base_url="http://127.0.0.1:9000")
+
+    html = """<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="data:text/css;base64,YWJj">
+    <link rel="stylesheet" href="blob:https://example.org/uuid-1234">
+    <link rel="stylesheet" href="javascript:void(0)">
+    <script src="javascript:alert(1)"></script>
+</head>
+<body>
+    <img src="data:image/png;base64,iVBORw0KGgo">
+    <img src="blob:https://example.org/blob-img">
+    <img src="">
+    <a href="#top">Top</a>
+    <a href="mailto:editor@example.org">Email</a>
+    <a href="javascript:doSomething()">Action</a>
+    <a href="https://example.org/article/">Article</a>
+</body>
+</html>"""
+
+    rewritten = rewriter.rewrite_html(html, page_url="https://example.org/index.html")
+
+    # Excluded schemes must not be routed through replay
+    assert 'href="data:text/css;base64,YWJj"' in rewritten
+    assert 'href="blob:https://example.org/uuid-1234"' in rewritten
+    assert 'href="javascript:void(0)"' in rewritten
+    assert 'src="javascript:alert(1)"' in rewritten
+    assert 'src="data:image/png;base64,iVBORw0KGgo"' in rewritten
+    assert 'src="blob:https://example.org/blob-img"' in rewritten
+    assert 'href="#top"' in rewritten
+    assert 'href="mailto:editor@example.org"' in rewritten
+    assert 'href="javascript:doSomething()"' in rewritten
+    # Standard URL must be routed through replay
+    assert "http://127.0.0.1:9000/replay?url=" in rewritten
+    assert "https%3A%2F%2Fexample.org%2Farticle%2F" in rewritten
+
+    # CSS rewriting exclusions for data: and blob:
+    css = """
+    .a { background: url('data:image/svg+xml;base64,PHN2Zz4='); }
+    .b { background: url("blob:https://example.org/blob-css"); }
+    .c { background: url('/images/valid.png'); }
+    """
+    rewritten_css = rewriter.rewrite_css(css, base_url="https://example.org/style.css")
+    assert "data:image/svg+xml;base64,PHN2Zz4=" in rewritten_css
+    assert "blob:https://example.org/blob-css" in rewritten_css
+    assert "https%3A%2F%2Fexample.org%2Fimages%2Fvalid.png" in rewritten_css
+
+
 # ---------------------------------------------------------------------------
 # Test 5: Strict Live Network Barrier (Missing Resource Returns Explicit 404)
 # ---------------------------------------------------------------------------

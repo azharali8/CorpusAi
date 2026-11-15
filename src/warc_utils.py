@@ -8,6 +8,7 @@ Preserves URL provenance, record IDs, and SHA-256 checksums.
 
 import io
 import os
+from pathlib import Path
 
 from src.utils.crypto import sha256_bytes, sha256_file
 from typing import Any, Dict, List, Optional, Tuple
@@ -33,7 +34,7 @@ def validate_warc_input(warc_path: str) -> Dict[str, Any]:
     Returns:
         Dict with total_records, html_records, valid, sha256, and file_size.
     """
-    if not os.path.exists(warc_path):
+    if not Path(warc_path).exists():
         return {
             "valid": False,
             "error": f"WARC file does not exist: {warc_path}",
@@ -41,11 +42,12 @@ def validate_warc_input(warc_path: str) -> Dict[str, Any]:
             "html_records": 0,
         }
 
-    file_size = os.path.getsize(warc_path)
+    file_size = Path(warc_path).stat().st_size
     if file_size == 0:
         return {
             "valid": False,
             "error": "WARC file is empty (0 bytes)",
+            "file_size_bytes": 0,
             "total_records": 0,
             "html_records": 0,
         }
@@ -86,7 +88,7 @@ def list_html_records(warc_path: str) -> List[Dict[str, Any]]:
     Returns:
         List of dicts containing url, record_id, content_type, date, and http_status.
     """
-    if not os.path.exists(warc_path):
+    if not Path(warc_path).exists():
         raise FileNotFoundError(f"WARC file not found: {warc_path}")
 
     records_meta = []
@@ -131,7 +133,7 @@ def extract_html_samples(warc_path: str, limit: Optional[int] = None) -> List[Di
     Returns:
         List of dicts: {"url": str, "record_id": str, "content_type": str, "html": str, "warc_file": str}
     """
-    if not os.path.exists(warc_path):
+    if not Path(warc_path).exists():
         raise FileNotFoundError(f"WARC file not found: {warc_path}")
 
     extracted: List[Dict[str, Any]] = []
@@ -243,7 +245,10 @@ def write_warc_fixture(
     Returns:
         Absolute path to the created WARC file.
     """
-    os.makedirs(os.path.dirname(os.path.abspath(output_warc_path)), exist_ok=True)
+    Path(os.path.abspath(output_warc_path)).parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     with open(output_warc_path, "wb") as output:
         writer = WARCWriter(output, gzip=False)
@@ -293,7 +298,10 @@ def create_warc_response_file(
     Returns:
         Tuple of (absolute_warc_path, list_of_record_provenance_dicts)
     """
-    os.makedirs(os.path.dirname(os.path.abspath(output_warc_path)), exist_ok=True)
+    Path(os.path.abspath(output_warc_path)).parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
 
     written_records_info = []
 

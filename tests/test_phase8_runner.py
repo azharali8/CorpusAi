@@ -118,11 +118,11 @@ def test_cli_invalid_portal():
 
 def test_cli_dry_run():
     """2. test_cli_dry_run: --dry-run for a known portal exits 0 without making HTTP calls."""
-    with mock.patch("urllib.request.urlopen") as mock_url:
+    with mock.patch("requests.get") as mock_get:
         with pytest.raises(SystemExit) as exc_info:
             corpusai_run.main(["--portal", "wordpress-news", "--mode", "baseline", "--dry-run"])
         assert exc_info.value.code == 0
-        mock_url.assert_not_called()
+        mock_get.assert_not_called()
 
 
 def test_cli_incremental_no_baseline(tmp_path):
