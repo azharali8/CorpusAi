@@ -17,18 +17,20 @@ import os
 import platform
 import shutil
 import tempfile
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
 from src.archive_run import compute_config_hash
 from src.deposit_metadata import DepositMetadata
 from src.utils.crypto import sha256_file as compute_file_sha256
+from src.utils.paths import resolve_contained_path
 
 
 # Package Layout Constants
 CONTENT_DIR = "content"
 REPLAY_DIR = "replay"
-SCREENSHOTS_DIR = os.path.join("replay", "screenshots")
+SCREENSHOTS_DIR = "replay/screenshots"
 QA_DIR = "qa"
 
 MANIFEST_FILENAME = "manifest.json"
@@ -93,13 +95,13 @@ class ArchivePackager:
         self.archives_root = os.path.abspath(archives_root)
 
     def get_portal_dir(self, portal_id: str) -> str:
-        return os.path.join(self.archives_root, portal_id)
+        return str(Path(self.archives_root) / portal_id)
 
     def get_runs_dir(self, portal_id: str) -> str:
-        return os.path.join(self.get_portal_dir(portal_id), "runs")
+        return str(Path(self.get_portal_dir(portal_id)) / "runs")
 
     def get_run_dir(self, portal_id: str, run_id: str) -> str:
-        return os.path.join(self.get_runs_dir(portal_id), run_id)
+        return str(Path(self.get_runs_dir(portal_id)) / run_id)
 
     def package_run(
         self,
@@ -147,8 +149,8 @@ class ArchivePackager:
         staging_dir = tempfile.mkdtemp(prefix=f".stage_{run_id}_", dir=runs_parent)
 
         try:
-            os.makedirs(os.path.join(staging_dir, CONTENT_DIR), exist_ok=True)
-            os.makedirs(os.path.join(staging_dir, REPLAY_DIR), exist_ok=True)
+            os.makedirs(Path(staging_dir) / CONTENT_DIR, exist_ok=True)
+            os.makedirs(Path(staging_dir) / REPLAY_DIR, exist_ok=True)
 
             inventory: Dict[str, str] = {}  # artifact_key -> relative_path
             copied_files: Set[str] = set()   # relative_path
@@ -156,14 +158,14 @@ class ArchivePackager:
             # 1. Content Stream
             if content_html_warc and os.path.exists(content_html_warc):
                 rel_path = f"{CONTENT_DIR}/{CONTENT_HTML_WARC}"
-                dest = os.path.join(staging_dir, rel_path)
+                dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(content_html_warc, dest)
                 inventory["content_html_warc"] = rel_path
                 copied_files.add(rel_path)
 
             if content_json_warc and os.path.exists(content_json_warc):
                 rel_path = f"{CONTENT_DIR}/{CONTENT_JSON_WARC}"
-                dest = os.path.join(staging_dir, rel_path)
+                dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(content_json_warc, dest)
                 inventory["content_json_warc"] = rel_path
                 copied_files.add(rel_path)
@@ -171,37 +173,40 @@ class ArchivePackager:
             # 2. Replay Stream
             if replay_wacz and os.path.exists(replay_wacz):
                 rel_path = f"{REPLAY_DIR}/{REPLAY_WACZ}"
-                dest = os.path.join(staging_dir, rel_path)
+                dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(replay_wacz, dest)
                 inventory["replay_wacz"] = rel_path
                 copied_files.add(rel_path)
 
             if screenshots:
-                shots_dest = os.path.join(staging_dir, SCREENSHOTS_DIR)
+                shots_dest, shots_prefix = resolve_contained_path(staging_dir, SCREENSHOTS_DIR)
                 os.makedirs(shots_dest, exist_ok=True)
                 for shot_name, shot_src in screenshots.items():
                     if os.path.exists(shot_src):
-                        rel_path = f"{SCREENSHOTS_DIR}/{shot_name}".replace("\\", "/")
-                        dest = os.path.join(staging_dir, rel_path)
+                        dest, clean_name = resolve_contained_path(shots_dest, shot_name)
+                        if "/" in clean_name:
+                            raise ValueError(f"Nested screenshot filenames are not supported: '{shot_name}'")
                         shutil.copy2(shot_src, dest)
+                        rel_path = f"{shots_prefix}/{clean_name}"
                         copied_files.add(rel_path)
 
             if qa_files:
-                qa_dest = os.path.join(staging_dir, QA_DIR)
+                qa_dest, qa_prefix = resolve_contained_path(staging_dir, QA_DIR)
                 os.makedirs(qa_dest, exist_ok=True)
                 for qa_name, qa_src in qa_files.items():
                     if os.path.exists(qa_src):
-                        rel_path = f"{QA_DIR}/{qa_name}".replace("\\", "/")
-                        dest = os.path.join(staging_dir, rel_path)
+                        dest, clean_name = resolve_contained_path(qa_dest, qa_name)
+                        if "/" in clean_name:
+                            raise ValueError(f"Nested QA filenames are not supported: '{qa_name}'")
                         shutil.copy2(qa_src, dest)
+                        rel_path = f"{qa_prefix}/{clean_name}"
                         copied_files.add(rel_path)
 
             if extra_artifacts:
                 for rel_dest, src_path in extra_artifacts.items():
                     if os.path.exists(src_path):
-                        clean_rel = rel_dest.replace("\\", "/").lstrip("/")
-                        dest = os.path.join(staging_dir, clean_rel)
-                        os.makedirs(os.path.dirname(dest), exist_ok=True)
+                        dest, clean_rel = resolve_contained_path(staging_dir, rel_dest)
+                        dest.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(src_path, dest)
                         copied_files.add(clean_rel)
 
@@ -210,7 +215,7 @@ class ArchivePackager:
                 crawler_name=crawler_name,
                 crawler_version=crawler_version,
             )
-            env_path = os.path.join(staging_dir, ENVIRONMENT_FILENAME)
+            env_path = Path(staging_dir) / ENVIRONMENT_FILENAME
             with open(env_path, "w", encoding="utf-8") as f:
                 json.dump(env_metadata, f, indent=2, ensure_ascii=False)
             inventory["environment"] = ENVIRONMENT_FILENAME
@@ -218,7 +223,7 @@ class ArchivePackager:
 
             # 4. Optional Deposit Metadata
             if deposit_metadata:
-                dep_path = os.path.join(staging_dir, DEPOSIT_METADATA_FILENAME)
+                dep_path = str(Path(staging_dir) / DEPOSIT_METADATA_FILENAME)
                 deposit_metadata.save_to_json(dep_path)
                 inventory["deposit_metadata"] = DEPOSIT_METADATA_FILENAME
                 copied_files.add(DEPOSIT_METADATA_FILENAME)
@@ -246,7 +251,7 @@ class ArchivePackager:
             if custom_manifest_fields:
                 manifest_data.update(custom_manifest_fields)
 
-            manifest_path = os.path.join(staging_dir, MANIFEST_FILENAME)
+            manifest_path = Path(staging_dir) / MANIFEST_FILENAME
             with open(manifest_path, "w", encoding="utf-8") as f:
                 json.dump(manifest_data, f, indent=2, ensure_ascii=False)
             inventory["manifest"] = MANIFEST_FILENAME
@@ -255,10 +260,10 @@ class ArchivePackager:
             # 6. Generate Checksums (checksums.sha256 covers all files except itself)
             checksum_map: Dict[str, str] = {}
             for rel in sorted(copied_files):
-                full_f = os.path.join(staging_dir, rel)
+                full_f = Path(staging_dir) / rel
                 checksum_map[rel] = compute_file_sha256(full_f)
 
-            checksums_path = os.path.join(staging_dir, CHECKSUMS_FILENAME)
+            checksums_path = Path(staging_dir) / CHECKSUMS_FILENAME
             with open(checksums_path, "w", encoding="utf-8") as f:
                 for rel in sorted(checksum_map.keys()):
                     f.write(f"{checksum_map[rel]}  {rel}\n")
@@ -299,7 +304,7 @@ class ArchivePackager:
                     anomalies=anomalies or [],
                 )
                 catalog.register_run(entry, is_successful=is_success)
-                catalog_file = os.path.join(self.get_portal_dir(portal_id), "catalog.json")
+                catalog_file = str(Path(self.get_portal_dir(portal_id)) / "catalog.json")
                 catalog.save_to_json(catalog_file)
 
             # Re-verify at promoted destination
@@ -330,9 +335,9 @@ class PackageVerifier:
                 metadata_errors=[f"Package directory does not exist or is not a directory: {package_dir}"],
             )
 
-        manifest_path = os.path.join(package_dir, MANIFEST_FILENAME)
-        checksums_path = os.path.join(package_dir, CHECKSUMS_FILENAME)
-        env_path = os.path.join(package_dir, ENVIRONMENT_FILENAME)
+        manifest_path = Path(package_dir) / MANIFEST_FILENAME
+        checksums_path = Path(package_dir) / CHECKSUMS_FILENAME
+        env_path = Path(package_dir) / ENVIRONMENT_FILENAME
 
         metadata_errors: List[str] = []
         missing_files: List[str] = []
@@ -344,7 +349,7 @@ class PackageVerifier:
         run_id = os.path.basename(package_dir.rstrip("/\\"))
         portal_id = ""
 
-        if not os.path.exists(manifest_path):
+        if not manifest_path.exists():
             metadata_errors.append(f"Missing mandatory manifest file: {MANIFEST_FILENAME}")
         else:
             try:
@@ -360,7 +365,7 @@ class PackageVerifier:
                 metadata_errors.append(f"Invalid manifest JSON: {str(e)}")
 
         # 2. Environment metadata verification
-        if not os.path.exists(env_path):
+        if not env_path.exists():
             metadata_errors.append(f"Missing mandatory environment file: {ENVIRONMENT_FILENAME}")
         else:
             try:
@@ -372,8 +377,8 @@ class PackageVerifier:
                 metadata_errors.append(f"Invalid environment JSON: {str(e)}")
 
         # 3. Checksums verification
-        recorded_checksums: Dict[str, str] = {}
-        if not os.path.exists(checksums_path):
+        recorded_checksums: Dict[str, Tuple[str, Path]] = {}
+        if not checksums_path.exists():
             metadata_errors.append(f"Missing mandatory checksums file: {CHECKSUMS_FILENAME}")
         else:
             try:
@@ -387,18 +392,22 @@ class PackageVerifier:
                             metadata_errors.append(f"Malformed checksum line {line_idx}: {line}")
                             continue
                         digest, rel_path = parts[0], parts[1].strip()
-                        clean_rel = rel_path.replace("\\", "/").lstrip("./")
+                        try:
+                            resolved_target, clean_rel = resolve_contained_path(package_dir, rel_path)
+                        except ValueError as ve:
+                            metadata_errors.append(f"Illegal checksum path '{rel_path}' at line {line_idx}: {str(ve)}")
+                            continue
+
                         if clean_rel == CHECKSUMS_FILENAME:
                             metadata_errors.append("checksums.sha256 must not contain its own hash")
                             continue
-                        recorded_checksums[clean_rel] = digest.lower()
+                        recorded_checksums[clean_rel] = (digest.lower(), resolved_target)
             except Exception as e:
                 metadata_errors.append(f"Failed reading checksums file: {str(e)}")
 
         # Check all recorded checksum files exist and calculate hash
-        for rel_path, expected_digest in recorded_checksums.items():
-            full_path = os.path.join(package_dir, rel_path)
-            if not os.path.exists(full_path):
+        for rel_path, (expected_digest, full_path) in recorded_checksums.items():
+            if not full_path.exists():
                 missing_files.append(rel_path)
                 continue
 
@@ -417,7 +426,7 @@ class PackageVerifier:
         all_on_disk: Set[str] = set()
         for root, dirs, files in os.walk(package_dir):
             for file in files:
-                full_p = os.path.join(root, file)
+                full_p = Path(root) / file
                 rel_p = os.path.relpath(full_p, package_dir).replace("\\", "/")
                 all_on_disk.add(rel_p)
 

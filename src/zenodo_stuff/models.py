@@ -16,7 +16,7 @@ STATUS_PUBLISHED = "PUBLISHED"
 STATUS_FAILED = "FAILED"
 STATUS_NEEDS_RECONCILIATION = "NEEDS_RECONCILIATION"
 
-VALID_TRANSITIONS = {
+_VALID_TRANSITIONS = {
     STATUS_PENDING: {STATUS_DRAFT_CREATED, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
     STATUS_DRAFT_CREATED: {STATUS_UPLOADING, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
     STATUS_UPLOADING: {STATUS_UPLOADED, STATUS_FAILED, STATUS_NEEDS_RECONCILIATION},
@@ -114,7 +114,7 @@ class DepositReceipt:
         error_category: Optional[str] = None,
     ) -> None:
         """Enforce permitted state transitions."""
-        allowed = VALID_TRANSITIONS.get(self.status, set())
+        allowed = _VALID_TRANSITIONS.get(self.status, set())
         if new_status not in allowed:
             raise ValueError(
                 f"Invalid deposit status transition from '{self.status}' to '{new_status}'."

@@ -23,59 +23,42 @@ class DeterministicExtractor:
         """
         Extract content using a CSS selector via BeautifulSoup.
         """
+        result: Dict[str, Any] = {
+            "value": None,
+            "success": False,
+            "error": None,
+            "match_count": 0,
+        }
+
         try:
             elements = soup.select(selector)
         except Exception as e:
-            return {
-                "value": None,
-                "success": False,
-                "error": f"Invalid CSS selector '{selector}': {str(e)}",
-                "match_count": 0,
-            }
+            result["error"] = f"Invalid CSS selector '{selector}': {str(e)}"
+        else:
+            if not elements:
+                result["error"] = f"No element found for selector '{selector}'"
+            else:
+                result["match_count"] = len(elements)
 
-        if not elements:
-            return {
-                "value": None,
-                "success": False,
-                "error": f"No element found for selector '{selector}'",
-                "match_count": 0,
-            }
+                if len(elements) == 1:
+                    raw_text = elements[0].get_text(separator=" ", strip=True)
+                    if not raw_text:
+                        result["error"] = "Matched element contains empty text"
+                    else:
+                        result["value"] = raw_text
+                        result["success"] = True
+                else:
+                    texts = [el.get_text(separator=" ", strip=True) for el in elements]
+                    non_empty = [t for t in texts if t]
+                    if not non_empty:
+                        result["error"] = "Matched multiple elements but all contain empty text"
+                    else:
+                        result["value"] = (
+                            "\n\n".join(non_empty) if len(non_empty) > 1 else non_empty[0]
+                        )
+                        result["success"] = True
 
-        # If single element
-        if len(elements) == 1:
-            raw_text = elements[0].get_text(separator=" ", strip=True)
-            if not raw_text:
-                return {
-                    "value": None,
-                    "success": False,
-                    "error": "Matched element contains empty text",
-                    "match_count": 1,
-                }
-            return {
-                "value": raw_text,
-                "success": True,
-                "error": None,
-                "match_count": 1,
-            }
-
-        # Multiple elements matched: extract and join non-empty elements
-        texts = [el.get_text(separator=" ", strip=True) for el in elements]
-        non_empty = [t for t in texts if t]
-        if not non_empty:
-            return {
-                "value": None,
-                "success": False,
-                "error": "Matched multiple elements but all contain empty text",
-                "match_count": len(elements),
-            }
-
-        joined_text = "\n\n".join(non_empty) if len(non_empty) > 1 else non_empty[0]
-        return {
-            "value": joined_text,
-            "success": True,
-            "error": None,
-            "match_count": len(elements),
-        }
+        return result
 
     def _extract_xpath(self, tree: Any, xpath_expr: str) -> Dict[str, Any]:
         """
@@ -203,13 +186,3 @@ class DeterministicExtractor:
         for field, rule in rules.items():
             results[field] = self.extract_field(html_content, rule)
         return results
-
-
-def extract(
-    html_content: str, rules: Dict[str, Union[str, Dict[str, Any]]]
-) -> Dict[str, Dict[str, Any]]:
-    """
-    Convenience functional wrapper for deterministic extraction.
-    """
-    extractor = DeterministicExtractor()
-    return extractor.extract(html_content, rules)

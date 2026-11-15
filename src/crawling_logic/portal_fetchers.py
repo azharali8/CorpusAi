@@ -14,6 +14,16 @@ from src.downloader import ResourcePreservationHarvester
 from src.portal_state import PortalState
 from src.utils.crypto import sha256_bytes
 
+_PAGINATION_NEXT_MARKERS = ("wp-block-query-pagination-next", "pagination-next", "next")
+
+
+def _is_next_pagination_link(class_attr: Any) -> bool:
+    """Predicate to determine if an HTML class attribute corresponds to a next pagination link."""
+    if not class_attr:
+        return False
+    class_str = str(class_attr).lower()
+    return any(k in class_str for k in _PAGINATION_NEXT_MARKERS)
+
 
 def build_portal_fetchers(
     harvester: ResourcePreservationHarvester,
@@ -29,9 +39,7 @@ def build_portal_fetchers(
 
     def page_fetcher(page_url: str) -> Dict[str, Any]:
         if heartbeat is not None and not heartbeat.is_healthy():
-            raise RuntimeError(
-                f"Heartbeat failure during crawl: {heartbeat.failure_reason}"
-            )
+            raise RuntimeError(f"Heartbeat failure during crawl: {heartbeat.failure_reason}")
         logger.debug(f"Fetching archive page: {page_url}")
         res = harvester.fetch_url(page_url, resource_type="archive_page")
         if res.status_code != 200:
@@ -73,14 +81,7 @@ def build_portal_fetchers(
 
         # Next page extraction
         next_page_url: Optional[str] = None
-        next_tag = soup.find(
-            "a",
-            class_=lambda c: c
-            and any(
-                k in str(c).lower()
-                for k in ["wp-block-query-pagination-next", "pagination-next", "next"]
-            ),
-        )
+        next_tag = soup.find("a", class_=_is_next_pagination_link)
         if not next_tag:
             next_tag = soup.find("link", rel="next") or soup.find("a", rel="next")
         if next_tag and next_tag.get("href"):
@@ -95,9 +96,7 @@ def build_portal_fetchers(
 
     def article_fetcher(article_url: str) -> Dict[str, Any]:
         if heartbeat is not None and not heartbeat.is_healthy():
-            raise RuntimeError(
-                f"Heartbeat failure during crawl: {heartbeat.failure_reason}"
-            )
+            raise RuntimeError(f"Heartbeat failure during crawl: {heartbeat.failure_reason}")
         logger.debug(f"Article fetch requested: {article_url}")
 
         # In incremental mode, reuse prior provenance without live request if already archived

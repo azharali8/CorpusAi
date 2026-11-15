@@ -11,7 +11,7 @@ import json
 from typing import Any, Dict, List, Optional
 
 from src.utils.crypto import sha256_bytes
-from src.utils.serialization import ensure_parent_dir, read_json
+from src.utils.serialization import atomic_write_json, read_json
 
 
 def compute_config_hash(config: Dict[str, Any]) -> str:
@@ -68,9 +68,7 @@ class ArchiveRun:
 
     def save_to_json(self, file_path: str) -> None:
         """Persist ArchiveRun metadata to JSON file."""
-        path = ensure_parent_dir(file_path)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
+        atomic_write_json(file_path, self.to_dict(), indent=2)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "ArchiveRun":

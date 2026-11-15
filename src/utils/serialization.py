@@ -10,19 +10,6 @@ from pathlib import Path
 from typing import Any, Optional, Union
 
 
-def ensure_parent_dir(file_path: Union[str, Path]) -> Path:
-    """Ensure the parent directory of file_path exists and return lexical file_path as Path.
-
-    Preserves the exact lexical path without resolving symlinks or normalizing
-    lexical structure, matching the behavior of os.path.dirname(os.path.abspath(file_path)).
-    """
-    path = Path(file_path)
-    parent_dir = path.parent
-    if str(parent_dir) not in ("", "."):
-        parent_dir.mkdir(parents=True, exist_ok=True)
-    return path
-
-
 def atomic_write_json(file_path: Union[str, Path], data: Any, indent: int = 2) -> None:
     """Atomically write JSON data to file_path.
 
@@ -31,7 +18,8 @@ def atomic_write_json(file_path: Union[str, Path], data: Any, indent: int = 2) -
     destination file via os.replace. If serialization fails before replacement,
     the temporary file is cleaned up and the original file remains intact.
     """
-    path = ensure_parent_dir(file_path)
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp_path = path.with_name(f"{path.name}.tmp.{os.getpid()}")
 
     try:

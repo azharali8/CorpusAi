@@ -170,7 +170,7 @@ def extract_referenced_assets(html: str, page_url: str) -> List[Dict[str, Any]]:
     seen_urls = set()
 
     def add_asset(raw_url: Optional[str], res_type: str):
-        if not raw_url or raw_url.startswith("data:") or raw_url.startswith("blob:") or raw_url.startswith("javascript:"):
+        if not raw_url or raw_url.startswith(("data:", "blob:", "javascript:")):
             return
         full_url = urljoin(page_url, raw_url)
         # strip anchor
@@ -209,7 +209,7 @@ def extract_referenced_assets(html: str, page_url: str) -> List[Dict[str, Any]]:
 
     # Fonts (<link rel="preload" as="font"> or font extensions)
     for link in soup.find_all("link", rel=lambda r: r and "preload" in (r if isinstance(r, list) else [r])):
-        if link.get("as") == "font" or any(link.get("href", "").endswith(ext) for ext in [".woff", ".woff2", ".ttf", ".otf"]):
+        if link.get("as") == "font" or link.get("href", "").endswith((".woff", ".woff2", ".ttf", ".otf")):
             add_asset(link.get("href"), "font")
 
     # Embedded Audio/Video

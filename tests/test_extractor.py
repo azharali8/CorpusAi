@@ -4,7 +4,7 @@ Unit tests for Deterministic HTML Extractor (Phase 1).
 
 import os
 import pytest
-from src.extractor import DeterministicExtractor, extract
+from src.extractor import DeterministicExtractor
 
 SAMPLE_HTML = """
 <!DOCTYPE html>
@@ -112,6 +112,37 @@ def test_empty_html_input(extractor):
     assert result["success"] is False
     assert result["value"] is None
     assert "Empty or missing HTML" in result["error"]
+
+
+def test_multiple_elements_css_extraction(extractor):
+    html = """
+    <div>
+        <p class="para">First section.</p>
+        <p class="para">Second section.</p>
+        <p class="para">   </p>
+    </div>
+    """
+    rule = {"selector": "p.para", "type": "css"}
+    res = extractor.extract_field(html, rule)
+    assert res["success"] is True
+    assert res["match_count"] == 3
+    assert res["value"] == "First section.\n\nSecond section."
+    assert res["error"] is None
+
+
+def test_multiple_empty_elements_css_extraction(extractor):
+    html = """
+    <div>
+        <p class="blank">   </p>
+        <p class="blank"></p>
+    </div>
+    """
+    rule = {"selector": "p.blank", "type": "css"}
+    res = extractor.extract_field(html, rule)
+    assert res["success"] is False
+    assert res["match_count"] == 2
+    assert res["value"] is None
+    assert "Matched multiple elements but all contain empty text" in res["error"]
 
 
 def test_real_raw_html_fixtures(extractor):

@@ -16,6 +16,7 @@ Tests cover:
 
 import json
 import os
+from pathlib import Path
 import pytest
 import shutil
 
@@ -257,7 +258,7 @@ def test_packaging_failure_cleans_up_staging(tmp_path):
     orig_compute = src.archive_package.compute_file_sha256
 
     def fail_compute(p):
-        if "manifest.json" in p:
+        if "manifest.json" in str(p):
             raise RuntimeError("Simulated IO disk failure during packaging")
         return orig_compute(p)
 
@@ -549,3 +550,347 @@ def test_controlled_crawl_to_archival_package_integration(tmp_path):
         reverify2 = PackageVerifier.verify_package(run2_dir)
         assert reverify1.is_valid is True
         assert reverify2.is_valid is True
+
+
+def test_archive_packager_accessors_return_strings_and_preserve_hierarchy(tmp_path):
+    """Verify that ArchivePackager accessors return str and construct valid hierarchies.
+
+    Expected paths are built with os.path.abspath() to match the constructor, which
+    stores os.path.abspath(archives_root). No Path.resolve() or Path.absolute() is used.
+    """
+    import os
+    packager = ArchivePackager(str(tmp_path))
+
+    portal_dir = packager.get_portal_dir("portal-alpha")
+    runs_dir = packager.get_runs_dir("portal-alpha")
+    run_dir = packager.get_run_dir("portal-alpha", "run-123")
+
+    assert isinstance(portal_dir, str)
+    assert isinstance(runs_dir, str)
+    assert isinstance(run_dir, str)
+
+    abs_root = os.path.abspath(str(tmp_path))
+    expected_portal = os.path.join(abs_root, "portal-alpha")
+    expected_runs = os.path.join(abs_root, "portal-alpha", "runs")
+    expected_run = os.path.join(abs_root, "portal-alpha", "runs", "run-123")
+
+    assert portal_dir == expected_portal
+    assert runs_dir == expected_runs
+    assert run_dir == expected_run
+
+
+def test_package_run_with_qa_files_and_checksum_forward_slash(tmp_path, sample_run_files):
+    """Verify QA directory creation, QA file packaging, and forward-slash checksum keys."""
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    qa_doc = tmp_path / "qa_summary.json"
+    qa_doc.write_text(json.dumps({"qa_check": "passed"}), encoding="utf-8")
+
+    run_dir, result = packager.package_run(
+        portal_id="qa-portal",
+        run_id="run-qa-001",
+        mode="BASELINE",
+        status="COMPLETED",
+        started_at="2026-10-23T00:00:00Z",
+        content_html_warc=sample_run_files["html_warc"],
+        qa_files={"qa_summary.json": str(qa_doc)},
+    )
+
+    assert result.is_valid is True
+    assert os.path.exists(os.path.join(run_dir, "qa", "qa_summary.json"))
+
+    # Verify checksums.sha256 keys use forward slashes strictly
+    checksums_path = os.path.join(run_dir, CHECKSUMS_FILENAME)
+    assert os.path.exists(checksums_path)
+    with open(checksums_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    assert any("qa/qa_summary.json" in line for line in lines)
+    for line in lines:
+        parts = line.strip().split(None, 1)
+        if len(parts) == 2:
+            rel_path = parts[1]
+            assert "\\" not in rel_path
+            assert not rel_path.startswith("/")
+
+
+def test_package_verifier_rejects_escaping_checksum_entries(tmp_path, sample_run_files, monkeypatch):
+    """
+    Verify that PackageVerifier rejects checksum entries attempting path traversal,
+    absolute paths, drive qualification, or UNC paths, without computing SHA-256 for outside files.
+    """
+    import src.archive_package
+    from pathlib import Path
+
+    # 1. Create a valid base package
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    run_dir, result = packager.package_run(
+        portal_id="security-portal",
+        run_id="run-sec-001",
+        mode="BASELINE",
+        status="COMPLETED",
+        started_at="2026-10-23T00:00:00Z",
+        content_html_warc=sample_run_files["html_warc"],
+    )
+    assert result.is_valid is True
+
+    # 2. Place an outside sentinel file
+    sentinel = tmp_path / "outside_sentinel.txt"
+    sentinel.write_text("SENSITIVE_OUTSIDE_DATA", encoding="utf-8")
+
+    # 3. Track calls to compute_file_sha256 to ensure outside files are NEVER hashed
+    hashed_paths = []
+    orig_hash = src.archive_package.compute_file_sha256
+
+    def spy_hash(file_path):
+        resolved = Path(file_path).resolve()
+        hashed_paths.append(str(resolved))
+        return orig_hash(file_path)
+
+    monkeypatch.setattr(src.archive_package, "compute_file_sha256", spy_hash)
+
+    # 4. Append malicious escaping entries to checksums.sha256
+    checksums_path = Path(run_dir) / CHECKSUMS_FILENAME
+    with open(checksums_path, "a", encoding="utf-8") as f:
+        f.write("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  ../outside_sentinel.txt\n")
+        f.write("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  content/../../outside_sentinel.txt\n")
+        f.write("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  C:\\Windows\\win.ini\n")
+        f.write("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855  \\\\server\\share\\file.txt\n")
+
+    # 5. Run PackageVerifier
+    v_result = PackageVerifier.verify_package(run_dir)
+
+    assert v_result.is_valid is False
+    # Check that metadata_errors flags the illegal checksum entries
+    err_text = " ".join(v_result.metadata_errors)
+    assert "Illegal checksum path '../outside_sentinel.txt'" in err_text
+    assert "Illegal checksum path 'content/../../outside_sentinel.txt'" in err_text
+    assert "Illegal checksum path 'C:\\Windows\\win.ini'" in err_text
+    assert "Illegal checksum path '\\\\server\\share\\file.txt'" in err_text
+
+    # CRITICAL SECURITY ASSERTION: The outside sentinel file was NEVER passed to compute_file_sha256
+    sentinel_resolved = str(sentinel.resolve())
+    assert sentinel_resolved not in hashed_paths
+
+    # Verify that valid package files were still hashed and verified
+    assert "content/content_html.warc.gz" in v_result.verified_files
+
+
+def test_package_run_rejects_escaping_screenshot_destinations(tmp_path, sample_run_files, monkeypatch):
+    """Verify that ArchivePackager.package_run rejects screenshot filenames escaping shots_dest."""
+    import shutil
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    # Outside sentinel file
+    sentinel = tmp_path / "outside_sentinel_shot.txt"
+    sentinel.write_text("SENSITIVE_SHOT_DATA", encoding="utf-8")
+
+    copied_destinations = []
+    orig_copy = shutil.copy2
+
+    def spy_copy(src, dst):
+        copied_destinations.append(str(Path(dst).resolve()))
+        return orig_copy(src, dst)
+
+    monkeypatch.setattr(shutil, "copy2", spy_copy)
+
+    malicious_shot_keys = [
+        "../outside.png",
+        "sub/../../outside.png",
+        "/tmp/abs_shot.png",
+        "C:\\Windows\\shot.png",
+        "\\\\server\\share\\shot.png",
+    ]
+
+    for key in malicious_shot_keys:
+        with pytest.raises(ValueError, match="(forbidden|Absolute|Path traversal|escapes)"):
+            packager.package_run(
+                portal_id="shot-sec-portal",
+                run_id=f"run-shot-sec-{abs(hash(key)) % 10000}",
+                mode="BASELINE",
+                status="COMPLETED",
+                started_at="2026-10-23T00:00:00Z",
+                content_html_warc=sample_run_files["html_warc"],
+                screenshots={key: sample_run_files["shot1"]},
+            )
+
+    # Sentinel file was never overwritten
+    assert sentinel.read_text(encoding="utf-8") == "SENSITIVE_SHOT_DATA"
+    assert str(sentinel.resolve()) not in copied_destinations
+
+
+def test_package_run_rejects_escaping_qa_destinations(tmp_path, sample_run_files, monkeypatch):
+    """Verify that ArchivePackager.package_run rejects QA filenames escaping qa_dest."""
+    import shutil
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    sentinel = tmp_path / "outside_sentinel_qa.txt"
+    sentinel.write_text("SENSITIVE_QA_DATA", encoding="utf-8")
+
+    qa_src = tmp_path / "valid_qa.json"
+    qa_src.write_text('{"qa": "test"}', encoding="utf-8")
+
+    copied_destinations = []
+    orig_copy = shutil.copy2
+
+    def spy_copy(src, dst):
+        copied_destinations.append(str(Path(dst).resolve()))
+        return orig_copy(src, dst)
+
+    monkeypatch.setattr(shutil, "copy2", spy_copy)
+
+    malicious_qa_keys = [
+        "../outside.json",
+        "sub/../../outside.json",
+        "/tmp/abs_qa.json",
+        "C:\\Windows\\qa.json",
+        "\\\\server\\share\\qa.json",
+    ]
+
+    for key in malicious_qa_keys:
+        with pytest.raises(ValueError, match="(forbidden|Absolute|Path traversal|escapes)"):
+            packager.package_run(
+                portal_id="qa-sec-portal",
+                run_id=f"run-qa-sec-{abs(hash(key)) % 10000}",
+                mode="BASELINE",
+                status="COMPLETED",
+                started_at="2026-10-23T00:00:00Z",
+                content_html_warc=sample_run_files["html_warc"],
+                qa_files={key: str(qa_src)},
+            )
+
+    assert sentinel.read_text(encoding="utf-8") == "SENSITIVE_QA_DATA"
+    assert str(sentinel.resolve()) not in copied_destinations
+
+
+def test_package_run_rejects_escaping_extra_artifacts_destinations(tmp_path, sample_run_files, monkeypatch):
+    """Verify that ArchivePackager.package_run rejects extra_artifacts keys escaping staging_dir."""
+    import shutil
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    sentinel = tmp_path / "outside_sentinel_extra.txt"
+    sentinel.write_text("SENSITIVE_EXTRA_DATA", encoding="utf-8")
+
+    copied_destinations = []
+    orig_copy = shutil.copy2
+
+    def spy_copy(src, dst):
+        copied_destinations.append(str(Path(dst).resolve()))
+        return orig_copy(src, dst)
+
+    monkeypatch.setattr(shutil, "copy2", spy_copy)
+
+    malicious_extra_keys = [
+        "../outside.json",
+        "sub/../../outside.json",
+        "/tmp/abs_extra.json",
+        "C:\\Windows\\extra.json",
+        "\\\\server\\share\\extra.json",
+    ]
+
+    for key in malicious_extra_keys:
+        with pytest.raises(ValueError, match="(forbidden|Absolute|Path traversal|escapes)"):
+            packager.package_run(
+                portal_id="extra-sec-portal",
+                run_id=f"run-extra-sec-{abs(hash(key)) % 10000}",
+                mode="BASELINE",
+                status="COMPLETED",
+                started_at="2026-10-23T00:00:00Z",
+                content_html_warc=sample_run_files["html_warc"],
+                extra_artifacts={key: sample_run_files["extra_doc"]},
+            )
+
+    assert sentinel.read_text(encoding="utf-8") == "SENSITIVE_EXTRA_DATA"
+    assert str(sentinel.resolve()) not in copied_destinations
+
+
+def test_package_run_supports_valid_nested_extra_artifacts(tmp_path, sample_run_files):
+    """Verify that valid nested artifact paths are copied correctly and produce forward-slash checksum keys."""
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    nested_key = "metrics/subfolder/summary.json"
+    run_dir, result = packager.package_run(
+        portal_id="nested-portal",
+        run_id="run-nested-001",
+        mode="BASELINE",
+        status="COMPLETED",
+        started_at="2026-10-23T00:00:00Z",
+        content_html_warc=sample_run_files["html_warc"],
+        extra_artifacts={nested_key: sample_run_files["extra_doc"]},
+    )
+
+    assert result.is_valid is True
+    assert os.path.exists(os.path.join(run_dir, "metrics", "subfolder", "summary.json"))
+
+    # Checksum manifest inspection
+    checksums_path = os.path.join(run_dir, CHECKSUMS_FILENAME)
+    with open(checksums_path, "r", encoding="utf-8") as f:
+        lines = f.readlines()
+
+    assert any(nested_key in line for line in lines)
+    for line in lines:
+        parts = line.strip().split(None, 1)
+        if len(parts) == 2:
+            rel_path = parts[1]
+            assert "\\" not in rel_path
+            assert not rel_path.startswith("/")
+
+
+def test_package_run_screenshot_and_qa_reject_nested_filenames(tmp_path, sample_run_files):
+    """
+    Verify that simple screenshot and QA filenames package successfully,
+    while nested names (both forward-slash and backslash) are strictly rejected.
+    """
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    # 1. Simple screenshot and QA filenames succeed
+    qa_doc = tmp_path / "valid_simple_qa.json"
+    qa_doc.write_text("{}", encoding="utf-8")
+
+    run_dir, result = packager.package_run(
+        portal_id="simple-portal",
+        run_id="run-simple-001",
+        mode="BASELINE",
+        status="COMPLETED",
+        started_at="2026-10-23T00:00:00Z",
+        content_html_warc=sample_run_files["html_warc"],
+        screenshots={"viewport.png": sample_run_files["shot1"]},
+        qa_files={"summary.json": str(qa_doc)},
+    )
+    assert result.is_valid is True
+    assert os.path.exists(os.path.join(run_dir, "replay", "screenshots", "viewport.png"))
+    assert os.path.exists(os.path.join(run_dir, "qa", "summary.json"))
+
+    # 2. Nested screenshot filenames are rejected
+    for nested_shot in ["nested/shot.png", "nested\\shot.png", "a/b/c.png"]:
+        with pytest.raises(ValueError, match="Nested screenshot filenames are not supported"):
+            packager.package_run(
+                portal_id="simple-portal",
+                run_id=f"run-shot-fail-{abs(hash(nested_shot)) % 10000}",
+                mode="BASELINE",
+                status="COMPLETED",
+                started_at="2026-10-23T00:00:00Z",
+                content_html_warc=sample_run_files["html_warc"],
+                screenshots={nested_shot: sample_run_files["shot1"]},
+            )
+
+    # 3. Nested QA filenames are rejected
+    for nested_qa in ["nested/report.json", "nested\\report.json", "x/y/z.json"]:
+        with pytest.raises(ValueError, match="Nested QA filenames are not supported"):
+            packager.package_run(
+                portal_id="simple-portal",
+                run_id=f"run-qa-fail-{abs(hash(nested_qa)) % 10000}",
+                mode="BASELINE",
+                status="COMPLETED",
+                started_at="2026-10-23T00:00:00Z",
+                content_html_warc=sample_run_files["html_warc"],
+                qa_files={nested_qa: str(qa_doc)},
+            )

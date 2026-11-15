@@ -39,6 +39,8 @@ from src.warc_utils import (
     extract_html_samples,
     read_html_record,
     split_warc_records,
+    write_warc_fixture,
+    create_warc_response_file,
 )
 from src.html_preprocessor import preprocess_html
 
@@ -209,3 +211,112 @@ def test_html_from_warc_preprocessable():
         cleaned = preprocess_html(sample["html"])
         assert isinstance(cleaned, str)
         assert len(cleaned) > 0, f"Preprocessed HTML is empty for {sample['url']}"
+
+
+# ---------------------------------------------------------------------------
+# 14. validate_warc_input() handles 0-byte (empty) files
+# ---------------------------------------------------------------------------
+
+def test_validate_warc_input_zero_byte_file(tmp_path):
+    empty_file = tmp_path / "empty.warc"
+    empty_file.write_bytes(b"")
+    res = validate_warc_input(str(empty_file))
+    assert res["valid"] is False
+    assert "empty (0 bytes)" in res["error"]
+    assert res["file_size_bytes"] == 0
+    assert res["total_records"] == 0
+    assert res["html_records"] == 0
+
+
+# ---------------------------------------------------------------------------
+# 15. Writer functions create nested nonexistent parent directories
+# ---------------------------------------------------------------------------
+
+def test_writer_functions_create_nested_parent_directories(tmp_path):
+    # Test write_warc_fixture
+    fixture_path = str(tmp_path / "nested" / "sub" / "fixture.warc")
+    out_fixture = write_warc_fixture(fixture_path, [("http://example.com", "text/html", "<b>test</b>")])
+    assert isinstance(out_fixture, str)
+    assert os.path.isabs(out_fixture)
+    assert os.path.exists(out_fixture)
+
+    # Test create_warc_response_file
+    response_warc_path = str(tmp_path / "deep" / "archive" / "responses.warc.gz")
+    out_resp, recs = create_warc_response_file(
+        response_warc_path,
+        [{"uri": "http://example.com/page", "payload": "<html>content</html>", "content_type": "text/html"}],
+        gzip=True,
+    )
+    assert isinstance(out_resp, str)
+    assert os.path.isabs(out_resp)
+    assert os.path.exists(out_resp)
+    assert len(recs) == 1
+    assert recs[0]["warc_target_uri"] == "http://example.com/page"
+
+
+# ---------------------------------------------------------------------------
+# 16. Writer functions handle relative nested output paths relative to CWD
+# ---------------------------------------------------------------------------
+
+def test_writer_functions_relative_output_paths(tmp_path, monkeypatch):
+    monkeypatch.chdir(tmp_path)
+
+    # Relative path for write_warc_fixture
+    rel_fixture = os.path.join("rel_dir", "sub", "test.warc")
+    out_fixture = write_warc_fixture(rel_fixture, [("http://example.com/rel", "text/plain", "relative")])
+    assert isinstance(out_fixture, str)
+    assert os.path.isabs(out_fixture)
+    expected_fixture = os.path.abspath(rel_fixture)
+    assert out_fixture == expected_fixture
+    assert os.path.exists(out_fixture)
+
+    # Relative path for create_warc_response_file
+    rel_resp = os.path.join("rel_dir", "deep", "test_resp.warc.gz")
+    out_resp, recs = create_warc_response_file(
+        rel_resp,
+        [{"uri": "http://example.com/page", "payload": "hello", "content_type": "text/plain"}],
+        gzip=True,
+    )
+    assert isinstance(out_resp, str)
+    assert os.path.isabs(out_resp)
+    expected_resp = os.path.abspath(rel_resp)
+    assert out_resp == expected_resp
+    assert os.path.exists(out_resp)
+    assert len(recs) == 1
+
+
+# ---------------------------------------------------------------------------
+# 17. Symlink-parent compatibility preserves lexical path without resolve()
+# ---------------------------------------------------------------------------
+
+def test_writer_functions_symlink_parent_preserves_lexical_path(tmp_path):
+    target_dir = tmp_path / "real_dir"
+    target_dir.mkdir()
+    symlink_dir = tmp_path / "sym_link_dir"
+
+    try:
+        symlink_dir.symlink_to(target_dir, target_is_directory=True)
+    except (OSError, NotImplementedError):
+        pytest.skip("Symlink creation not supported or permitted in this environment")
+
+    # Destination through symlink parent
+    sym_fixture_path = str(symlink_dir / "nested" / "fixture.warc")
+    out_fixture = write_warc_fixture(sym_fixture_path, [("http://example.com", "text/html", "content")])
+
+    assert isinstance(out_fixture, str)
+    assert os.path.isabs(out_fixture)
+    assert os.path.exists(out_fixture)
+    # Crucial assertion: os.path.abspath preserves the symlink path segment, not dereferenced target_dir
+    assert str(target_dir) not in out_fixture
+    assert str(symlink_dir) in out_fixture
+
+    sym_resp_path = str(symlink_dir / "nested2" / "response.warc.gz")
+    out_resp, recs = create_warc_response_file(
+        sym_resp_path,
+        [{"uri": "http://example.com", "payload": "content", "content_type": "text/html"}],
+    )
+    assert isinstance(out_resp, str)
+    assert os.path.isabs(out_resp)
+    assert os.path.exists(out_resp)
+    assert str(target_dir) not in out_resp
+    assert str(symlink_dir) in out_resp

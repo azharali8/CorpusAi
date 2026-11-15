@@ -18,11 +18,13 @@ import hashlib
 import json
 import logging
 import os
+from pathlib import Path
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
-import urllib.error
 import urllib.parse
 import urllib.request
+
+import requests
 
 from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
@@ -39,7 +41,6 @@ from src.zenodo_stuff.models import (
     STATUS_UPLOADING,
     STATUS_VERIFIED,
     UploadedArtifactRecord,
-    VALID_TRANSITIONS,
 )
 from src.zenodo_stuff.orchestrator import (
     DepositOrchestrator,
@@ -64,7 +65,7 @@ def compute_package_fingerprint(package_dir: str) -> str:
     Compute a stable SHA-256 fingerprint of the finalized package.
     Uses checksums.sha256 if present, or sorted contents.
     """
-    checksums_path = os.path.join(package_dir, "checksums.sha256")
+    checksums_path = Path(package_dir) / "checksums.sha256"
     if os.path.exists(checksums_path):
         return sha256_file(checksums_path)
     # Fallback: hash directory tree listing
@@ -94,7 +95,7 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         max_retries: int = 3,
         request_timeout: float = 30.0,
         sleep_fn: Optional[Callable[[float], None]] = None,
-        http_transport: Optional[Callable[[urllib.request.Request], Any]] = None,
+        http_transport: Optional[Callable] = None,
     ):
         token = api_token or os.environ.get("CORPUSAI_DEPOSIT_TOKEN", "")
         self._api_token = token.strip()
@@ -164,30 +165,33 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
                     else:
                         raise RuntimeError(f"HTTP {code}: {resp_bytes.decode('utf-8', errors='replace')[:200]}")
 
-                # Standard urllib transport
-                req = urllib.request.Request(url, data=data or data_stream, headers=req_headers, method=method)
-                with urllib.request.urlopen(req, timeout=self.request_timeout) as resp:
-                    resp_bytes = resp.read()
-                    code = resp.status
+                # Standard requests transport
+                with requests.request(
+                    method,
+                    url,
+                    headers=req_headers,
+                    data=data or data_stream,
+                    timeout=self.request_timeout,
+                ) as resp:
+                    resp_bytes = resp.content
+                    code = resp.status_code
                     try:
                         resp_json = json.loads(resp_bytes.decode("utf-8")) if resp_bytes else {}
                     except Exception:
                         resp_json = {}
-                    return code, resp_json, resp_bytes
+                    if 200 <= code < 300:
+                        return code, resp_json, resp_bytes
+                    err_body = self._mask_secret(resp_bytes.decode("utf-8", errors="replace"))
+                    if code in (401, 403):
+                        raise PermissionError(f"HTTP {code}: Access denied. Token may be invalid or expired.")
+                    elif 500 <= code < 600 and attempt <= self.max_retries:
+                        last_err = RuntimeError(f"HTTP {code}")
+                        delay = float(2 ** attempt)
+                        self.sleep_fn(delay)
+                        continue
+                    else:
+                        raise RuntimeError(f"HTTP {code}: {err_body[:200]}")
 
-            except urllib.error.HTTPError as e:
-                code = e.code
-                err_body = e.read().decode("utf-8", errors="replace") if hasattr(e, "read") else ""
-                clean_err_body = self._mask_secret(err_body)
-                if code in (401, 403):
-                    raise PermissionError(f"HTTP {code}: Access denied. Token may be invalid or expired.")
-                elif 500 <= code < 600 and attempt <= self.max_retries:
-                    last_err = e
-                    delay = float(2 ** attempt)
-                    self.sleep_fn(delay)
-                    continue
-                else:
-                    raise RuntimeError(f"HTTP {code}: {clean_err_body[:200]}")
             except PermissionError:
                 raise
             except Exception as e:
@@ -371,7 +375,7 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         total_package_bytes = 0
         for root, _, files in os.walk(package_dir):
             for file in sorted(files):
-                full_p = os.path.join(root, file)
+                full_p = Path(root) / file
                 rel_p = os.path.relpath(full_p, package_dir).replace("\\", "/")
                 sz = os.path.getsize(full_p)
                 if sz > ZENODO_MAX_SINGLE_FILE_BYTES:
@@ -458,7 +462,7 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         if receipt.status != STATUS_UPLOADED:
             raise ValueError(f"Cannot verify remote artifacts when deposit status is '{receipt.status}'.")
 
-        checksums_path = os.path.join(package_dir, "checksums.sha256")
+        checksums_path = Path(package_dir) / "checksums.sha256"
         expected_sha256s: Dict[str, str] = {}
         if os.path.exists(checksums_path):
             with open(checksums_path, "r", encoding="utf-8") as f:

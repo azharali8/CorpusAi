@@ -392,3 +392,29 @@ def test_phase6d_catalog_has_both_runs():
     inc_runs = [r for r in runs.values() if r["mode"] == "INCREMENTAL"]
     assert len(inc_runs) >= 1
     assert inc_runs[0]["previous_run_id"] is not None
+
+
+# ---------------------------------------------------------------------------
+# Test 12: Next pagination link predicate unit tests
+# ---------------------------------------------------------------------------
+
+def test_is_next_pagination_link_predicate():
+    """Verify _is_next_pagination_link correctly identifies pagination links and rejects non-matches."""
+    from src.crawling_logic.portal_fetchers import _is_next_pagination_link
+
+    # Matching cases: single string, list, mixed case, substrings
+    assert _is_next_pagination_link("wp-block-query-pagination-next") is True
+    assert _is_next_pagination_link("pagination-next") is True
+    assert _is_next_pagination_link("next") is True
+    assert _is_next_pagination_link("NEXT") is True
+    assert _is_next_pagination_link("page-numbers next") is True
+    assert _is_next_pagination_link(["wp-block-query-pagination-next", "nav-link"]) is True
+    assert _is_next_pagination_link(["pagination", "next", "btn"]) is True
+
+    # Non-matching cases: None, empty string, empty list, unrelated classes
+    assert _is_next_pagination_link(None) is False
+    assert _is_next_pagination_link("") is False
+    assert _is_next_pagination_link([]) is False
+    assert _is_next_pagination_link("prev") is False
+    assert _is_next_pagination_link("pagination-prev") is False
+    assert _is_next_pagination_link(["page-numbers", "current"]) is False

@@ -7,10 +7,9 @@ provenance lineages, rights declarations, and archive manifests.
 """
 
 from dataclasses import asdict, dataclass, field
-import json
 from typing import Any, Dict, List, Optional
 
-from src.utils.serialization import ensure_parent_dir, read_json
+from src.utils.serialization import atomic_write_json, read_json
 
 
 @dataclass
@@ -73,9 +72,7 @@ class DepositMetadata:
         errors = self.validate()
         if errors:
             raise ValueError(f"Invalid deposit metadata: {', '.join(errors)}")
-        path = ensure_parent_dir(file_path)
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(self.to_dict(), f, indent=2, ensure_ascii=False)
+        atomic_write_json(file_path, self.to_dict(), indent=2)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "DepositMetadata":

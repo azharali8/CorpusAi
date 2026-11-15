@@ -15,8 +15,8 @@ from pathlib import Path
 import re
 import time
 from typing import Any, Dict, List, Optional, Set
-import urllib.error
-import urllib.request
+
+import requests
 
 from src.html_preprocessor import preprocess_html
 
@@ -226,20 +226,25 @@ class OllamaRuleGenerator(RuleGenerator):
             },
         }
 
-        data = json.dumps(payload).encode("utf-8")
-        req = urllib.request.Request(
-            url,
-            data=data,
-            headers={"Content-Type": "application/json"},
-            method="POST",
-        )
-
         try:
-            with urllib.request.urlopen(req, timeout=self.timeout) as resp:
-                result_json = json.loads(resp.read().decode("utf-8"))
+            with requests.post(
+                url,
+                json=payload,
+                timeout=self.timeout,
+            ) as resp:
+                resp.raise_for_status()
+                result_json = resp.json()
                 return result_json.get("response", "")
-        except urllib.error.URLError as e:
-            raise GenerationError(f"Ollama connection error at {url}: {e.reason}")
+        except requests.ConnectionError as e:
+            raise GenerationError(f"Ollama connection error at {url}: {e}")
+        except requests.HTTPError as e:
+            raise GenerationError(f"Ollama API HTTP error at {url}: {e}")
+        except requests.Timeout as e:
+            raise GenerationError(f"Ollama request timed out at {url}: {e}")
+        except requests.exceptions.JSONDecodeError as e:
+            raise GenerationError(f"Ollama API request failed: {str(e)}")
+        except requests.RequestException as e:
+            raise GenerationError(f"Ollama network request failed at {url}: {e}")
         except Exception as e:
             raise GenerationError(f"Ollama API request failed: {str(e)}")
 

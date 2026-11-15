@@ -8,10 +8,9 @@ Maintains a dedicated content URL registry separate from generic web crawl front
 
 from dataclasses import asdict, dataclass, field
 import datetime
-import json
 from typing import Any, Dict, List, Optional
 
-from src.utils.serialization import ensure_parent_dir, read_json
+from src.utils.serialization import atomic_write_json, read_json
 
 
 @dataclass
@@ -136,10 +135,8 @@ class ContentURLRegistry:
 
     def save_to_json(self, file_path: str) -> None:
         """Persist registry to a JSON file."""
-        path = ensure_parent_dir(file_path)
         data = [e.to_dict() for e in self._entries.values()]
-        with open(path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        atomic_write_json(file_path, data, indent=2)
 
     @classmethod
     def load_from_json(cls, file_path: str) -> "ContentURLRegistry":
