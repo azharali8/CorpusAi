@@ -29,6 +29,7 @@ import requests
 from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
 from src.utils.crypto import compute_file_md5_and_sha256, sha256_file
+from src.utils.paths import resolve_contained_path
 from src.utils.serialization import atomic_write_json
 from src.zenodo_stuff.models import (
     DepositReceipt,
@@ -66,7 +67,7 @@ def compute_package_fingerprint(package_dir: str) -> str:
     Uses checksums.sha256 if present, or sorted contents.
     """
     checksums_path = Path(package_dir) / "checksums.sha256"
-    if os.path.exists(checksums_path):
+    if checksums_path.exists():
         return sha256_file(checksums_path)
     # Fallback: hash directory tree listing
     hasher = hashlib.sha256()
@@ -376,8 +377,8 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         for root, _, files in os.walk(package_dir):
             for file in sorted(files):
                 full_p = Path(root) / file
-                rel_p = os.path.relpath(full_p, package_dir).replace("\\", "/")
-                sz = os.path.getsize(full_p)
+                rel_p = full_p.relative_to(package_dir).as_posix()
+                sz = full_p.stat().st_size
                 if sz > ZENODO_MAX_SINGLE_FILE_BYTES:
                     receipt.transition_to(
                         STATUS_FAILED,
@@ -464,15 +465,25 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
 
         checksums_path = Path(package_dir) / "checksums.sha256"
         expected_sha256s: Dict[str, str] = {}
-        if os.path.exists(checksums_path):
+        if checksums_path.exists():
             with open(checksums_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    parts = line.strip().split(None, 1)
+                for line_idx, line in enumerate(f, start=1):
+                    line = line.strip()
+                    if not line or line.startswith("#"):
+                        continue
+                    parts = line.split(None, 1)
                     if len(parts) == 2:
-                        expected_sha256s[parts[1].strip().replace("\\", "/").lstrip("./")] = parts[0].strip().lower()
+                        raw_rel = parts[1].strip()
+                        try:
+                            _, clean_rel = resolve_contained_path(package_dir, raw_rel)
+                            expected_sha256s[clean_rel] = parts[0].strip().lower()
+                        except ValueError as ve:
+                            raise ValueError(
+                                f"Checksums file contains illegal or traversal path '{raw_rel}' at line {line_idx}: {ve}"
+                            ) from ve
 
         # Add checksums.sha256 itself if present
-        if os.path.exists(checksums_path):
+        if checksums_path.exists():
             expected_sha256s["checksums.sha256"] = sha256_file(checksums_path).lower()
 
         missing_or_mismatched = []

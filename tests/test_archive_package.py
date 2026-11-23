@@ -894,3 +894,39 @@ def test_package_run_screenshot_and_qa_reject_nested_filenames(tmp_path, sample_
                 content_html_warc=sample_run_files["html_warc"],
                 qa_files={nested_qa: str(qa_doc)},
             )
+
+
+def test_package_verifier_supports_relative_and_absolute_paths(sample_run_files, tmp_path, monkeypatch):
+    """
+    Regression test for Finding 1:
+    PackageVerifier.verify_package() must correctly handle both relative and
+    absolute package_dir arguments without ValueError in full_p.relative_to(pkg_path).
+    """
+    archives_root = tmp_path / "archives"
+    packager = ArchivePackager(str(archives_root))
+
+    run_dir, result = packager.package_run(
+        portal_id="rel-abs-portal",
+        run_id="run-rel-abs-001",
+        mode="BASELINE",
+        status="COMPLETED",
+        started_at="2026-10-23T00:00:00Z",
+        content_html_warc=sample_run_files["html_warc"],
+    )
+    assert result.is_valid is True
+
+    # 1. Absolute path verification
+    res_abs = PackageVerifier.verify_package(str(run_dir))
+    assert res_abs.is_valid is True
+    assert len(res_abs.unexpected_files) == 0
+    assert len(res_abs.missing_files) == 0
+
+    # 2. Relative path verification from working directory
+    monkeypatch.chdir(tmp_path)
+    rel_path_to_pkg = os.path.relpath(run_dir, tmp_path)
+    assert not os.path.isabs(rel_path_to_pkg)
+
+    res_rel = PackageVerifier.verify_package(rel_path_to_pkg)
+    assert res_rel.is_valid is True
+    assert len(res_rel.unexpected_files) == 0
+    assert len(res_rel.missing_files) == 0

@@ -92,7 +92,7 @@ class ArchivePackager:
     """
 
     def __init__(self, archives_root: str):
-        self.archives_root = os.path.abspath(archives_root)
+        self.archives_root = str(Path(archives_root).resolve())
 
     def get_portal_dir(self, portal_id: str) -> str:
         return str(Path(self.archives_root) / portal_id)
@@ -138,32 +138,32 @@ class ArchivePackager:
         Refuses to overwrite an existing finalized run directory.
         """
         final_run_dir = self.get_run_dir(portal_id, run_id)
-        if os.path.exists(final_run_dir):
+        if Path(final_run_dir).exists():
             raise FileExistsError(
                 f"Cannot package run '{run_id}': run directory already exists and is immutable: {final_run_dir}"
             )
 
         runs_parent = self.get_runs_dir(portal_id)
-        os.makedirs(runs_parent, exist_ok=True)
+        Path(runs_parent).mkdir(parents=True, exist_ok=True)
 
         staging_dir = tempfile.mkdtemp(prefix=f".stage_{run_id}_", dir=runs_parent)
 
         try:
-            os.makedirs(Path(staging_dir) / CONTENT_DIR, exist_ok=True)
-            os.makedirs(Path(staging_dir) / REPLAY_DIR, exist_ok=True)
+            (Path(staging_dir) / CONTENT_DIR).mkdir(parents=True, exist_ok=True)
+            (Path(staging_dir) / REPLAY_DIR).mkdir(parents=True, exist_ok=True)
 
             inventory: Dict[str, str] = {}  # artifact_key -> relative_path
             copied_files: Set[str] = set()   # relative_path
 
             # 1. Content Stream
-            if content_html_warc and os.path.exists(content_html_warc):
+            if content_html_warc and Path(content_html_warc).exists():
                 rel_path = f"{CONTENT_DIR}/{CONTENT_HTML_WARC}"
                 dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(content_html_warc, dest)
                 inventory["content_html_warc"] = rel_path
                 copied_files.add(rel_path)
 
-            if content_json_warc and os.path.exists(content_json_warc):
+            if content_json_warc and Path(content_json_warc).exists():
                 rel_path = f"{CONTENT_DIR}/{CONTENT_JSON_WARC}"
                 dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(content_json_warc, dest)
@@ -171,7 +171,7 @@ class ArchivePackager:
                 copied_files.add(rel_path)
 
             # 2. Replay Stream
-            if replay_wacz and os.path.exists(replay_wacz):
+            if replay_wacz and Path(replay_wacz).exists():
                 rel_path = f"{REPLAY_DIR}/{REPLAY_WACZ}"
                 dest = str(Path(staging_dir) / rel_path)
                 shutil.copy2(replay_wacz, dest)
@@ -180,9 +180,9 @@ class ArchivePackager:
 
             if screenshots:
                 shots_dest, shots_prefix = resolve_contained_path(staging_dir, SCREENSHOTS_DIR)
-                os.makedirs(shots_dest, exist_ok=True)
+                shots_dest.mkdir(parents=True, exist_ok=True)
                 for shot_name, shot_src in screenshots.items():
-                    if os.path.exists(shot_src):
+                    if Path(shot_src).exists():
                         dest, clean_name = resolve_contained_path(shots_dest, shot_name)
                         if "/" in clean_name:
                             raise ValueError(f"Nested screenshot filenames are not supported: '{shot_name}'")
@@ -192,9 +192,9 @@ class ArchivePackager:
 
             if qa_files:
                 qa_dest, qa_prefix = resolve_contained_path(staging_dir, QA_DIR)
-                os.makedirs(qa_dest, exist_ok=True)
+                qa_dest.mkdir(parents=True, exist_ok=True)
                 for qa_name, qa_src in qa_files.items():
-                    if os.path.exists(qa_src):
+                    if Path(qa_src).exists():
                         dest, clean_name = resolve_contained_path(qa_dest, qa_name)
                         if "/" in clean_name:
                             raise ValueError(f"Nested QA filenames are not supported: '{qa_name}'")
@@ -204,7 +204,7 @@ class ArchivePackager:
 
             if extra_artifacts:
                 for rel_dest, src_path in extra_artifacts.items():
-                    if os.path.exists(src_path):
+                    if Path(src_path).exists():
                         dest, clean_rel = resolve_contained_path(staging_dir, rel_dest)
                         dest.parent.mkdir(parents=True, exist_ok=True)
                         shutil.copy2(src_path, dest)
@@ -313,7 +313,7 @@ class ArchivePackager:
 
         except Exception:
             # Clean up staging directory on any error to avoid leaving half-baked packages
-            if os.path.exists(staging_dir):
+            if Path(staging_dir).exists():
                 shutil.rmtree(staging_dir, ignore_errors=True)
             raise
 
@@ -325,19 +325,20 @@ class PackageVerifier:
 
     @staticmethod
     def verify_package(package_dir: str) -> PackageVerificationResult:
-        package_dir = os.path.abspath(package_dir)
-        if not os.path.isdir(package_dir):
+        pkg_path = Path(package_dir).resolve()
+        package_dir_str = str(pkg_path)
+        if not pkg_path.is_dir():
             return PackageVerificationResult(
                 is_valid=False,
                 run_id="",
                 portal_id="",
-                package_dir=package_dir,
-                metadata_errors=[f"Package directory does not exist or is not a directory: {package_dir}"],
+                package_dir=package_dir_str,
+                metadata_errors=[f"Package directory does not exist or is not a directory: {package_dir_str}"],
             )
 
-        manifest_path = Path(package_dir) / MANIFEST_FILENAME
-        checksums_path = Path(package_dir) / CHECKSUMS_FILENAME
-        env_path = Path(package_dir) / ENVIRONMENT_FILENAME
+        manifest_path = pkg_path / MANIFEST_FILENAME
+        checksums_path = pkg_path / CHECKSUMS_FILENAME
+        env_path = pkg_path / ENVIRONMENT_FILENAME
 
         metadata_errors: List[str] = []
         missing_files: List[str] = []
@@ -346,7 +347,7 @@ class PackageVerifier:
         verified_files: List[str] = []
 
         # 1. Manifest verification
-        run_id = os.path.basename(package_dir.rstrip("/\\"))
+        run_id = pkg_path.name
         portal_id = ""
 
         if not manifest_path.exists():
@@ -393,7 +394,7 @@ class PackageVerifier:
                             continue
                         digest, rel_path = parts[0], parts[1].strip()
                         try:
-                            resolved_target, clean_rel = resolve_contained_path(package_dir, rel_path)
+                            resolved_target, clean_rel = resolve_contained_path(pkg_path, rel_path)
                         except ValueError as ve:
                             metadata_errors.append(f"Illegal checksum path '{rel_path}' at line {line_idx}: {str(ve)}")
                             continue
@@ -424,10 +425,10 @@ class PackageVerifier:
 
         # 4. Check for unexpected files in the package directory
         all_on_disk: Set[str] = set()
-        for root, dirs, files in os.walk(package_dir):
+        for root, dirs, files in os.walk(pkg_path):
             for file in files:
                 full_p = Path(root) / file
-                rel_p = os.path.relpath(full_p, package_dir).replace("\\", "/")
+                rel_p = full_p.relative_to(pkg_path).as_posix()
                 all_on_disk.add(rel_p)
 
         # Allow checksums.sha256 itself, plus all files declared in checksums.sha256

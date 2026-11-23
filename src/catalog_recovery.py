@@ -68,7 +68,7 @@ def validate_baseline_integrity(
 
     # Resolve finalized package directory
     pkg_dir = str(Path(results_base_dir) / "packages" / portal_id / "runs" / prev_run_id)
-    if not os.path.exists(pkg_dir):
+    if not Path(pkg_dir).exists():
         raise BaselineIntegrityError(
             f"Finalized package directory not found for baseline run '{prev_run_id}' at '{pkg_dir}'."
         )
@@ -90,7 +90,7 @@ def validate_baseline_integrity(
         str(Path(results_base_dir) / "runs" / prev_run_id / "portal_state.json"),
         str(Path(cat_entry.run_dir) / "portal_state.json"),
     ]
-    state_file = next((p for p in candidate_state_paths if os.path.exists(p)), None)
+    state_file = next((p for p in candidate_state_paths if Path(p).exists()), None)
     if not state_file:
         raise BaselineIntegrityError(
             f"Authoritative portal_state.json not found for baseline run '{prev_run_id}' "
@@ -160,7 +160,7 @@ class CatalogReconciler:
     """
 
     def __init__(self, results_base_dir: str, portal_id: str):
-        self.results_base_dir = os.path.abspath(results_base_dir)
+        self.results_base_dir = str(Path(results_base_dir).resolve())
         self.portal_id = portal_id
         self.catalog_path = str(Path(self.results_base_dir) / "catalog.json")
         self.packages_dir = str(Path(self.results_base_dir) / "packages" / self.portal_id / "runs")
@@ -178,7 +178,7 @@ class CatalogReconciler:
         # Check existing catalog entries
         for run_id in catalog.all_run_ids:
             pkg_path = str(Path(self.packages_dir) / run_id)
-            if not os.path.exists(pkg_path):
+            if not Path(pkg_path).exists():
                 report.missing_packages.append(run_id)
                 report.details.append(f"Catalog entry '{run_id}' has no package directory at '{pkg_path}'.")
             else:
@@ -190,23 +190,23 @@ class CatalogReconciler:
                     report.details.append(f"Package '{run_id}' failed verification: {err_msg}.")
 
         # Scan packages directory on disk for orphaned packages
-        if os.path.exists(self.packages_dir):
-            for entry in sorted(os.listdir(self.packages_dir)):
-                pkg_path = str(Path(self.packages_dir) / entry)
-                if not os.path.isdir(pkg_path):
+        if Path(self.packages_dir).exists():
+            for entry in sorted(Path(self.packages_dir).iterdir()):
+                pkg_path = str(entry)
+                if not entry.is_dir():
                     continue
 
-                if entry not in catalog.runs:
+                if entry.name not in catalog.runs:
                     # Potential orphaned package. Verify it independently.
                     verifier_fn = getattr(PackageVerifier, "verify", PackageVerifier.verify_package)
                     res = verifier_fn(pkg_path)
                     if res.is_valid:
                         # Verify it has valid manifest and portal_state
-                        manifest_file = str(Path(pkg_path) / "manifest.json")
-                        state_file = str(Path(pkg_path) / "portal_state.json")
-                        if not os.path.exists(state_file):
-                            state_file = str(Path(pkg_path) / "extra" / "portal_state.json")
-                        if os.path.exists(manifest_file) and os.path.exists(state_file):
+                        manifest_file = str(entry / "manifest.json")
+                        state_file = str(entry / "portal_state.json")
+                        if not Path(state_file).exists():
+                            state_file = str(entry / "extra" / "portal_state.json")
+                        if Path(manifest_file).exists() and Path(state_file).exists():
                             try:
                                 with open(manifest_file, "r", encoding="utf-8") as f:
                                     mdata = json.load(f)
@@ -217,33 +217,34 @@ class CatalogReconciler:
                                 valid_st = (
                                     "CONVERGED", "COMPLETED", "PILOT_SCOPE_CONVERGED", "MULTIPAGE_PILOT_COMPLETE"
                                 )
+                                run_name = entry.name
                                 if status not in valid_st:
-                                    report.ambiguous_candidates.append(entry)
+                                    report.ambiguous_candidates.append(run_name)
                                     report.details.append(
-                                        f"Orphaned package '{entry}' has non-successful crawl status '{status}' "
+                                        f"Orphaned package '{run_name}' has non-successful crawl status '{status}' "
                                         f"(cannot be adopted as catalog baseline)."
                                     )
                                 elif mdata.get("anomalies"):
-                                    report.ambiguous_candidates.append(entry)
+                                    report.ambiguous_candidates.append(run_name)
                                     report.details.append(
-                                        f"Orphaned package '{entry}' contains anomalies {mdata.get('anomalies')} "
+                                        f"Orphaned package '{run_name}' contains anomalies {mdata.get('anomalies')} "
                                         f"(requires manual review, cannot be auto-adopted)."
                                     )
                                 elif mdata.get("portal_id") == self.portal_id and st.portal_id == self.portal_id:
-                                    report.orphaned_verified_packages.append(entry)
-                                    report.details.append(f"Found valid orphaned verified package: '{entry}'.")
+                                    report.orphaned_verified_packages.append(run_name)
+                                    report.details.append(f"Found valid orphaned verified package: '{run_name}'.")
                                 else:
-                                    report.ambiguous_candidates.append(entry)
-                                    report.details.append(f"Orphaned package '{entry}' has portal_id mismatch.")
+                                    report.ambiguous_candidates.append(run_name)
+                                    report.details.append(f"Orphaned package '{run_name}' has portal_id mismatch.")
                             except Exception as e:
-                                report.ambiguous_candidates.append(entry)
-                                report.details.append(f"Orphaned package '{entry}' metadata unreadable: {e}")
+                                report.ambiguous_candidates.append(entry.name)
+                                report.details.append(f"Orphaned package '{entry.name}' metadata unreadable: {e}")
                         else:
-                            report.ambiguous_candidates.append(entry)
-                            report.details.append(f"Orphaned package '{entry}' missing manifest or state snapshot.")
+                            report.ambiguous_candidates.append(entry.name)
+                            report.details.append(f"Orphaned package '{entry.name}' missing manifest or state snapshot.")
                     else:
-                        report.corrupted_packages.append(entry)
-                        report.details.append(f"Unreferenced package directory '{entry}' is corrupt/unverified.")
+                        report.corrupted_packages.append(entry.name)
+                        report.details.append(f"Unreferenced package directory '{entry.name}' is corrupt/unverified.")
 
         # Determine proposed recovery action
         if report.orphaned_verified_packages:
@@ -346,7 +347,7 @@ class StorageRetentionManager:
     """
 
     def __init__(self, results_base_dir: str, portal_id: str):
-        self.results_base_dir = os.path.abspath(results_base_dir)
+        self.results_base_dir = str(Path(results_base_dir).resolve())
         self.portal_id = portal_id
         self.catalog_path = str(Path(self.results_base_dir) / "catalog.json")
         self.runs_dir = str(Path(self.results_base_dir) / "runs")
@@ -359,19 +360,19 @@ class StorageRetentionManager:
         current_head = catalog.latest_successful_run_id
 
         # 1. All packages are unconditionally protected
-        if os.path.exists(self.packages_dir):
+        if Path(self.packages_dir).exists():
             for pkg in os.listdir(self.packages_dir):
                 plan.retained_packages.append(pkg)
                 plan.protected_reasons[pkg] = "Finalized immutable archival package (never deleted)"
 
-        if not os.path.exists(self.runs_dir):
+        if not Path(self.runs_dir).exists():
             return plan
 
         all_staging_folders = sorted(os.listdir(self.runs_dir))
 
         for folder in all_staging_folders:
             folder_path = str(Path(self.runs_dir) / folder)
-            if not os.path.isdir(folder_path):
+            if not Path(folder_path).is_dir():
                 continue
 
             # Check if this folder matches or contains current head run
@@ -391,7 +392,7 @@ class StorageRetentionManager:
 
             # Check if run has anomalies or manual review
             summary_file = str(Path(folder_path) / "run_summary.json")
-            if os.path.exists(summary_file):
+            if Path(summary_file).exists():
                 try:
                     with open(summary_file, "r", encoding="utf-8") as f:
                         sdata = json.load(f)
@@ -419,11 +420,11 @@ class StorageRetentionManager:
                 plan.protected_reasons[f] = "Protected by min_keep_staging count"
 
         for f in plan.eligible_for_removal:
-            folder_path = str(Path(self.runs_dir) / f)
+            folder_path = Path(self.runs_dir) / f
             try:
                 for root, _, files in os.walk(folder_path):
                     for file in files:
-                        plan.bytes_reclaimable += os.path.getsize(Path(root) / file)
+                        plan.bytes_reclaimable += (Path(root) / file).stat().st_size
             except Exception:
                 pass
 
