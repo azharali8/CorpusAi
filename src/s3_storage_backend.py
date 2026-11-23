@@ -247,7 +247,9 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         return self._key(f"packages/{portal_id}/runs/{run_id}/")
 
     def _artifact_key(self, portal_id: str, run_id: str, rel_path: str) -> str:
-        norm = rel_path.replace("\\", "/")
+        # S3 keys are logical forward-slash delimited URIs, not host filesystem paths.
+        # Ensure Windows backslashes are normalized to '/' regardless of the host OS.
+        norm = rel_path.replace("\\", "/").lstrip("/")
         return self._key(f"packages/{portal_id}/runs/{run_id}/{norm}")
 
     def _quarantine_key(self, portal_id: str, quarantine_id: str) -> str:
@@ -759,7 +761,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         """
         result: Dict[str, RemoteArtifactMetadata] = {}
         for rel_path, local_abs_path in local_files.items():
-            norm_rel = rel_path.replace("\\", "/")
+            norm_rel = rel_path.replace("\\", "/").lstrip("/")
             s3_key = self._artifact_key(portal_id, run_id, norm_rel)
 
             try:
@@ -823,7 +825,7 @@ class S3RemoteStorageBackend(RemoteStorageContract):
         """
         mismatches: List[str] = []
         for rel_path, expected_sha256 in expected_checksums.items():
-            norm_rel = rel_path.replace("\\", "/")
+            norm_rel = rel_path.replace("\\", "/").lstrip("/")
             s3_key = self._artifact_key(portal_id, run_id, norm_rel)
 
             try:

@@ -88,7 +88,7 @@ def resolve_contained_path(
 
     # Verify candidate is strictly contained beneath resolved base
     try:
-        candidate.relative_to(base)
+        relative_candidate = candidate.relative_to(base)
     except ValueError as err:
         raise ValueError(f"Path traversal detected: '{relative_path}' escapes base directory '{base}'") from err
 

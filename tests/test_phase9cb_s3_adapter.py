@@ -1088,3 +1088,36 @@ def test_etag_round_trip_strip_then_quote():
     wire = _quote_etag(internal)
     assert wire == '"deadbeef12345678"'
     assert wire == s3_etag  # full round-trip equality
+
+
+def test_artifact_key_normalization_windows_and_posix_separators():
+    """
+    Regression test for Finding 2:
+    S3 artifact keys are logical URIs with forward slashes.
+    Both Windows backslashes ('\\') and POSIX slashes ('/') in rel_path
+    must normalize consistently to '/' regardless of the host OS,
+    without host-dependent Path.as_posix() quirks on POSIX platforms.
+    """
+    mock_s3 = MagicMock()
+    backend = _make_backend(mock_s3)
+
+    portal_id = "test-portal"
+    run_id = "run-20261027T000000Z"
+
+    # 1. POSIX relative path
+    k_posix = backend._artifact_key(portal_id, run_id, "content/content_html.warc.gz")
+    assert k_posix == f"test/packages/{portal_id}/runs/{run_id}/content/content_html.warc.gz"
+
+    # 2. Windows-style backslash path
+    k_win = backend._artifact_key(portal_id, run_id, r"content\content_html.warc.gz")
+    assert k_win == f"test/packages/{portal_id}/runs/{run_id}/content/content_html.warc.gz"
+
+    # 3. Deeply nested mixed separators
+    k_mixed = backend._artifact_key(portal_id, run_id, r"qa/reports\summary\detail.json")
+    assert k_mixed == f"test/packages/{portal_id}/runs/{run_id}/qa/reports/summary/detail.json"
+
+    # 4. Leading separator stripping
+    k_lead_slash = backend._artifact_key(portal_id, run_id, "/manifest.json")
+    k_lead_bslash = backend._artifact_key(portal_id, run_id, r"\manifest.json")
+    assert k_lead_slash == f"test/packages/{portal_id}/runs/{run_id}/manifest.json"
+    assert k_lead_bslash == f"test/packages/{portal_id}/runs/{run_id}/manifest.json"

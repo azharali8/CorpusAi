@@ -25,6 +25,7 @@ import os
 import shutil
 import tempfile
 from typing import Any, Dict, List
+from pathlib import Path
 import unittest.mock as mock
 
 import pytest
@@ -938,3 +939,33 @@ def test_zenodo_requests_transport_semantics(tmp_path):
         adapter_with_transport._execute_http_request(url="https://sandbox.zenodo.org/api/x", method="GET")
     assert transport_called[0] is True
     assert not mock_r2.called
+
+
+def test_checksum_parsing_rejects_traversal_paths(tmp_path):
+    """
+    Regression test for Finding 3:
+    In zenodo_deposit.py, checksums.sha256 parsing must reject traversal paths
+    (e.g., '../secret.txt') instead of silently transforming them via lstrip('./').
+    """
+    pkg_dir = _create_valid_packaged_run(tmp_path)
+    adapter = ZenodoSandboxAdapter(api_token="test_token")
+
+    receipt = DepositReceipt(
+        receipt_id="r_trav",
+        portal_id="wordpress-news",
+        run_id="run-1",
+        package_fingerprint="fp",
+        repository_target="zenodo",
+        environment="sandbox",
+        status=STATUS_UPLOADED,
+        created_at="2026-10-23T01:00:00Z",
+        updated_at="2026-10-23T01:00:00Z",
+    )
+
+    # Corrupt checksums.sha256 with a traversal line
+    checksums_file = Path(pkg_dir) / "checksums.sha256"
+    with open(checksums_file, "a", encoding="utf-8") as f:
+        f.write("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef  ../secret.txt\n")
+
+    with pytest.raises(ValueError, match="illegal or traversal path"):
+        adapter.verify_remote_artifacts(receipt, pkg_dir)

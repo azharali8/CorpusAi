@@ -36,6 +36,7 @@ from src.incremental_archive_policy import (
 from src.portal_state import PortalState
 from src.replay_validation import generate_sha256_manifest
 from src.storage_backend import LocalStateStorageBackend
+from src.utils.paths import resolve_contained_path
 from src.catalog_recovery import (
     validate_baseline_integrity,
     BaselineIntegrityError,
@@ -880,14 +881,18 @@ def main(argv: Optional[List[str]] = None) -> int:
                         checksums_file = pkg_path / "checksums.sha256"
                         if checksums_file.exists():
                             with open(checksums_file, "r", encoding="utf-8") as cs_f:
-                                for line in cs_f:
+                                for line_idx, line in enumerate(cs_f, start=1):
                                     line = line.strip()
                                     if line and not line.startswith("#"):
                                         parts = line.split(None, 1)
                                         if len(parts) == 2:
                                             digest, rel_p = parts[0], parts[1].strip()
-                                            clean_rel = rel_p.replace("\\", "/").lstrip("./")
-                                            pkg_checksums[clean_rel] = digest.lower()
+                                            try:
+                                                _, clean_rel = resolve_contained_path(pkg_path, rel_p)
+                                                pkg_checksums[clean_rel] = digest.lower()
+                                            except ValueError as ve:
+                                                logger.error(f"Illegal checksum entry in {checksums_file}:{line_idx}: {ve}")
+                                                raise
 
                         is_valid, mismatches = remote_backend.verify_remote_artifacts(
                             portal_id=args.portal,
