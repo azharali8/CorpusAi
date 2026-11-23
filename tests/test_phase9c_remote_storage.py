@@ -239,7 +239,7 @@ def test_expiry_alone_does_not_revoke_until_takeover(mock_storage):
 # ---------------------------------------------------------------------------
 # Test 5: Takeover vs Publication Race: resolved by atomic CAS to control record
 # ---------------------------------------------------------------------------
-def test_takeover_vs_publication_race_resolved_by_cas(mock_storage, sample_package_bundle):
+def test_takeover_vs_publication_race_resolved_by_cas(mock_storage, sample_package_bundle, tmp_path):
     portal_id = sample_package_bundle["portal_id"]
     run_id = sample_package_bundle["run_id"]
 
@@ -269,7 +269,8 @@ def test_takeover_vs_publication_race_resolved_by_cas(mock_storage, sample_packa
     assert ok_stale is False
 
     # Control record active owner remains Runner 2
-    ctrl_active, _, _, _, _ = mock_storage.hydrate_state(portal_id, target_dir="nonexistent_tmp")
+    hydrate_target = tmp_path / "hydrate_takeover_race"
+    ctrl_active, _, _, _, _ = mock_storage.hydrate_state(portal_id, target_dir=str(hydrate_target))
     assert ctrl_active.lease.lease_owner_id == "runner-2"
     assert ctrl_active.baseline.latest_successful_run_id is None
 
@@ -414,7 +415,7 @@ def test_strict_remote_orphan_validation(sample_package_bundle):
 # ---------------------------------------------------------------------------
 # Test 10: Failure between control-record publication, catalog projection, and deposit registry
 # ---------------------------------------------------------------------------
-def test_failure_between_control_record_catalog_and_deposit(mock_storage, sample_package_bundle):
+def test_failure_between_control_record_catalog_and_deposit(mock_storage, sample_package_bundle, tmp_path):
     portal_id = sample_package_bundle["portal_id"]
     run_id = "run-100"
 
@@ -445,7 +446,8 @@ def test_failure_between_control_record_catalog_and_deposit(mock_storage, sample
     }
 
     # Next runner hydrates state: control record strictly overrides catalog
-    ctrl_rec, _, cat_hydrated, _, deposit_data = mock_storage.hydrate_state(portal_id, target_dir="nonexistent_tmp")
+    hydrate_target = tmp_path / "hydrate_control_overrides_catalog"
+    ctrl_rec, _, cat_hydrated, _, deposit_data = mock_storage.hydrate_state(portal_id, target_dir=str(hydrate_target))
     assert ctrl_rec.baseline.latest_successful_run_id == run_id
     assert cat_hydrated.latest_successful_run_id == run_id
     assert deposit_data is None  # Deposit failure did not invalidate crawl baseline
