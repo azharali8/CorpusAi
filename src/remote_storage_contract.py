@@ -35,7 +35,6 @@ Architecture & Invariants:
 from abc import ABC, abstractmethod
 from dataclasses import asdict, dataclass, field
 import datetime
-import json
 from typing import Any, Dict, List, Optional, Tuple
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry

@@ -279,8 +279,8 @@ class ReplayArchive:
             raise FileNotFoundError(f"Portal state file not found: {portal_state_path}")
 
         count = 0
-        with open(portal_state_path, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(portal_state_path, encoding="UTF-8") as fh:
+            data = json.load(fh)
 
         articles = data.get("articles", {})
         for art_url, art_info in articles.items():

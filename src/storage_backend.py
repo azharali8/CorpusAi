@@ -66,23 +66,23 @@ class PortalLock:
                 # Open with read/write (create if not exists)
                 # On Windows, open('a+b') or open('r+b') works with msvcrt.locking
                 if not lock_path.exists():
-                    with open(lock_path, "a+b") as f:
-                        f.write(b" ")
-                        f.flush()
+                    with open(lock_path, "a+b") as init_fh:
+                        init_fh.write(b" ")
+                        init_fh.flush()
 
-                f = open(lock_path, "r+b")
+                fh = open(lock_path, "r+b")
 
                 # Apply OS-level lock on first byte
                 if sys.platform == "win32":
                     import msvcrt
-                    f.seek(0)
-                    msvcrt.locking(f.fileno(), msvcrt.LK_NBLCK, 1)
+                    fh.seek(0)
+                    msvcrt.locking(fh.fileno(), msvcrt.LK_NBLCK, 1)
                 else:
                     import fcntl
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    fcntl.flock(fh.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
 
                 # Lock granted
-                self._file_obj = f
+                self._file_obj = fh
                 self._acquired = True
 
                 # Write diagnostic metadata (safe after lock is held)

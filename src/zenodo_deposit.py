@@ -439,7 +439,6 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
                 local_sha256=sha256_val,
                 local_md5=md5_val,
                 remote_md5=remote_md5,
-                remote_checksum=resp_data.get("checksum"),
                 remote_file_id=resp_data.get("id"),
                 verified=False,
             )
@@ -466,8 +465,8 @@ class ZenodoSandboxAdapter(RepositoryDepositClient):
         checksums_path = Path(package_dir) / "checksums.sha256"
         expected_sha256s: Dict[str, str] = {}
         if checksums_path.exists():
-            with open(checksums_path, "r", encoding="utf-8") as f:
-                for line_idx, line in enumerate(f, start=1):
+            with open(checksums_path, encoding="UTF-8") as fh:
+                for line_idx, line in enumerate(fh, start=1):
                     line = line.strip()
                     if not line or line.startswith("#"):
                         continue

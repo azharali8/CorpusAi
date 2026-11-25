@@ -216,8 +216,8 @@ class ArchivePackager:
                 crawler_version=crawler_version,
             )
             env_path = Path(staging_dir) / ENVIRONMENT_FILENAME
-            with open(env_path, "w", encoding="utf-8") as f:
-                json.dump(env_metadata, f, indent=2, ensure_ascii=False)
+            with open(env_path, "w", encoding="UTF-8") as fh:
+                json.dump(env_metadata, fh, indent=2, ensure_ascii=False)
             inventory["environment"] = ENVIRONMENT_FILENAME
             copied_files.add(ENVIRONMENT_FILENAME)
 
@@ -252,8 +252,8 @@ class ArchivePackager:
                 manifest_data.update(custom_manifest_fields)
 
             manifest_path = Path(staging_dir) / MANIFEST_FILENAME
-            with open(manifest_path, "w", encoding="utf-8") as f:
-                json.dump(manifest_data, f, indent=2, ensure_ascii=False)
+            with open(manifest_path, "w", encoding="UTF-8") as fh:
+                json.dump(manifest_data, fh, indent=2, ensure_ascii=False)
             inventory["manifest"] = MANIFEST_FILENAME
             copied_files.add(MANIFEST_FILENAME)
 
@@ -264,9 +264,9 @@ class ArchivePackager:
                 checksum_map[rel] = compute_file_sha256(full_f)
 
             checksums_path = Path(staging_dir) / CHECKSUMS_FILENAME
-            with open(checksums_path, "w", encoding="utf-8") as f:
+            with open(checksums_path, "w", encoding="UTF-8") as fh:
                 for rel in sorted(checksum_map.keys()):
-                    f.write(f"{checksum_map[rel]}  {rel}\n")
+                    fh.write(f"{checksum_map[rel]}  {rel}\n")
 
             # 7. Verification inside staging before promotion
             verifier_func = getattr(PackageVerifier, "verify", PackageVerifier.verify_package)
@@ -354,8 +354,8 @@ class PackageVerifier:
             metadata_errors.append(f"Missing mandatory manifest file: {MANIFEST_FILENAME}")
         else:
             try:
-                with open(manifest_path, "r", encoding="utf-8") as f:
-                    manifest_data = json.load(f)
+                with open(manifest_path, encoding="UTF-8") as fh:
+                    manifest_data = json.load(fh)
                 run_id = manifest_data.get("run_id", run_id)
                 portal_id = manifest_data.get("portal_id", "")
                 if not run_id:
@@ -370,8 +370,8 @@ class PackageVerifier:
             metadata_errors.append(f"Missing mandatory environment file: {ENVIRONMENT_FILENAME}")
         else:
             try:
-                with open(env_path, "r", encoding="utf-8") as f:
-                    env_data = json.load(f)
+                with open(env_path, encoding="UTF-8") as fh:
+                    env_data = json.load(fh)
                 if not isinstance(env_data, dict) or "python_version" not in env_data:
                     metadata_errors.append("environment.json missing expected metadata fields")
             except Exception as e:
@@ -383,8 +383,8 @@ class PackageVerifier:
             metadata_errors.append(f"Missing mandatory checksums file: {CHECKSUMS_FILENAME}")
         else:
             try:
-                with open(checksums_path, "r", encoding="utf-8") as f:
-                    for line_idx, line in enumerate(f, start=1):
+                with open(checksums_path, encoding="UTF-8") as fh:
+                    for line_idx, line in enumerate(fh, start=1):
                         line = line.strip()
                         if not line or line.startswith("#"):
                             continue

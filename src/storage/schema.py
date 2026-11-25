@@ -33,6 +33,17 @@ V1_SCHEMA_STATEMENTS: List[str] = [
     );
     """,
 
+    # 1b. Data Migrations table (tracks legacy JSON data imports atomically)
+    """
+    CREATE TABLE IF NOT EXISTS data_migrations (
+        migration_id TEXT PRIMARY KEY,
+        source_path TEXT NOT NULL,
+        source_sha256 TEXT NOT NULL,
+        imported_count INTEGER NOT NULL DEFAULT 0,
+        completed_at TEXT NOT NULL
+    );
+    """,
+
     # 2. Portals table
     """
     CREATE TABLE IF NOT EXISTS portals (

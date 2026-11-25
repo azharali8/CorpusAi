@@ -517,9 +517,9 @@ def test_deposit_registry_sqlite_round_trip(tmp_path):
     repo.upsert_run("p-dep", "run-dep-1", "2026-11-15T10:00:00Z", "CONVERGED")
     repo.upsert_package("p-dep", "run-dep-1", "/tmp/pkg/run-dep-1", package_status="SEALED")
 
-    # Create dummy deposit_registry.json
+    # Create dummy legacy deposit_registry.json without saving to SQLite first
     reg_path = tmp_path / "deposit_registry.json"
-    registry = DepositRegistry(reg_path)
+    legacy_reg = DepositRegistry.load_or_create(reg_path, db_path=db.db_path)
     art1 = UploadedArtifactRecord(
         filename="archive.warc.gz",
         filesize=12345,
@@ -543,7 +543,8 @@ def test_deposit_registry_sqlite_round_trip(tmp_path):
         artifact_inventory={"archive.warc.gz": art1},
         checksum_verification_outcome="VERIFIED",
     )
-    registry.register_receipt(receipt)
+    legacy_reg.receipts["p-dep:run-dep-1"] = receipt
+    legacy_reg.export_json(reg_path)
 
     # Import into SQLite
     cnt = tool.import_deposit_registry_json(reg_path, "p-dep")

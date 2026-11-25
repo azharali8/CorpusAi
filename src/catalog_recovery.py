@@ -208,8 +208,8 @@ class CatalogReconciler:
                             state_file = str(entry / "extra" / "portal_state.json")
                         if Path(manifest_file).exists() and Path(state_file).exists():
                             try:
-                                with open(manifest_file, "r", encoding="utf-8") as f:
-                                    mdata = json.load(f)
+                                with open(manifest_file, encoding="UTF-8") as fh:
+                                    mdata = json.load(fh)
                                 st = PortalState.load_from_json(state_file)
                                 # Crucial: Check that the package represents a successful crawl
                                 # Package integrity alone is NOT proof of crawl success
@@ -295,8 +295,8 @@ class CatalogReconciler:
         if new_head in report.orphaned_verified_packages:
             pkg_path = str(Path(self.packages_dir) / new_head)
             manifest_file = str(Path(pkg_path) / "manifest.json")
-            with open(manifest_file, "r", encoding="utf-8") as f:
-                mdata = json.load(f)
+            with open(manifest_file, encoding="UTF-8") as fh:
+                mdata = json.load(fh)
 
             entry = CatalogRunEntry(
                 run_id=new_head,
@@ -394,8 +394,8 @@ class StorageRetentionManager:
             summary_file = str(Path(folder_path) / "run_summary.json")
             if Path(summary_file).exists():
                 try:
-                    with open(summary_file, "r", encoding="utf-8") as f:
-                        sdata = json.load(f)
+                    with open(summary_file, encoding="UTF-8") as fh:
+                        sdata = json.load(fh)
                     if sdata.get("anomalies") or sdata.get("errors"):
                         plan.retained_runs.append(folder)
                         plan.protected_reasons[folder] = "Diagnostic retention (contains errors or anomalies)"

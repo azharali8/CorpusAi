@@ -23,10 +23,10 @@ def atomic_write_json(file_path: Union[str, Path], data: Any, indent: int = 2) -
     tmp_path = path.with_name(f"{path.name}.tmp.{os.getpid()}")
 
     try:
-        with open(tmp_path, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=indent, ensure_ascii=False)
-            f.flush()
-            os.fsync(f.fileno())
+        with open(tmp_path, "w", encoding="UTF-8") as fh:
+            json.dump(data, fh, indent=indent, ensure_ascii=False)
+            fh.flush()
+            os.fsync(fh.fileno())
         os.replace(tmp_path, path)
     except Exception:
         if tmp_path.exists():
@@ -55,5 +55,5 @@ def read_json(
     if not path.exists():
         msg = missing_file_message or f"File not found: {file_path}"
         raise FileNotFoundError(msg)
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    with open(path, encoding="UTF-8") as fh:
+        return json.load(fh)

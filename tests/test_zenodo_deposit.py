@@ -125,7 +125,7 @@ def test_invalid_package_rejected_before_remote_creation(tmp_path):
 
     meta = _create_sample_metadata(tmp_path)
     adapter = ZenodoSandboxAdapter(api_token="dummy_token")
-    registry = DepositRegistry(str(tmp_path / "deposit_registry.json"))
+    registry = DepositRegistry(db_path=tmp_path / "deposit_state.db")
     orchestrator = DepositOrchestrator(adapter, registry)
 
     mock_create = mock.MagicMock()
@@ -277,7 +277,8 @@ def test_idempotent_deposit_returns_existing_receipt(tmp_path):
     fp = compute_package_fingerprint(pkg_dir)
 
     reg_file = str(tmp_path / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+    db_file = tmp_path / "deposit_state.db"
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
 
     # Pre-record completed verified receipt
     pre_receipt = DepositReceipt(
@@ -311,7 +312,8 @@ def test_modified_package_triggers_needs_reconciliation(tmp_path):
     meta = _create_sample_metadata(tmp_path)
 
     reg_file = str(tmp_path / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+    db_file = tmp_path / "deposit_state.db"
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
 
     # Record receipt with OLD fingerprint
     old_receipt = DepositReceipt(
@@ -342,7 +344,8 @@ def test_upload_failure_leaves_local_package_intact_and_receipt_retryable(tmp_pa
     meta = _create_sample_metadata(tmp_path)
 
     reg_file = str(tmp_path / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+    db_file = tmp_path / "deposit_state.db"
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
 
     # Mock client that creates draft but fails during upload
     class FailingUploadClient(ZenodoSandboxAdapter):
@@ -429,7 +432,8 @@ def test_deposit_failure_does_not_alter_catalog(tmp_path):
 
     # Simulate deposit failure for run-baseline-1
     reg_file = str(tmp_path / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+    db_file = tmp_path / "deposit_state.db"
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
     failed_receipt = DepositReceipt(
         receipt_id="r1",
         portal_id="wordpress-news",
@@ -451,9 +455,19 @@ def test_deposit_failure_does_not_alter_catalog(tmp_path):
 
 
 def test_atomic_receipt_persistence(tmp_path):
-    """13. Atomic receipt persistence survives malformed or interrupted state updates."""
+    """13. Atomic receipt persistence and explicit export survives malformed or interrupted state updates."""
+    db_file = tmp_path / "nested" / "deposit_registry.db"
     reg_file = str(tmp_path / "nested" / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+
+    # Initialize portal and package rows so foreign keys are satisfied
+    from src.storage.sqlite_backend import CorpusAIStateDatabase
+    db = CorpusAIStateDatabase(db_path=db_file)
+    with db.transaction() as conn:
+        conn.execute("INSERT INTO portals (portal_id, name, base_url, parser_type) VALUES ('portal', 'Portal', 'http://p', 'generic');")
+        conn.execute("INSERT INTO packages (portal_id, package_id, package_path) VALUES ('portal', 'run-1', '/pkg/run-1');")
+        conn.execute("INSERT INTO packages (portal_id, package_id, package_path) VALUES ('portal', 'run-2', '/pkg/run-2');")
+
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
 
     receipt = DepositReceipt(
         receipt_id="r1",
@@ -468,6 +482,11 @@ def test_atomic_receipt_persistence(tmp_path):
     )
     registry.register_receipt(receipt)
 
+    # Runtime persistence writes to database; confirm JSON is NOT automatically written
+    assert not os.path.exists(reg_file)
+
+    # Explicit export creates the JSON file
+    registry.export_json(reg_file)
     assert os.path.exists(reg_file)
     with open(reg_file, "r", encoding="utf-8") as f:
         data = json.load(f)
@@ -475,7 +494,7 @@ def test_atomic_receipt_persistence(tmp_path):
     assert data["receipts"]["portal:run-1"]["receipt_id"] == "r1"
 
     # Verify reload round-trip
-    reloaded = DepositRegistry.load_or_create(reg_file)
+    reloaded = DepositRegistry.load_or_create(reg_file, db_path=db_file)
     rec = reloaded.get_receipt("portal", "run-1")
     assert rec is not None
     assert rec.receipt_id == "r1"
@@ -495,6 +514,7 @@ def test_atomic_receipt_persistence(tmp_path):
         last_error="Non-ASCII characters: Árvíztűrő tükörfúrógép 🚀",
     )
     reloaded.register_receipt(receipt2)
+    reloaded.export_json(reg_file)
 
     with open(reg_file, "r", encoding="utf-8") as f:
         raw_text = f.read()
@@ -506,10 +526,10 @@ def test_atomic_receipt_persistence(tmp_path):
     parent_dir = os.path.dirname(reg_file)
     with mock.patch("src.utils.serialization.json.dump", side_effect=TypeError("Serialization error")):
         with pytest.raises(TypeError, match="Serialization error"):
-            reloaded.save()
+            reloaded.export_json(reg_file)
 
     # Original file must be completely untouched and valid
-    reloaded_after_fail = DepositRegistry.load_or_create(reg_file)
+    reloaded_after_fail = DepositRegistry.load_or_create(reg_file, db_path=db_file)
     assert reloaded_after_fail.get_receipt("portal", "run-1") is not None
     assert reloaded_after_fail.get_receipt("portal", "run-2") is not None
 
@@ -581,7 +601,8 @@ def test_reconciliation_finds_existing_unrecorded_draft(tmp_path):
     meta = _create_sample_metadata(tmp_path)
 
     reg_file = str(tmp_path / "deposit_registry.json")
-    registry = DepositRegistry.load_or_create(reg_file)
+    db_file = tmp_path / "deposit_state.db"
+    registry = DepositRegistry.load_or_create(reg_file, db_path=db_file)
 
     # Simulate finding an existing draft via remote query
     mock_existing_draft = [

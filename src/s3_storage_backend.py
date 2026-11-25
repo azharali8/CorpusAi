@@ -654,8 +654,8 @@ class S3RemoteStorageBackend(RemoteStorageContract):
             body, control_etag = self._get_object(control_key)
             c_dict = json.loads(body.decode("utf-8"))
             local_control_path = Path(target_dir) / "portal_control.json"
-            with open(local_control_path, "w", encoding="utf-8") as f:
-                json.dump(c_dict, f, indent=2)
+            with open(local_control_path, "w", encoding="UTF-8") as fh:
+                json.dump(c_dict, fh, indent=2)
             control_record = PortalControlRecord.from_dict(c_dict)
         except ClientError as e:
             code = e.response["Error"]["Code"]
@@ -669,8 +669,8 @@ class S3RemoteStorageBackend(RemoteStorageContract):
             body, catalog_etag = self._get_object(catalog_key)
             cat_dict = json.loads(body.decode("utf-8"))
             local_cat_path = Path(target_dir) / "catalog.json"
-            with open(local_cat_path, "w", encoding="utf-8") as f:
-                json.dump(cat_dict, f, indent=2)
+            with open(local_cat_path, "w", encoding="UTF-8") as fh:
+                json.dump(cat_dict, fh, indent=2)
             catalog = ArchiveCatalog.from_dict(cat_dict)
         except ClientError as e:
             code = e.response["Error"]["Code"]
@@ -708,8 +708,8 @@ class S3RemoteStorageBackend(RemoteStorageContract):
                         dst_path.parent.mkdir(parents=True, exist_ok=True)
                         try:
                             file_body, _ = self._get_object(obj_key)
-                            with open(dst_path, "wb") as f:
-                                f.write(file_body)
+                            with open(dst_path, "wb") as fh:
+                                fh.write(file_body)
                         except ClientError as e2:
                             code2 = e2.response["Error"]["Code"]
                             if code2 != "NoSuchKey":
@@ -731,8 +731,8 @@ class S3RemoteStorageBackend(RemoteStorageContract):
             body, _ = self._get_object(deposit_key)
             deposit_data = json.loads(body.decode("utf-8"))
             local_dep_path = Path(target_dir) / "deposit_registry.json"
-            with open(local_dep_path, "w", encoding="utf-8") as f:
-                json.dump(deposit_data, f, indent=2)
+            with open(local_dep_path, "w", encoding="UTF-8") as fh:
+                json.dump(deposit_data, fh, indent=2)
         except ClientError as e:
             code = e.response["Error"]["Code"]
             if code != "NoSuchKey":

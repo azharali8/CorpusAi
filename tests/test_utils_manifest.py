@@ -190,3 +190,32 @@ class TestReplayValidationBackwardCompat:
     def test_compute_file_sha256_importable_from_replay_validation(self):
         from src.replay_validation import compute_file_sha256  # noqa: F401
         assert callable(compute_file_sha256)
+
+
+class TestManifestPathSupport:
+    """Stage 4 targeted tests: generate_sha256_manifest supports Path values and keys."""
+
+    def test_path_values_without_base_dir(self, tmp_path):
+        f = tmp_path / "sample.txt"
+        f.write_bytes(b"manifest path test")
+        # Pass Path object as dict value
+        res = generate_sha256_manifest({"sample.txt": f})
+        expected_digest = sha256_file(f)
+        assert res == f"{expected_digest}  sample.txt\n"
+
+    def test_path_base_dir(self, tmp_path):
+        f = tmp_path / "sub" / "item.txt"
+        f.parent.mkdir(parents=True)
+        f.write_bytes(b"manifest sub item")
+        # Pass Path object as base_dir
+        res = generate_sha256_manifest({"sub/item.txt": "ignored"}, base_dir=tmp_path)
+        expected_digest = sha256_file(f)
+        assert res == f"{expected_digest}  sub/item.txt\n"
+
+    def test_path_as_posix_normalization_on_keys(self, tmp_path):
+        f = tmp_path / "windows_style.bin"
+        f.write_bytes(b"windows style manifest key")
+        # Key with Windows backslash separator is normalized to forward slash
+        res = generate_sha256_manifest({"folder\\nested\\file.txt": f})
+        assert "folder/nested/file.txt" in res
+        assert "\\" not in res
