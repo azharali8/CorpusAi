@@ -14,7 +14,6 @@ import datetime
 import hashlib
 import json
 import logging
-import os
 from pathlib import Path
 import socket
 import sys
@@ -25,7 +24,7 @@ import urllib.robotparser
 
 import requests
 
-from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
+from src.archive_catalog import CatalogRunEntry
 from src.archive_package import ArchivePackager, PackageVerifier
 from src.crawling_logic.portal_fetchers import build_portal_fetchers
 from src.downloader import ResourcePreservationHarvester
@@ -716,8 +715,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             "retry_log": inc_run.retry_log,
         }
         summary_path = Path(run_dir) / "run_summary.json"
-        with open(summary_path, "w", encoding="utf-8") as f:
-            json.dump(summary_data, f, indent=2, ensure_ascii=False)
+        with open(summary_path, "w", encoding="UTF-8") as fh:
+            json.dump(summary_data, fh, indent=2, ensure_ascii=False)
         logger.info(f"Saved run summary to {summary_path}")
 
         # Ensure log output is flushed before hashing
@@ -735,8 +734,8 @@ def main(argv: Optional[List[str]] = None) -> int:
 
         checksums_manifest = generate_sha256_manifest(files_to_hash, base_dir=run_dir)
         checksums_path = Path(run_dir) / "checksums.sha256"
-        with open(checksums_path, "w", encoding="utf-8") as f:
-            f.write(checksums_manifest)
+        with open(checksums_path, "w", encoding="UTF-8") as fh:
+            fh.write(checksums_manifest)
         logger.info(f"Saved SHA-256 checksums to {checksums_path}")
 
         cat_entry = CatalogRunEntry(
@@ -880,8 +879,8 @@ def main(argv: Optional[List[str]] = None) -> int:
                         pkg_checksums: Dict[str, str] = {}
                         checksums_file = pkg_path / "checksums.sha256"
                         if checksums_file.exists():
-                            with open(checksums_file, "r", encoding="utf-8") as cs_f:
-                                for line_idx, line in enumerate(cs_f, start=1):
+                            with open(checksums_file, encoding="UTF-8") as cs_fh:
+                                for line_idx, line in enumerate(cs_fh, start=1):
                                     line = line.strip()
                                     if line and not line.startswith("#"):
                                         parts = line.split(None, 1)

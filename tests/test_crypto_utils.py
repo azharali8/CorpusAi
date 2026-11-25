@@ -10,8 +10,10 @@ import pytest
 
 from src.utils.crypto import (
     _create_hasher,
+    _hash_file,
     _hash_stream,
     compute_file_md5_and_sha256,
+    hash_bytes,
     md5_bytes,
     md5_file,
     sha256_bytes,
@@ -270,3 +272,54 @@ def test_multithreaded_hashing_parity(tmp_path):
     assert mt_md5 == seq_md5 == md5_bytes(payload)
     assert mt_sha == seq_sha == sha256_bytes(payload)
     assert mt_bytes == seq_bytes == len(payload)
+
+
+# --- Stage 4 Hashing Utilities Targeted Tests ---
+
+
+def test_hash_bytes_generic():
+    """Verify hash_bytes works for both sha256 and md5, matching specific helpers."""
+    payload = b"generic byte hashing in CorpusAI Stage 4"
+    assert hash_bytes(payload, "sha256") == sha256_bytes(payload)
+    assert hash_bytes(payload, "SHA256") == sha256_bytes(payload)
+    assert hash_bytes(payload, "md5") == md5_bytes(payload)
+    assert hash_bytes(payload, "MD5") == md5_bytes(payload)
+
+    with pytest.raises(ValueError, match="Unsupported hashing algorithm"):
+        hash_bytes(payload, "unknown_algo")
+
+
+def test_hash_stream_chunk_size_validation():
+    """Verify _hash_stream validates chunk_size directly, rejecting non-positive or bool values."""
+    stream = io.BytesIO(b"test data")
+
+    for bad_size in (0, -1, -100):
+        with pytest.raises(ValueError, match="chunk_size must be a positive integer"):
+            _hash_stream(stream, ["sha256"], chunk_size=bad_size)
+
+    for bad_type in (True, False, 12.5, "1024", None):
+        with pytest.raises(TypeError, match="chunk_size must be an integer"):
+            _hash_stream(stream, ["sha256"], chunk_size=bad_type)
+
+
+def test_hash_stream_and_file_string_algorithm_argument(tmp_path):
+    """Verify _hash_stream and _hash_file accept a single string algorithm without character iteration."""
+    payload = b"algorithm argument polymorphism test"
+    stream = io.BytesIO(payload)
+
+    # Single string argument to _hash_stream
+    digests, total = _hash_stream(stream, "sha256")
+    assert digests == [sha256_bytes(payload)]
+    assert total == len(payload)
+
+    # Single string argument to _hash_file
+    f = tmp_path / "str_algo.txt"
+    f.write_bytes(payload)
+    digests_f, total_f = _hash_file(f, "sha256")
+    assert digests_f == [sha256_bytes(payload)]
+    assert total_f == len(payload)
+
+    # Sequence of algorithms still works
+    digests_seq, total_seq = _hash_file(f, ["md5", "sha256"])
+    assert digests_seq == [md5_bytes(payload), sha256_bytes(payload)]
+    assert total_seq == len(payload)

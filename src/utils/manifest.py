@@ -6,13 +6,16 @@ by archive_package, replay_validation, and corpusai_run, eliminating duplicated
 manifest-generation code while preserving exact format compatibility.
 """
 
-from pathlib import Path
-from typing import Dict
+from pathlib import Path, PureWindowsPath
+from typing import Dict, Union
 
 from src.utils.crypto import sha256_file
 
 
-def generate_sha256_manifest(files_dict: Dict[str, str], base_dir: str = "") -> str:
+def generate_sha256_manifest(
+    files_dict: Dict[Union[str, Path], Union[str, Path]],
+    base_dir: Union[str, Path] = "",
+) -> str:
     """
     Generate standard SHA-256 checksum manifest lines.
 
@@ -24,7 +27,7 @@ def generate_sha256_manifest(files_dict: Dict[str, str], base_dir: str = "") -> 
     Args:
         files_dict: Mapping of relative-path-label -> file path.
             - When *base_dir* is non-empty, the full path is computed as
-              ``os.path.join(base_dir, rel_key)``, and the dict values are
+              ``Path(base_dir) / rel_key``, and the dict values are
               ignored.  This matches the ``corpusai_run`` calling pattern where
               keys are short names and values are absolute paths relative to a
               common run directory.
@@ -42,10 +45,17 @@ def generate_sha256_manifest(files_dict: Dict[str, str], base_dir: str = "") -> 
         PermissionError: If a referenced file cannot be opened.
     """
     lines = []
-    for rel_path in sorted(files_dict.keys()):
-        full_path = Path(base_dir) / rel_path if base_dir else files_dict[rel_path]
+    base_path = Path(base_dir) if base_dir else None
+
+    # Sort keys by their string representation
+    sorted_keys = sorted(files_dict.keys(), key=lambda k: str(k))
+
+    for rel_key in sorted_keys:
+        rel_str = str(rel_key)
+        full_path = (base_path / rel_str) if base_path is not None else files_dict[rel_key]
         digest = sha256_file(full_path)
-        # Normalise to forward slashes for portable checksum files
-        clean_rel = rel_path.replace("\\", "/")
+        # Normalise relative path to forward slashes for portable checksum files
+        # using PureWindowsPath so Windows-style backslashes are normalized on POSIX hosts too.
+        clean_rel = PureWindowsPath(rel_str).as_posix()
         lines.append(f"{digest}  {clean_rel}")
     return "\n".join(lines) + "\n"

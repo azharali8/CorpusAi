@@ -6,6 +6,7 @@ Returns structured field outputs accompanied by explicit success/failure status.
 """
 
 from typing import Any, Dict, Union
+
 from bs4 import BeautifulSoup
 from lxml import html as lxml_html
 from lxml.etree import XPathError
@@ -23,42 +24,58 @@ class DeterministicExtractor:
         """
         Extract content using a CSS selector via BeautifulSoup.
         """
-        result: Dict[str, Any] = {
-            "value": None,
-            "success": False,
-            "error": None,
-            "match_count": 0,
-        }
-
         try:
             elements = soup.select(selector)
         except Exception as e:
-            result["error"] = f"Invalid CSS selector '{selector}': {str(e)}"
-        else:
-            if not elements:
-                result["error"] = f"No element found for selector '{selector}'"
-            else:
-                result["match_count"] = len(elements)
+            return {
+                "value": None,
+                "success": False,
+                "error": f"Invalid CSS selector '{selector}': {e}",
+                "match_count": 0,
+            }
 
-                if len(elements) == 1:
-                    raw_text = elements[0].get_text(separator=" ", strip=True)
-                    if not raw_text:
-                        result["error"] = "Matched element contains empty text"
-                    else:
-                        result["value"] = raw_text
-                        result["success"] = True
-                else:
-                    texts = [el.get_text(separator=" ", strip=True) for el in elements]
-                    non_empty = [t for t in texts if t]
-                    if not non_empty:
-                        result["error"] = "Matched multiple elements but all contain empty text"
-                    else:
-                        result["value"] = (
-                            "\n\n".join(non_empty) if len(non_empty) > 1 else non_empty[0]
-                        )
-                        result["success"] = True
+        if not elements:
+            return {
+                "value": None,
+                "success": False,
+                "error": f"No element found for selector '{selector}'",
+                "match_count": 0,
+            }
 
-        return result
+        match_count = len(elements)
+        if match_count == 1:
+            raw_text = elements[0].get_text(separator=" ", strip=True)
+            if not raw_text:
+                return {
+                    "value": None,
+                    "success": False,
+                    "error": "Matched element contains empty text",
+                    "match_count": match_count,
+                }
+            return {
+                "value": raw_text,
+                "success": True,
+                "error": None,
+                "match_count": match_count,
+            }
+
+        texts = [el.get_text(separator=" ", strip=True) for el in elements]
+        non_empty = [t for t in texts if t]
+        if not non_empty:
+            return {
+                "value": None,
+                "success": False,
+                "error": "Matched multiple elements but all contain empty text",
+                "match_count": match_count,
+            }
+
+        value = "\n\n".join(non_empty) if len(non_empty) > 1 else non_empty[0]
+        return {
+            "value": value,
+            "success": True,
+            "error": None,
+            "match_count": match_count,
+        }
 
     def _extract_xpath(self, tree: Any, xpath_expr: str) -> Dict[str, Any]:
         """

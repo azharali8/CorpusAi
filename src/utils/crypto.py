@@ -7,9 +7,9 @@ exhaustion on large archival packages or WARC records.
 """
 
 import hashlib
-import os
 import queue
 import threading
+from pathlib import Path
 from typing import Sequence, Tuple, Union
 
 DEFAULT_CHUNK_SIZE: int = 65536
@@ -35,19 +35,24 @@ def _validate_chunk_size(chunk_size: int) -> None:
 
 def _hash_stream(
     stream,
-    algorithms: Sequence[str],
-    chunk_size: int,
+    algorithms: Union[str, Sequence[str]],
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
 ) -> Tuple[list[str], int]:
     """
     Process an open binary stream in chunks, updating hash states in a single pass.
 
-    Precondition: chunk_size has already been validated.
     Returns: (list_of_hexdigests, total_bytes_read)
     """
-    if not algorithms:
+    _validate_chunk_size(chunk_size)
+    if isinstance(algorithms, str):
+        algo_list = [algorithms]
+    else:
+        algo_list = list(algorithms)
+
+    if not algo_list:
         raise ValueError("At least one algorithm must be specified")
 
-    hashers = [_create_hasher(algo) for algo in algorithms]
+    hashers = [_create_hasher(algo) for algo in algo_list]
     total_bytes = 0
 
     while chunk := stream.read(chunk_size):
@@ -59,33 +64,36 @@ def _hash_stream(
 
 
 def _hash_file(
-    file_path: Union[str, os.PathLike],
-    algorithms: Sequence[str],
+    file_path: Union[str, Path],
+    algorithms: Union[str, Sequence[str]],
     chunk_size: int = DEFAULT_CHUNK_SIZE,
 ) -> Tuple[list[str], int]:
     """
     Validate chunk_size, open file, and compute digests and byte count in a single pass.
     """
     _validate_chunk_size(chunk_size)
-    with open(file_path, "rb") as f:
-        return _hash_stream(f, algorithms, chunk_size)
+    with open(file_path, "rb") as fh:
+        return _hash_stream(fh, algorithms, chunk_size)
+
+
+def hash_bytes(data: bytes, algorithm: str) -> str:
+    """Compute the hexadecimal digest of bytes for a supported algorithm."""
+    h = _create_hasher(algorithm)
+    h.update(data)
+    return h.hexdigest()
 
 
 def sha256_bytes(data: bytes) -> str:
     """Compute the hexadecimal SHA-256 digest of bytes."""
-    h = _create_hasher("sha256")
-    h.update(data)
-    return h.hexdigest()
+    return hash_bytes(data, "sha256")
 
 
 def md5_bytes(data: bytes) -> str:
     """Compute the hexadecimal MD5 digest of bytes."""
-    h = _create_hasher("md5")
-    h.update(data)
-    return h.hexdigest()
+    return hash_bytes(data, "md5")
 
 
-def sha256_file(file_path: Union[str, os.PathLike], chunk_size: int = 65536) -> str:
+def sha256_file(file_path: Union[str, Path], chunk_size: int = DEFAULT_CHUNK_SIZE) -> str:
     """
     Compute the hexadecimal SHA-256 digest of a file using streaming chunks.
 
@@ -98,7 +106,7 @@ def sha256_file(file_path: Union[str, os.PathLike], chunk_size: int = 65536) -> 
     return digests[0]
 
 
-def md5_file(file_path: Union[str, os.PathLike], chunk_size: int = 65536) -> str:
+def md5_file(file_path: Union[str, Path], chunk_size: int = DEFAULT_CHUNK_SIZE) -> str:
     """
     Compute the hexadecimal MD5 digest of a file using streaming chunks.
 
@@ -112,8 +120,8 @@ def md5_file(file_path: Union[str, os.PathLike], chunk_size: int = 65536) -> str
 
 
 def compute_file_md5_and_sha256(
-    file_path: Union[str, os.PathLike],
-    chunk_size: int = 65536,
+    file_path: Union[str, Path],
+    chunk_size: int = DEFAULT_CHUNK_SIZE,
     multithreaded: bool = False,
 ) -> Tuple[str, str, int]:
     """
@@ -136,11 +144,11 @@ def compute_file_md5_and_sha256(
         return digests[0], digests[1], total_bytes
 
     # Multithreaded MtHasher pipeline
-    resolved_path = os.fspath(file_path)
-    if not os.path.exists(resolved_path):
-        raise FileNotFoundError(f"File not found: {resolved_path}")
-    if os.path.isdir(resolved_path):
-        raise IsADirectoryError(f"Target is a directory, not a file: {resolved_path}")
+    p = Path(file_path)
+    if not p.exists():
+        raise FileNotFoundError(f"File not found: {p}")
+    if p.is_dir():
+        raise IsADirectoryError(f"Target is a directory, not a file: {p}")
 
     q_md5: queue.Queue = queue.Queue(maxsize=16)
     q_sha: queue.Queue = queue.Queue(maxsize=16)
@@ -173,9 +181,9 @@ def compute_file_md5_and_sha256(
 
     total_bytes = 0
     try:
-        with open(resolved_path, "rb") as f:
+        with open(p, "rb") as fh:
             while not err_event.is_set():
-                chunk = f.read(chunk_size)
+                chunk = fh.read(chunk_size)
                 if not chunk:
                     break
                 total_bytes += len(chunk)
