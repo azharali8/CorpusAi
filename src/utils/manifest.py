@@ -6,7 +6,7 @@ by archive_package, replay_validation, and corpusai_run, eliminating duplicated
 manifest-generation code while preserving exact format compatibility.
 """
 
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Dict, Union
 
 from src.utils.crypto import sha256_file
@@ -54,7 +54,8 @@ def generate_sha256_manifest(
         rel_str = str(rel_key)
         full_path = (base_path / rel_str) if base_path is not None else files_dict[rel_key]
         digest = sha256_file(full_path)
-        # Normalise relative path to forward slashes for portable checksum files using Path.as_posix()
-        clean_rel = Path(rel_str).as_posix()
+        # Normalise relative path to forward slashes for portable checksum files
+        # using PureWindowsPath so Windows-style backslashes are normalized on POSIX hosts too.
+        clean_rel = PureWindowsPath(rel_str).as_posix()
         lines.append(f"{digest}  {clean_rel}")
     return "\n".join(lines) + "\n"
