@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Set
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 
-from src.archive_visit_policy import ArchiveVisitPolicy, create_policy
+from src.crawling_logic.archive_visit_policy import ArchiveVisitPolicy, create_policy
 from research.crawling.experiments.portal_simulator import UnstablePortalSimulator
 
 

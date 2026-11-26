@@ -652,7 +652,7 @@ def test_file_count_and_size_limits_enforced(tmp_path):
         remote_bucket_url="http://sandbox/bucket",
     )
 
-    with mock.patch("src.zenodo_deposit.ZENODO_MAX_RECORD_FILES", 2):
+    with mock.patch("src.zenodo_stuff.client.ZENODO_MAX_RECORD_FILES", 2):
         # Package has 4 files (manifest, env, checksums, content) > 2
         receipt = adapter.upload_artifacts(receipt, pkg_dir)
         assert receipt.status == STATUS_FAILED

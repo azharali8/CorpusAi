@@ -11,7 +11,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from src.utils.crypto import sha256_bytes
 from urllib.parse import urlparse
 
-from src.archive_visit_policy import ArticleLedger, normalize_article_url
+from src.crawling_logic.archive_visit_policy import ArticleLedger, normalize_article_url
 
 
 def compute_node_child_fingerprints(child_urls: List[str]) -> Tuple[str, str]:

@@ -390,7 +390,7 @@ def test_controlled_crawl_to_archival_package_integration(tmp_path):
     import urllib.parse
     from bs4 import BeautifulSoup
     from src.downloader import ResourcePreservationHarvester
-    from src.incremental_archive_policy import IncrementalArchivePolicy
+    from src.crawling_logic.incremental_archive_policy import IncrementalArchivePolicy
     from tests.test_controlled_incremental_crawler import ControlledPortalServer, _read_warc_records
 
     routes = {

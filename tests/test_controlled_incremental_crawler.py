@@ -28,7 +28,7 @@ from warcio.archiveiterator import ArchiveIterator
 
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
 from src.downloader import DownloadedResource, ResourcePreservationHarvester
-from src.incremental_archive_policy import (
+from src.crawling_logic.incremental_archive_policy import (
     IncrementalArchivePolicy,
     IncrementalCrawlBudget,
 )

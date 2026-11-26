@@ -13,7 +13,7 @@ Tests cover:
 
 import hashlib
 import pytest
-from src.archive_visit_policy import normalize_article_url, compute_page_fingerprints
+from src.crawling_logic.archive_visit_policy import normalize_article_url, compute_page_fingerprints
 
 
 # ---------------------------------------------------------------------------

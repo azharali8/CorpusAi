@@ -28,7 +28,7 @@ import urllib.robotparser
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from src.archive_visit_policy import compute_page_fingerprints, normalize_article_url
+from src.crawling_logic.archive_visit_policy import compute_page_fingerprints, normalize_article_url
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
 from src.incremental_run import IncrementalRun
 from src.replay_validation import generate_sha256_manifest

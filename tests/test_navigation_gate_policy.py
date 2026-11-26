@@ -25,8 +25,8 @@ Verifies all 20 required test criteria:
 """
 
 import pytest
-from src.navigation_gate_policy import NavigationGatePolicy
-from src.multipage_article_policy import MultiPageArticlePolicy, LogicalArticle
+from src.crawling_logic.navigation_gate_policy import NavigationGatePolicy
+from src.crawling_logic.multipage_article_policy import MultiPageArticlePolicy, LogicalArticle
 from research.crawling.experiments.gated_portal_simulator import GatedPortalSimulator
 from research.crawling.experiments.run_gated_navigation_experiment import execute_gated_crawl
 

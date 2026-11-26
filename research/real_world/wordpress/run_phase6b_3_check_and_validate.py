@@ -29,8 +29,8 @@ from bs4 import BeautifulSoup
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 sys.path.insert(0, PROJECT_ROOT)
 
-from src.archive_page_discovery import ArchivePageDiscovery
-from src.archive_visit_policy import compute_page_fingerprints, normalize_article_url
+from src.crawling_logic.archive_page_discovery import ArchivePageDiscovery
+from src.crawling_logic.archive_visit_policy import compute_page_fingerprints, normalize_article_url
 from src.article_inspector import extract_article_metadata
 from src.portal_state import ArticleState, ArchivePageState, PortalState
 from src.incremental_run import IncrementalRun
