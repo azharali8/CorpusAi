@@ -3,7 +3,7 @@ Unit tests for multi-level forum / bulletin board crawling and incremental state
 """
 
 import pytest
-from src.archive_visit_policy import normalize_article_url
+from src.crawling_logic.archive_visit_policy import normalize_article_url
 from src.portal_state import ArticleState, ArchivePageState, PortalState
 from src.run_comparison import RunComparisonEngine
 

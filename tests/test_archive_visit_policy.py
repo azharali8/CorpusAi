@@ -20,7 +20,7 @@ Verifies all 15 required test criteria:
 """
 
 import pytest
-from src.archive_visit_policy import (
+from src.crawling_logic.archive_visit_policy import (
     ArchiveVisitPolicy,
     ArticleLedger,
     compute_page_fingerprints,

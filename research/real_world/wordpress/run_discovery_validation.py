@@ -18,8 +18,8 @@ from urllib.parse import urlparse
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 
-from src.archive_page_discovery import ArchivePageDiscovery
-from src.archive_visit_policy import normalize_article_url
+from src.crawling_logic.archive_page_discovery import ArchivePageDiscovery
+from src.crawling_logic.archive_visit_policy import normalize_article_url
 
 TARGET_ARCHIVE_URL = "https://wordpress.org/news/all-posts/"
 USER_AGENT = "CorpusAI-Research-Validator/1.0 (+https://github.com/CorpusAI; Academic Research Evaluation)"

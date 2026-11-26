@@ -13,8 +13,8 @@ from typing import Any, Dict, List, Optional, Set
 # Add project root to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "..")))
 
-from src.navigation_gate_policy import NavigationGatePolicy
-from src.multipage_article_policy import MultiPageArticlePolicy
+from src.crawling_logic.navigation_gate_policy import NavigationGatePolicy
+from src.crawling_logic.multipage_article_policy import MultiPageArticlePolicy
 from research.crawling.experiments.gated_portal_simulator import GatedPortalSimulator
 
 

@@ -14,7 +14,7 @@ import datetime
 import time
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from src.archive_visit_policy import (
+from src.crawling_logic.archive_visit_policy import (
     compute_page_fingerprints,
     normalize_article_url,
 )

@@ -25,7 +25,7 @@ Verifies all 20 required test criteria:
 """
 
 import pytest
-from src.archive_graph_policy import (
+from src.crawling_logic.archive_graph_policy import (
     ArchiveGraphTraversalPolicy,
     compute_node_child_fingerprints,
 )

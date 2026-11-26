@@ -18,7 +18,7 @@ import os
 import pytest
 import sys
 
-from src.archive_page_discovery import ArchivePageDiscovery
+from src.crawling_logic.archive_page_discovery import ArchivePageDiscovery
 from research.real_world.wordpress.run_discovery_validation import evaluate_discovery
 
 

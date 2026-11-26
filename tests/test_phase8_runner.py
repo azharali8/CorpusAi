@@ -33,7 +33,7 @@ import pytest
 from src.archive_catalog import ArchiveCatalog
 from src.archive_package import PackageVerificationResult, PackageVerifier
 from src.downloader import DownloadedResource
-from src.incremental_archive_policy import (
+from src.crawling_logic.incremental_archive_policy import (
     IncrementalArchivePolicy,
     IncrementalCrawlBudget,
 )

@@ -8,7 +8,7 @@ from urllib.parse import urljoin
 
 from bs4 import BeautifulSoup
 
-from src.archive_page_discovery import ArchivePageDiscovery
+from src.crawling_logic.archive_page_discovery import ArchivePageDiscovery
 from src.article_inspector import extract_article_metadata
 from src.downloader import ResourcePreservationHarvester
 from src.portal_state import PortalState

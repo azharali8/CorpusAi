@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Set
 from urllib.parse import urljoin, urlparse
 from bs4 import BeautifulSoup
 
-from src.archive_visit_policy import normalize_article_url
+from src.crawling_logic.archive_visit_policy import normalize_article_url
 
 
 class ArchivePageDiscovery:

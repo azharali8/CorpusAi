@@ -2,13 +2,14 @@
 Deposit Orchestration sequencing package validation, draft creation, uploads, and verification.
 """
 
-from abc import ABC, abstractmethod
 import itertools
 import logging
 from typing import Optional, Set
 
 from src.archive_package import PackageVerifier
 from src.deposit_metadata import DepositMetadata
+from src.zenodo_stuff.client_contract import RepositoryDepositClient
+from src.zenodo_stuff.fingerprint import compute_package_fingerprint
 from src.zenodo_stuff.models import (
     DepositReceipt,
     DepositStatus,
@@ -29,66 +30,6 @@ _UPLOADABLE_STATUSES: Set[str] = {
     STATUS_UPLOADING,
     STATUS_FAILED,
 }
-
-
-class RepositoryDepositClient(ABC):
-    """Abstract interface defining the repository deposit lifecycle contract."""
-
-    @property
-    def repository_target(self) -> str:
-        """Name of the target repository (e.g. 'zenodo')."""
-        return "zenodo"
-
-    @property
-    def environment(self) -> str:
-        """Environment name (e.g. 'sandbox' or 'production')."""
-        return "sandbox"
-
-    @abstractmethod
-    def create_draft(
-        self,
-        metadata: DepositMetadata,
-        portal_id: str,
-        run_id: str,
-        package_fingerprint: str,
-    ) -> DepositReceipt:
-        raise NotImplementedError
-
-    @abstractmethod
-    def find_existing_draft(
-        self,
-        portal_id: str,
-        run_id: str,
-    ) -> Optional[DepositReceipt]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def upload_artifacts(
-        self,
-        receipt: DepositReceipt,
-        package_dir: str,
-    ) -> DepositReceipt:
-        raise NotImplementedError
-
-    @abstractmethod
-    def verify_remote_artifacts(
-        self,
-        receipt: DepositReceipt,
-        package_dir: str,
-    ) -> DepositReceipt:
-        raise NotImplementedError
-
-    @abstractmethod
-    def get_status(self, receipt: DepositReceipt) -> DepositReceipt:
-        raise NotImplementedError
-
-    @abstractmethod
-    def publish_deposit(
-        self,
-        receipt: DepositReceipt,
-        allow_publish: bool = False,
-    ) -> DepositReceipt:
-        raise NotImplementedError
 
 
 class DepositOrchestrator:
@@ -231,8 +172,6 @@ class DepositOrchestrator:
         Orchestrate deposit with idempotency, local verification, safe retry,
         sequential upload, and immediate remote verification.
         """
-        from src.zenodo_deposit import compute_package_fingerprint
-
         package_fingerprint = compute_package_fingerprint(package_dir)
 
         # 1. Check existing receipt for duplicate protection & resumption

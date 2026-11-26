@@ -17,11 +17,11 @@ from src.portal_state import ArticleState, ArchivePageState, PortalState
 from src.incremental_run import IncrementalRun
 from src.archive_catalog import ArchiveCatalog, CatalogRunEntry
 from src.run_comparison import IncrementalDiff, RunComparisonEngine
-from src.incremental_archive_policy import (
+from src.crawling_logic.incremental_archive_policy import (
     IncrementalArchivePolicy,
     IncrementalCrawlBudget,
 )
-from src.archive_visit_policy import compute_page_fingerprints
+from src.crawling_logic.archive_visit_policy import compute_page_fingerprints
 
 
 # ===========================================================================

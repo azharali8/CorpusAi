@@ -28,7 +28,7 @@ from src.archive_catalog import CatalogRunEntry
 from src.archive_package import ArchivePackager, PackageVerifier
 from src.crawling_logic.portal_fetchers import build_portal_fetchers
 from src.downloader import ResourcePreservationHarvester
-from src.incremental_archive_policy import (
+from src.crawling_logic.incremental_archive_policy import (
     IncrementalArchivePolicy,
     IncrementalCrawlBudget,
 )

@@ -251,9 +251,9 @@ class TestOrchestratorLifecycle:
         registry.register_receipt(uploaded_receipt)
 
         # Mock compute_package_fingerprint to match
-        import src.zenodo_deposit
-        original_fp = src.zenodo_deposit.compute_package_fingerprint
-        src.zenodo_deposit.compute_package_fingerprint = lambda p: "fp123456"
+        import src.zenodo_stuff.orchestrator
+        original_fp = src.zenodo_stuff.orchestrator.compute_package_fingerprint
+        src.zenodo_stuff.orchestrator.compute_package_fingerprint = lambda p: "fp123456"
 
         try:
             client = DummyCompleteClient()
@@ -266,7 +266,48 @@ class TestOrchestratorLifecycle:
             )
             assert receipt.status == STATUS_VERIFIED
         finally:
-            src.zenodo_deposit.compute_package_fingerprint = original_fp
+            src.zenodo_stuff.orchestrator.compute_package_fingerprint = original_fp
+
+
+class TestLegacyShimAndImportIndependence:
+    """Verify legacy src.zenodo_deposit shim resolves to canonical objects without cycles."""
+
+    def test_legacy_shim_exports_resolve_to_canonical_objects(self):
+        import src.zenodo_deposit as legacy
+        from src.zenodo_stuff.client import (
+            ZENODO_PRODUCTION_BASE_URL,
+            ZENODO_SANDBOX_BASE_URL,
+            ZenodoSandboxAdapter,
+        )
+        from src.zenodo_stuff.client_contract import RepositoryDepositClient
+        from src.zenodo_stuff.fingerprint import compute_package_fingerprint
+        from src.zenodo_stuff.models import DepositReceipt, UploadedArtifactRecord
+        from src.zenodo_stuff.orchestrator import DepositOrchestrator
+        from src.zenodo_stuff.registry import DepositRegistry
+
+        assert legacy.DepositOrchestrator is DepositOrchestrator
+        assert legacy.ZenodoSandboxAdapter is ZenodoSandboxAdapter
+        assert legacy.RepositoryDepositClient is RepositoryDepositClient
+        assert legacy.compute_package_fingerprint is compute_package_fingerprint
+        assert legacy.DepositReceipt is DepositReceipt
+        assert legacy.UploadedArtifactRecord is UploadedArtifactRecord
+        assert legacy.DepositRegistry is DepositRegistry
+        assert legacy.ZENODO_SANDBOX_BASE_URL == ZENODO_SANDBOX_BASE_URL
+        assert legacy.ZENODO_PRODUCTION_BASE_URL == ZENODO_PRODUCTION_BASE_URL
+
+    def test_orchestrator_does_not_import_concrete_client(self):
+        import subprocess
+        import sys
+
+        code = (
+            "import sys; "
+            "from src.zenodo_stuff.orchestrator import DepositOrchestrator; "
+            "from src.zenodo_stuff.client_contract import RepositoryDepositClient; "
+            "assert 'src.zenodo_stuff.client' not in sys.modules; "
+            "assert 'src.zenodo_deposit' not in sys.modules"
+        )
+        res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        assert res.returncode == 0, res.stderr
 
     def test_failed_receipt_non_retry_eligible_rejected_immediately(self, tmp_path):
         registry = DepositRegistry(tmp_path / "registry.json", db_path=tmp_path / "deposit_state.db")
@@ -282,9 +323,9 @@ class TestOrchestratorLifecycle:
         )
         registry.register_receipt(failed_receipt)
 
-        import src.zenodo_deposit
-        original_fp = src.zenodo_deposit.compute_package_fingerprint
-        src.zenodo_deposit.compute_package_fingerprint = lambda p: "fp_locked"
+        import src.zenodo_stuff.orchestrator
+        original_fp = src.zenodo_stuff.orchestrator.compute_package_fingerprint
+        src.zenodo_stuff.orchestrator.compute_package_fingerprint = lambda p: "fp_locked"
 
         try:
             client = DummyCompleteClient()
@@ -299,7 +340,48 @@ class TestOrchestratorLifecycle:
             assert res.last_error_category == "FATAL_CORRUPTION"
             assert res.retry_eligible is False
         finally:
-            src.zenodo_deposit.compute_package_fingerprint = original_fp
+            src.zenodo_stuff.orchestrator.compute_package_fingerprint = original_fp
+
+
+class TestLegacyShimAndImportIndependence:
+    """Verify legacy src.zenodo_deposit shim resolves to canonical objects without cycles."""
+
+    def test_legacy_shim_exports_resolve_to_canonical_objects(self):
+        import src.zenodo_deposit as legacy
+        from src.zenodo_stuff.client import (
+            ZENODO_PRODUCTION_BASE_URL,
+            ZENODO_SANDBOX_BASE_URL,
+            ZenodoSandboxAdapter,
+        )
+        from src.zenodo_stuff.client_contract import RepositoryDepositClient
+        from src.zenodo_stuff.fingerprint import compute_package_fingerprint
+        from src.zenodo_stuff.models import DepositReceipt, UploadedArtifactRecord
+        from src.zenodo_stuff.orchestrator import DepositOrchestrator
+        from src.zenodo_stuff.registry import DepositRegistry
+
+        assert legacy.DepositOrchestrator is DepositOrchestrator
+        assert legacy.ZenodoSandboxAdapter is ZenodoSandboxAdapter
+        assert legacy.RepositoryDepositClient is RepositoryDepositClient
+        assert legacy.compute_package_fingerprint is compute_package_fingerprint
+        assert legacy.DepositReceipt is DepositReceipt
+        assert legacy.UploadedArtifactRecord is UploadedArtifactRecord
+        assert legacy.DepositRegistry is DepositRegistry
+        assert legacy.ZENODO_SANDBOX_BASE_URL == ZENODO_SANDBOX_BASE_URL
+        assert legacy.ZENODO_PRODUCTION_BASE_URL == ZENODO_PRODUCTION_BASE_URL
+
+    def test_orchestrator_does_not_import_concrete_client(self):
+        import subprocess
+        import sys
+
+        code = (
+            "import sys; "
+            "from src.zenodo_stuff.orchestrator import DepositOrchestrator; "
+            "from src.zenodo_stuff.client_contract import RepositoryDepositClient; "
+            "assert 'src.zenodo_stuff.client' not in sys.modules; "
+            "assert 'src.zenodo_deposit' not in sys.modules"
+        )
+        res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        assert res.returncode == 0, res.stderr
 
 
 # ---------------------------------------------------------------------------
@@ -358,9 +440,9 @@ class TestRepositoryEnvironmentPropagation:
         )
         registry.register_receipt(orig_receipt)
 
-        import src.zenodo_deposit
-        original_fp = src.zenodo_deposit.compute_package_fingerprint
-        src.zenodo_deposit.compute_package_fingerprint = lambda p: "match_fp"
+        import src.zenodo_stuff.orchestrator
+        original_fp = src.zenodo_stuff.orchestrator.compute_package_fingerprint
+        src.zenodo_stuff.orchestrator.compute_package_fingerprint = lambda p: "match_fp"
 
         try:
             client = DummyCompleteClient(repo="default_repo", env="default_env")
@@ -376,4 +458,45 @@ class TestRepositoryEnvironmentPropagation:
             assert res.environment == "osf_prod"
             assert res.status == STATUS_VERIFIED
         finally:
-            src.zenodo_deposit.compute_package_fingerprint = original_fp
+            src.zenodo_stuff.orchestrator.compute_package_fingerprint = original_fp
+
+
+class TestLegacyShimAndImportIndependence:
+    """Verify legacy src.zenodo_deposit shim resolves to canonical objects without cycles."""
+
+    def test_legacy_shim_exports_resolve_to_canonical_objects(self):
+        import src.zenodo_deposit as legacy
+        from src.zenodo_stuff.client import (
+            ZENODO_PRODUCTION_BASE_URL,
+            ZENODO_SANDBOX_BASE_URL,
+            ZenodoSandboxAdapter,
+        )
+        from src.zenodo_stuff.client_contract import RepositoryDepositClient
+        from src.zenodo_stuff.fingerprint import compute_package_fingerprint
+        from src.zenodo_stuff.models import DepositReceipt, UploadedArtifactRecord
+        from src.zenodo_stuff.orchestrator import DepositOrchestrator
+        from src.zenodo_stuff.registry import DepositRegistry
+
+        assert legacy.DepositOrchestrator is DepositOrchestrator
+        assert legacy.ZenodoSandboxAdapter is ZenodoSandboxAdapter
+        assert legacy.RepositoryDepositClient is RepositoryDepositClient
+        assert legacy.compute_package_fingerprint is compute_package_fingerprint
+        assert legacy.DepositReceipt is DepositReceipt
+        assert legacy.UploadedArtifactRecord is UploadedArtifactRecord
+        assert legacy.DepositRegistry is DepositRegistry
+        assert legacy.ZENODO_SANDBOX_BASE_URL == ZENODO_SANDBOX_BASE_URL
+        assert legacy.ZENODO_PRODUCTION_BASE_URL == ZENODO_PRODUCTION_BASE_URL
+
+    def test_orchestrator_does_not_import_concrete_client(self):
+        import subprocess
+        import sys
+
+        code = (
+            "import sys; "
+            "from src.zenodo_stuff.orchestrator import DepositOrchestrator; "
+            "from src.zenodo_stuff.client_contract import RepositoryDepositClient; "
+            "assert 'src.zenodo_stuff.client' not in sys.modules; "
+            "assert 'src.zenodo_deposit' not in sys.modules"
+        )
+        res = subprocess.run([sys.executable, "-c", code], capture_output=True, text=True)
+        assert res.returncode == 0, res.stderr
